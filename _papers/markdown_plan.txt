@@ -35,3 +35,9 @@
 *step five: Other Classifiers*
 - 1. implement the tagging techniques with other classifiers
 - 2. Discuss/compare
+
+*Weighting Schemes: Improving Sentiment Analysis with Part-Of-Speech Weighting*
+1. How to weigh PoS?
+- The paper specify a strength for each PoS. Here 4 classes of PoS is used (noun, verb, adjective, verb) with each strength ranging from 1-5. Then the feature weight is normalized over all PoS strengths in the document
+2. How to assign initial strength?
+- As there are 4 classes, there are 625 possible combinations (5^4). Here we can try for every possible combination, and use OCFS to reduce our feature. The paper also include Improved Iterative Scaling to fine tune the results, but I think this can be optional for us, as we aim to investigate different PoS weighing scheme. Based on the feature that passed our OCFS filter and result on testdata, we can discuss which PoS plays an important role to capture the sentiment.

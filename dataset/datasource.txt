@@ -1,2 +1,0 @@
-https://www.kaggle.com/crowdflower/twitter-airline-sentiment/home
-http://help.sentiment140.com/for-students/

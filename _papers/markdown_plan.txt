@@ -1,0 +1,37 @@
+*step one: Baseline*:
+- 1. Dataset for project: Sentiment Analysis 140
+   *(Twitter messages divided in 3 categories (positive, negative, neutral)dataset developed by Stanford University Students during NLP Lectures)*
+
+- 2. Pre-processing of data
+    - spelling correction *(basic method but better than nothing. pattern.en API will provide an easy way to clean data. word will be corrected if the result is > 0.9)*
+    - heldout dataset: dataset is big enough (1.6 Millions Training documents + 500 Test)=> split in 1,28M Docs for Training, 0.32M docs for Test, 500 docs for Dev
+- 3. Implement baseline classifier: MaxEnt (LogisticRegression) Classifier with Unigram, TD*IDF with pre-processed data
+    *(we will use scikit: https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html, 
+    https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
+    Why TD*IDF? in "Word clustering based on POS feature for efficient twitter sentiment analysis" introduction => described as one of the most robust and efficient schemes for feature weighing.
+    )*
+    
+*step two: PoS Tagging*:
+- 1. The most promising POS Tagger for Twitter is the GATE Twitter part-of-speech tagger.
+	*(see "Twitter Part-of-Speech Tagging for All: Overcoming Sparse and Noisy Data" conclusion, all results in this paper helped to build it. 
+		it improved upon the good work already done by the Stanford POS Tagger)*
+	*This tagger will provide some special handling of slang, which is really helpful for Twitter*
+- 2. Other data processing step needed => create an input file with one tweet per line.
+	The Tagger will output the result in another file. The new file will need another parsing step to get the POS.
+
+
+*step three: Weighing Schemes (big one)*:
+- 1. Previous Related Work: summarise what has been done in papers
+(-> *_let's already start a MarkDown note with bullet points: most important points from papers we read_*)
+- 2. choose which weighing schemes to implement
+- 3. try out/implement weighing schemes
+- 4. record results in a table for easy comparison
+
+*step four: Discussion*:
+- 1. describe results
+- 2. discuss what results mean, compare weighing schemes
+- 3. compare with papers from Related Work section
+
+*step five: Other Classifiers*
+- 1. implement the tagging techniques with other classifiers
+- 2. Discuss/compare

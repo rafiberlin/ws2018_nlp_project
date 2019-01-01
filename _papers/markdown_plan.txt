@@ -51,3 +51,15 @@
 
 *Twitter Part-of-Speech Tagging for All: Overcoming Sparse and Noisy Data*
 1. This paper points to the best POS Tagger for twitter ( slang handling for example). RL: What I am not sure of => if we need to perform spelling correction before or if the Tagger will be to do that on the fly to assign the right POS
+
+*Twitter Sentiment Classification using Distant Supervision*
+All the following points might be relevant for Data Prepocessing and POS Tagging
+1. Emoticons could help to understand if a Tweet is positive or negative => not useful for us, the emoticons were already removed.
+2. Standard length of twitters => 140 Characters. We should use the length of a document as feature.
+Points 3 to 5 see chapter 2.3
+3. all usernames (starting by @ followed by a string) replaced by equivalence token USERNAME to reduce feature space. => could be useful as well
+4. all urls replaced by equivalence token URL to reduce feature space. => could be useful as well
+5. Repeated letters being reduced to max 2 consecutive letters=>ex. huuuuuuuuuungry => huungry. RL: This is used in the spelling correction function I pushed.
+see chapter 4.2 Results for following points
+6. Unigrams + Bigrams performs better than Unigram or Bigrams alone => SHould we also use Unigram + Bigram as well in step 3 ()
+7. They say that POS alone does not help (no POS grouping used here.) => it will be interesting to compare with our results for MaxEnt

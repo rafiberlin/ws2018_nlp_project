@@ -48,3 +48,6 @@
 2. Proposed grouping: J for [adjectives, adverbs] V for [verbs],  N for [nouns], [O the other POS tags]
 3. In the paper, each group is a feature, weights are learned with gradient descend based on 2 models: Perceptron and Minimal Classification error.
 => RL: I suggest ever to learn the weights as any normal feature in the MaxEnt. Or we could simply use this Grouping and mix the methodology used in *Weighting Schemes: Improving Sentiment Analysis with Part-Of-Speech Weighting*
+
+*Twitter Part-of-Speech Tagging for All: Overcoming Sparse and Noisy Data*
+1. This paper points to the best POS Tagger for twitter ( slang handling for example). RL: What I am not sure of => if we need to perform spelling correction before or if the Tagger will be to do that on the fly to assign the right POS

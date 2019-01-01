@@ -42,3 +42,9 @@
 2. How to assign initial strength?
 - As there are 4 classes, there are 625 possible combinations (5^4). Here we can try for every possible combination, and use OCFS to reduce our feature. The paper also include Improved Iterative Scaling to fine tune the results, but I think this can be optional for us, as we aim to investigate different PoS weighing scheme. Based on the feature that passed our OCFS filter and result on testdata, we can discuss which PoS plays an important role to capture the sentiment.
 - How to use OCFS: See Chapter "4.3 An Illustrating Example". @TODO: how do we define how many features do we want to keep?
+
+*A POS-based Ensemble Model for Cross-domain Sentiment Classification*
+1.  This paper concentrates on Transfer Learning using POS Tag Groups for sentiment classification. While the cross domain part of this paper is not so interesting in itself, the grouping problematic is interesting for our project(which POS are signigficant for classification in a general way? how to group them?)
+2. Proposed grouping: J for [adjectives, adverbs] V for [verbs],  N for [nouns], [O the other POS tags]
+3. In the paper, each group is a feature, weights are learned with gradient descend based on 2 models: Perceptron and Minimal Classification error.
+=> RL: I suggest ever to learn the weights as any normal feature in the MaxEnt. Or we could simply use this Grouping and mix the methodology used in *Weighting Schemes: Improving Sentiment Analysis with Part-Of-Speech Weighting*

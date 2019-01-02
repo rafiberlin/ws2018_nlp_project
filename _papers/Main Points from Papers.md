@@ -1,6 +1,8 @@
 #Weighting Schemes: Improving Sentiment Analysis with Part-Of-Speech Weighting
 1. How to weigh PoS?
-- The paper specify a strength for each PoS. Here 4 classes of PoS is used (noun, verb, adjective, verb) with each strength ranging from 1-5. Then the feature weight is normalized over all PoS strengths in the document
+- The paper specify a strength for each PoS. Here 4 classes of PoS is used (noun, verb, adjective, verb) with each strength ranging from 1-5. Then the feature weight is normalized over all PoS strengths in the document.
+AV: filter out all words such, that have PoS tags other than {noun,verb,adjective,adverb} by setting the weights to 0.
+
 2. How to assign initial strength (see chapter 4.3 for details)?
 - As there are 4 classes, there are 625 possible combinations (5^4). Here we can try for every possible combination, and use OCFS to reduce our feature. The paper also include Improved Iterative Scaling to fine tune the results, but I think this can be optional for us, as we aim to investigate different PoS weighing scheme. Based on the feature that passed our OCFS filter and result on testdata, we can discuss which PoS plays an important role to capture the sentiment.
 3. Initial weights for individual words are assigned used word counting accross document (see chapter 4.1) 
@@ -12,15 +14,44 @@ For example: if we have the 2 following documents:
  I-N hate-VB ugly-ADJ dogs-N : Negative
 
 In this example, we have only 5^3 combinations; but we would basically train 5^3 times with the corresponding starting weights (1st classifier ADJ=5, N=4, V=3, ... 125 classifier Adj=1 , N=2, V=5 )  ) and look which one of the starting weights delivered the better results?
+AV: this is also how I understand it. If there are any words that get PoS tags that are not N,VB,ADJ or ADV - their weights are set to 0.
+
 We might run into a computing problem if we decide to compute all combinations. Neglecting the testing set with 500 docs, if we split the main dataset (1.6 Million) into
 60% Training, 20%Dev, 20%Test => 20% Dev gives 320000 docs, which will make a huge computational difference... In the article, they only use 174 documents to find out the best combination.
 Maybe it s not a bad idea to use the dev set with only 500 documents.
--->
+-->  
 
+AV: 
+4. **Why weighting** PoS categories?
+    - By doing this, the intention is to get further separation between sentiment carrying words and content words, without completely ignoring entire word categories (such as nouns, which are often content words)
+
+5. **Evaluation** metrics:
+    - Precision, recall and accuracy: presented. F measure: used for comparing performance
+
+6. **Baseline** performance:
+- baseline classifier uses only the OCFS and the word count feature weighting (BoW)
+The way I(AV) understand it is: they compared three baseline classifiers: 1) closed PoS filter with 500 features; 2) closed PoS filter with all features and 3) 1)Stemming, stopword removal and closed PoS filter
+- Best baseline performance: BoW + OCFS + Closed POS filter (everything that is not a noun, verb, adjective or adverb is filtered out) + stemming and stop word removal. Feature cutoff: 1000 or no cut-off. F: 72.00%
+
+(?) in Table 2 the average F for baseline: 74.80%, so it increased from initial 72%. It is because of Improved Iterative Scaling? 
+(?) Stemming and stopword removal should be easy, if we want to add it to baseline
+
+7. **PoS-enriched classifier performance**: 
+    - Best weights: N:2, VB:3, ADV:4, ADJ:5 - 79.20% (baseline: 74.80%)
+
+8. Take away: 
+    - adjectives are very strong indicators of sentiment, but adverbs can be just as strong.
+    - with similar PoS strength combinations as in paper: using OCFS doesn't have much effect (commonly one or two POS categories that dominate the others in terms of weighting. So an odd low-frequency term that is left in the feature space will contribute little to classification of a document)
 
 #OCFS_optimal_orthogonal_centroid_feature_selection_for_text_categorization
-1. How to use OCFS to reduce the number of features: See Chapter "4.3 An Illustrating Example".
-Looks like "simple" mean calculation with cutoff values for selection...
+1. How to use OCFS to reduce the number of features that do not contribute to distinguishing between texts: See Chapter "4.3 An Illustrating Example".
+Looks like "simple" mean calculation with cutoff values for selection...  
+AV:
+2. OCFS is aimed at finding features which maximize the distance between the mean feature vectors (centroids) of all classes.
+3. How OCFS works:
+    4. Computes the centroid vectors for each class
+    5. Ranks each feature by its distance from the centroids
+    6. Cuts off all features whose distances from the centroids are below a pre-specified threshold
 
 
 #A POS-based Ensemble Model for Cross-domain Sentiment Classification

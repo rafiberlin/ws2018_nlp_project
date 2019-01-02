@@ -22,7 +22,7 @@
 
 
 
-*step three: Weighing Schemes (big one)*:
+*step three: Weighing Schemes*:
 - 1. Previous Related Work: summarise what has been done in papers
 *From Twitter Part-of-Speech Tagging for All: Overcoming Sparse and Noisy Data => it says that POS alone does not help to improve classification*.
 *On the other hand, IMPROVING SENTIMENT ANALYSIS WITH PART-OF-SPEECH WEIGHTING mentions the opposite*

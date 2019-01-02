@@ -1,4 +1,4 @@
-#Weighting Schemes: Improving Sentiment Analysis with Part-Of-Speech Weighting*
+#Weighting Schemes: Improving Sentiment Analysis with Part-Of-Speech Weighting
 1. How to weigh PoS?
 - The paper specify a strength for each PoS. Here 4 classes of PoS is used (noun, verb, adjective, verb) with each strength ranging from 1-5. Then the feature weight is normalized over all PoS strengths in the document
 2. How to assign initial strength?
@@ -18,12 +18,12 @@ Maybe it s not a bad idea to use the dev set with only 500 documents.
 -->
 
 
-#OCFS_optimal_orthogonal_centroid_feature_selection_for_text_categorization*
+#OCFS_optimal_orthogonal_centroid_feature_selection_for_text_categorization
 1. How to use OCFS to reduce the number of features: See Chapter "4.3 An Illustrating Example".
 Looks like "simple" mean calculation with cutoff values for selection...
 
 
-#A POS-based Ensemble Model for Cross-domain Sentiment Classification*
+#A POS-based Ensemble Model for Cross-domain Sentiment Classification
 1.  This paper concentrates on Transfer Learning using POS Tag Groups for sentiment classification and Ensemble methods to combine different learning results into algorithm for prediction.
 2. In the paper, they learn the weights of each group individually unlike the paper *Weighting Schemes: Improving Sentiment Analysis with Part-Of-Speech Weighting*.
 The individual results are combined with this ensemble approach to build a better prediction.
@@ -34,7 +34,7 @@ Or even better, only use J for [adjectives, adverbs] V for [verbs],  N for [noun
 
 
 
-#Twitter Part-of-Speech Tagging for All: Overcoming Sparse and Noisy Data*
+#Twitter Part-of-Speech Tagging for All: Overcoming Sparse and Noisy Data
 1. This paper points to the best POS Tagger for twitter ( slang handling for example). <!--RL: What I am not sure of => if we need to perform spelling correction before or if the Tagger will be to do that on the fly to assign the right POS-->
 
 *Twitter Sentiment Classification using Distant Supervision*

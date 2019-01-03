@@ -62,7 +62,19 @@ The individual results are combined with this ensemble approach to build a bette
 Maybe we could use the grouping from this paper ( J for [adjectives, adverbs] V for [verbs],  N for [nouns], [O the other POS tags] ) with the methodology used in Weighting Schemes: Improving Sentiment Analysis with Part-Of-Speech Weighting
 Or even better, only use J for [adjectives, adverbs] V for [verbs],  N for [nouns] to reduce the search of the best combination in Weighting Schemes: Improving Sentiment Analysis with Part-Of-Speech Weighting
 -->
+AV: @RL, we can try your last suggestion. It seems like a small change: the only difference to the grouping in Improving-SA paper is that we combine adverbs and adjective into one group, right? 
 
+
+3. **Findings**: 
+    - across different domains, features with some types of PoS tags are domain-dependent, while some others are domain-free. 
+    - When changing domain: part of knowledge changes and other part remains similar. Changes across domains: N>>Uni>V>J>O. The change of N is significantly larger than the other POS types and Uni (unigrams). The distribution of O (words that don't belong to one of 4 main categories) changes the least. Most fetures in J and V are partially domain-free (e.g. “great” and “love” always express a positive meaning in whatever domains.) 
+
+4. **Adjectives**: Even though Improving Sentiment paper suggests that adjectives are the most important indicators of sentiment, "using only adjectives as features actually results in much worse performance than using the same number of most frequent unigrams" (cited: Pang et al., 2002; Benamara et al., 2007)
+
+5. **Learning Weights**: stochastic gradient descent to optimize two criteria: perceptron (Perc) model, and minimal classification error (MCE) criterion. 
+=> its sounds like a pretty complicated calculation that they use
+
+6. PoS Tagger: they used an old tagger from 1997. It seems pretty outdated to me, which may have affected the results (http://www.inf.ed.ac.uk/resources/nlp/local_doc/MXPOST.html)
 
 
 #Twitter Part-of-Speech Tagging for All: Overcoming Sparse and Noisy Data

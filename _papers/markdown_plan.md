@@ -17,6 +17,10 @@
 	*(see "Twitter Part-of-Speech Tagging for All: Overcoming Sparse and Noisy Data" conclusion, all results in this paper helped to build it. 
 		it improved upon the good work already done by the Stanford POS Tagger)*
 	*This tagger will provide some special handling of slang, which is really helpful for Twitter*
+	
+AV: 4 implementation options: 1) Java program 2) plugin for the language processing framework GATE 3) model for the Stanford tagger, distributed as a single file, for use in existing applications 4) high-speed model that trades about 2% accuracy for doubled pace.
+Suggestion: java program? everything else is unfamiliar to me.
+
 - 2. Other data processing step needed => create an input file with one tweet per line.
 	The Tagger will output the result in another file. The new file will need another parsing step to get the POS.
 

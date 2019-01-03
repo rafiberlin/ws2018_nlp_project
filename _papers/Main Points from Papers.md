@@ -78,7 +78,8 @@ AV: @RL, we can try your last suggestion. It seems like a small change: the only
 
 
 #Twitter Part-of-Speech Tagging for All: Overcoming Sparse and Noisy Data
-1. This paper points to the best POS Tagger for twitter ( slang handling for example). <!--RL: What I am not sure of => if we need to perform spelling correction before or if the Tagger will be to do that on the fly to assign the right POS-->
+1. This paper points to the best POS Tagger for twitter ( slang handling for example). <!--RL: What I am not sure of => if we need to perform spelling correction before or if the Tagger will be to do that on the fly to assign the right POS--> 
+2. 90.5% tagging accuracy
 
 *Twitter Sentiment Classification using Distant Supervision*
 All the following points might be relevant for Data Prepocessing and POS Tagging

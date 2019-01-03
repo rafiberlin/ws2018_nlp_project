@@ -92,3 +92,11 @@ Points 3 to 5 see chapter 2.3
 see chapter 4.2 Results for following points-->
 6. Unigrams + Bigrams performs better than Unigram or Bigrams alone <!--RL: SHould we also use Unigram + Bigram as well in step 3 -->
 7. They say that POS alone does not help (no POS grouping used here.) => it will be interesting to compare with our results for MaxEnt
+
+
+
+#Twitter Sentiment Classification using Distant Supervision
+
+- **Effect of PoS tagging**: concluded that PoS tags were not useful: performance for MaxEnt increased non-significantly, while performance of Naive Bayes and SVM decreased. 
+    - no further informations on weighting of PoS tags. Seems like they used PoS tags just to disambiguate word meaning (e.g. “over” as a verb may have a negative connotation, but as a noun it is neutral, as in "cricket over")
+- **Bigrams as Features**: Using only bigrams as features is not useful because the feature space is very sparse. When using both unigram and bigrams as features accuracy improved for Naive Bayes (81.3% from to 82.7%) and Max- Ent (from 80.5 to 82.7). 

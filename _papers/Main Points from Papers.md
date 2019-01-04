@@ -106,9 +106,11 @@ see chapter 4.2 Results for following points-->
 
 - Even though we are not using the weighting scheme from the paper, it is a very recent paper (2018) that contains explanations for topics relevant to us
 - **TF-IDF**: The term frequency and inverse document frequency (TF–IDF)
-    - effectively measures the importance of the words among documents
+    - effectively measures the importance of the words among documents: selects the words important for a document and not paying much attention to common words
+        - Low value: the word appears evenly in every document
+        - High value: frequent only in few documents (also implying that many documents contain this word)
     - the importance of a word depends on 2 things:
-        - how often it occurs in the document
-        - ratio of total number of documents to num of documents containing the word
+        - Term frequency (TF): how often it occurs in the document 
+        - inverse document frequency (idf): ratio of total number of documents to num of documents containing the word
     - "greatly increases the accuracy of sentiment analysis"
     - like BoW, size of features is size of vocabulary of the document -> high dimentionality

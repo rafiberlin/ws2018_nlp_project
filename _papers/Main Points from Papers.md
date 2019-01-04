@@ -100,3 +100,15 @@ see chapter 4.2 Results for following points-->
 - **Effect of PoS tagging**: concluded that PoS tags were not useful: performance for MaxEnt increased non-significantly, while performance of Naive Bayes and SVM decreased. 
     - no further informations on weighting of PoS tags. Seems like they used PoS tags just to disambiguate word meaning (e.g. “over” as a verb may have a negative connotation, but as a noun it is neutral, as in "cricket over")
 - **Bigrams as Features**: Using only bigrams as features is not useful because the feature space is very sparse. When using both unigram and bigrams as features accuracy improved for Naive Bayes (81.3% from to 82.7%) and Max- Ent (from 80.5 to 82.7). 
+
+
+# Word clustering based on POS feature for efficient twitter sentiment analysis
+
+- Even though we are not using the weighting scheme from the paper, it is a very recent paper (2018) that contains explanations for topics relevant to us
+- **TF-IDF**: The term frequency and inverse document frequency (TF–IDF)
+    - effectively measures the importance of the words among documents
+    - the importance of a word depends on 2 things:
+        - how often it occurs in the document
+        - ratio of total number of documents to num of documents containing the word
+    - "greatly increases the accuracy of sentiment analysis"
+    - like BoW, size of features is size of vocabulary of the document -> high dimentionality

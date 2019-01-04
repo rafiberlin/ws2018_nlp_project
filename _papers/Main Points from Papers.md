@@ -114,3 +114,6 @@ see chapter 4.2 Results for following points-->
         - inverse document frequency (idf): ratio of total number of documents to num of documents containing the word
     - "greatly increases the accuracy of sentiment analysis"
     - like BoW, size of features is size of vocabulary of the document -> high dimentionality
+
+- About TF_IDF from the scikit-learn (section 4.2.3.4. Tf–idf term weighting on https://scikit-learn.org/stable/modules/feature_extraction.html#text-feature-extraction):
+    -  If we were to feed the direct count data directly to a classifier very frequent terms would shadow the frequencies of rarer yet more interesting terms.

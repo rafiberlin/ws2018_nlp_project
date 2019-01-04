@@ -110,10 +110,13 @@ see chapter 4.2 Results for following points-->
         - Low value: the word appears evenly in every document
         - High value: frequent only in few documents (also implying that many documents contain this word)
     - the importance of a word depends on 2 things:
-        - Term frequency (TF): how often it occurs in the document 
-        - inverse document frequency (idf): ratio of total number of documents to num of documents containing the word
+        - Term frequency (TF): how often it occurs in the document. Ratio of number of times the word appears in a document compared to the total number of words in that document.
+        - inverse document frequency (idf):  weight of rare words across all documents in the corpus. Ratio of total number of documents to num of documents containing the word
     - "greatly increases the accuracy of sentiment analysis"
     - like BoW, size of features is size of vocabulary of the document -> high dimentionality
 
-- About TF_IDF from the scikit-learn (section 4.2.3.4. Tf–idf term weighting on https://scikit-learn.org/stable/modules/feature_extraction.html#text-feature-extraction):
-    -  If we were to feed the direct count data directly to a classifier very frequent terms would shadow the frequencies of rarer yet more interesting terms.
+- More n TF-IDF:
+    -  Using count data: very frequent terms would shadow the frequencies of rarer yet more significant terms.
+
+- TF-IDF good explanation + example: https://medium.freecodecamp.org/how-to-process-textual-data-using-tf-idf-in-python-cd2bbc0a94a3
+- Scikit learn example: https://scikit-learn.org/stable/modules/feature_extraction.html#text-feature-extraction

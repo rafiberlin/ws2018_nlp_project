@@ -20,7 +20,7 @@ journal = {Proceedings of the 2009 International Conference on Machine Learning 
 doi = {10.1109/ICMLC.2009.5212278}
 }
 
-@InProceedings{pos-based-model,
+@inproceedings{pos-based-model,
 author = {Xia, Rui and Zong, Chengqing},
 title = {A POS-based Ensemble Model for Cross-domain Sentiment Classification},
 booktitle = {Proceedings of 5th International Joint Conference on Natural Language Processing},
@@ -53,15 +53,15 @@ url = {http://aclweb.org/anthology/I11-1069}
 }
 
 %For our baseline
-@misc{sklearn.feature_extraction.text.TfidfVectorizer,
+@misc{sklearnTfidfVectorizer,
     url = {https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html},
-    title = {sklearn.feature_extraction.text.TfidfVectorizer},
+    title = {scikit-learn TfidfVectorizer},
     note = {Online; accessed 30-December-2018}
 }
 
-@misc{sklearn.linear_model.LogisticRegression,
+@misc{sklearnLogisticRegression,
     url = {https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html},
-    title = {sklearn.feature_extraction.text.TfidfVectorizer},
+    title = {scikit-learn LogisticRegression},
     note = {Online; accessed 30-December-2018}
 }
 
@@ -73,8 +73,16 @@ url = {http://aclweb.org/anthology/I11-1069}
     note = {Online; accessed 30-December-2018}
 }
 
+%Alternative Tagger
+@misc{TweetNlpCarneggieMelon,
+    url = {http://www.cs.cmu.edu/~ark/TweetNLP/},
+    title = {Tweet NLP Carneggie Mellon},
+    note = {Online; accessed 05-Janunary-2019}
+}
 
-@book{Derczynski2013_POSTagging,
+
+%papers giving us the POS Tagging framework
+@inproceedings{Derczynski2013_POSTagging,
     title = {Twitter Part-of-Speech Tagging for All: Overcoming Sparse and Noisy Data},
     author = {Derczynski, Leon and Ritter, Alan and Clark, Sam and Bontcheva, Kalina},
     year = {2013},
@@ -82,10 +90,11 @@ url = {http://aclweb.org/anthology/I11-1069}
     publisher = {Association for Computational Linguistics}
 }
 
-@book{Wang2018_WordClustering,
-	author = { Wang et al. Hum. Cent. Comput. Inf. Sci },
-	title = {Word clustering based on POS feature
+%paper justifying TF*IDF in the baseline
+@article{Wang2018_WordClustering,
+  author={Y. Wang, K.T. Kim, B.J. Lee and H.Y. Youn},
+  title={Word clustering based on POS feature
 for efficient twitter sentiment analysis},
-	year = {2018}
+  journal={Human-centric Computing and Information Sciences},
+  year={2018},
 }
-

@@ -5,7 +5,7 @@
 - 2. Pre-processing of data
     - spelling correction *(basic method but better than nothing. pattern.en API will provide an easy way to clean data. word will be corrected if the result is > 0.9)*
     - replacing username and url by equivalence token to reduce space *(see main points from Twitter Sentiment Classification using Distant Supervision)*
-    - heldout dataset: dataset is big enough (1.6 Millions Training documents + 500 Test)=> split in 1,28M Docs for Training, 0.32M docs for Test, 500 docs for Dev
+    - heldout dataset: dataset is big enough (1.6 Millions Training documents + 500 Test)=> 70% training, 10% for dev and 20% (+ 500)for testing 
     - check if repeated tweets: if so, delete repeats
     - Foreign languages in data: leave as it is at first. If the foreign language words affect the result too much:
 try to determine if text is english with https://stackoverflow.com/questions/43377265/determine-if-text-is-in-english

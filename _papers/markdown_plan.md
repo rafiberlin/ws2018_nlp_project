@@ -5,7 +5,7 @@
 - 2. Pre-processing of data
     - spelling correction *(basic method but better than nothing. pattern.en API will provide an easy way to clean data. word will be corrected if the result is > 0.9)*
     - replacing username and url by equivalence token to reduce space *(see main points from Twitter Sentiment Classification using Distant Supervision)*
-    - heldout dataset: dataset is big enough (1.6 Millions Training documents + 500 Test)=> split in 1,28M Docs for Training, 0.32M docs for Test, 500 docs for Dev
+    - heldout dataset: dataset is big enough (1.6 Millions Training documents + 500 Test)=> 70% training, 10% for dev and 20% (+ 500)for testing 
     - check if repeated tweets: if so, delete repeats
     - Foreign languages in data: leave as it is at first. If the foreign language words affect the result too much:
 try to determine if text is english with https://stackoverflow.com/questions/43377265/determine-if-text-is-in-english
@@ -40,7 +40,7 @@ Suggestion: java program? everything else is unfamiliar to me.
 	- IMPROVING SENTIMENT ANALYSIS WITH PART-OF-SPEECH WEIGHTING uses OCFS as feature selection but does it really perform better than TF*IDF? We could first compare train a second classifier identical to baseline but using OCFS to decide, which feature selection strategy to stick with.
 AV: Improving SA paper mentions that OCFS was not helpful for the similar weighting scheme. -> So we try TF-IDF.
 	- The choice of the dev set size might be important here, as we test every weight combination to get the optimal weights for POS category. 500 docs is generally small, but it will help us here to find the best combination.
-	- Which features are used? Unigrams (initial feature weights calculated with word counting), POS Categories (initial feature weight found testing out all combination). The choice of POS Categories further reduces the feature space (words not belonging to the POS group in the paper are not used) => question? do we use hot encoding or count every occurence of the features? Answer: we use binary encoding (1 if feature exists and 0 if it doesn't. Because: The term frequency can be inaccurate (Zipf's Law).)
+	- Which features are used? Unigrams (initial feature weights calculated with word counting), POS Categories (initial feature weight found testing out all combination). The choice of POS Categories further reduces the feature space (words not belonging to the POS group in the paper are not used) => We use binary encoding (1 if feature exists and 0 if it doesn't. Because: presence is be more important than frequency and term frequency can be inaccurate (Zipf's Law) and see "Opinion Mining and Sentiment Analysis" paper)
 	- 1 to 5 are initial weights. The classifier then learns the actual weights from different starting points.
 	- Iterative step: Once the best weights are found, we can do the same but also using bigram as feature additionaly. not done in the paper but should enhance the results
 	- Iterative step: do the same but with the POS grouping used in A POS-based Ensemble Model for Cross-domain Sentiment Classification => Adjective+Adverb in one Group, one group for verbs, one group for nouns

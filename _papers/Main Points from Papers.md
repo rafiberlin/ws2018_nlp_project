@@ -120,3 +120,7 @@ see chapter 4.2 Results for following points-->
 
 - TF-IDF good explanation + example: https://medium.freecodecamp.org/how-to-process-textual-data-using-tf-idf-in-python-cd2bbc0a94a3
 - Scikit learn example: https://scikit-learn.org/stable/modules/feature_extraction.html#text-feature-extraction
+
+
+# Part-of-Speech Tagging for Twitter with Adversarial Neural Networks
+- compares GATE and ARK taggers. Shows why ARK is better.

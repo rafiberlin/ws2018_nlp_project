@@ -1,5 +1,18 @@
+%dataset we will use
+@InProceedings{SemEval,
+  author    = {Sara Rosenthal and Noura Farra and Preslav Nakov},
+  title     = {{SemEval}-2017 Task 4: Sentiment Analysis in {T}witter},
+  booktitle = {Proceedings of the 11th International Workshop on Semantic Evaluation},
+  series    = {SemEval '17},
+  month     = {August},
+  year      = {2017},
+  address   = {Vancouver, Canada},
+  publisher = {Association for Computational Linguistics},
+  url       = {http://alt.qcri.org/semeval2017/task4/index.php?id=results},
+  note = {Online; accessed 09-January-2019}
+}
 
-%dataset used. the year was inferred from http://help.sentiment140.com/for-students , section "how did it start"
+%old dataset
 @misc{sentiment140,
     author = {Alec Go et al. Stanford University},
     title = {Sentiment 140},
@@ -65,6 +78,18 @@ url = {http://aclweb.org/anthology/I11-1069}
     note = {Online; accessed 30-December-2018}
 }
 
+@misc{numpy,
+    url = {http://www.numpy.org/},
+    title = {Numpy},
+    note = {Online; accessed 09-Jan-2019}
+}
+
+@misc{pandas,
+    url = {https://pandas.pydata.org/},
+    title = {Pandas},
+    note = {Online; accessed 09-Jan-2019}
+}
+
 
 %best PoS Tagger , run with java -jar twitie_tag.jar models/english-twitter.model <input file>
 @misc{gatetagger,
@@ -79,7 +104,6 @@ url = {http://aclweb.org/anthology/I11-1069}
     title = {Tweet NLP Carneggie Mellon},
     note = {Online; accessed 05-Janunary-2019}
 }
-
 
 %papers giving us the POS Tagging framework
 %for GATE tagger
@@ -143,4 +167,20 @@ journal = {Proceedings of the Annual Meeting of the Association for Computationa
 for efficient twitter sentiment analysis},
   journal={Human-centric Computing and Information Sciences},
   year={2018},
+}
+
+%alternative POS Weighing methods
+@article{DBLP:journals/corr/LiomaB17,
+  author    = {Christina Lioma and
+               Roi Blanco},
+  title     = {Part of Speech Based Term Weighting for Information Retrieval},
+  journal   = {CoRR},
+  volume    = {abs/1704.01617},
+  year      = {2017},
+  url       = {http://arxiv.org/abs/1704.01617},
+  archivePrefix = {arXiv},
+  eprint    = {1704.01617},
+  timestamp = {Mon, 13 Aug 2018 16:46:27 +0200},
+  biburl    = {https://dblp.org/rec/bib/journals/corr/LiomaB17},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
 }

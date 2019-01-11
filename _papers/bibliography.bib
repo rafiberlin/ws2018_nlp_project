@@ -52,17 +52,36 @@ url = {http://aclweb.org/anthology/I11-1069}
 }
 
 %pattern en, spelling library
-@misc{spelling_pattern_en,
-    url = {https://github.com/clips/pattern)},
-    author = {Tom De Smed, Walter Daelemans},
-    note = {Online; accessed 30-December-2018}
-}
+@article{DeSmedt:2012:PP:2188385.2343710,
+ author = {De Smedt, Tom and Daelemans, Walter},
+ title = {Pattern for Python},
+ journal = {J. Mach. Learn. Res.},
+ issue_date = {3/1/2012},
+ volume = {13},
+ month = jun,
+ year = {2012},
+ issn = {1532-4435},
+ pages = {2063--2067},
+ numpages = {5},
+ url = {http://dl.acm.org/citation.cfm?id=2188385.2343710},
+ acmid = {2343710},
+ publisher = {JMLR.org},
+ keywords = {data mining, graph networks, machine learning, natural language processing, python},
+} 
 
-%based on pattern en . Does not use NLTK to perform the correction
-@misc{spelling_correction_python_example,
-    url = {https://rustyonrampage.github.io/text-mining/2017/11/28/spelling-correction-with-python-and-nltk.html},
-    title = {Correcting Words using Python and NLTK},
-    note = {Online; accessed 30-December-2018}
+%For our baseline
+
+%Scikit-learn webpage asks to cite them like this:
+@article{scikit-learn,
+ title={{Scikit-learn: Machine Learning in Python }},
+ author={Pedregosa, F. and Varoquaux, G. and Gramfort, A. and Michel, V.
+         and Thirion, B. and Grisel, O. and Blondel, M. and Prettenhofer, P.
+         and Weiss, R. and Dubourg, V. and Vanderplas, J. and Passos, A. and
+         Cournapeau, D. and Brucher, M. and Perrot, M. and Duchesnay, E.},
+ journal={Journal of Machine Learning Research},
+ volume={12},
+ pages={2825--2830},
+ year={2011}
 }
 
 %For our baseline
@@ -92,16 +111,23 @@ url = {http://aclweb.org/anthology/I11-1069}
     note = {Online; accessed 30-December-2018}
 }
 
-@misc{numpy,
-    url = {http://www.numpy.org/},
-    title = {Numpy},
-    note = {Online; accessed 09-Jan-2019}
+% Numpy
+@book{numpy,
+author = {Oliphant, Travis},
+year = {2006},
+month = {01},
+pages = {},
+title = {Guide to NumPy}
 }
 
-@misc{pandas,
-    url = {https://pandas.pydata.org/},
-    title = {Pandas},
-    note = {Online; accessed 09-Jan-2019}
+% Pandas
+@InProceedings{ mckinney-proc-scipy-2010,
+  author    = { Wes McKinney },
+  title     = { Data Structures for Statistical Computing in Python },
+  booktitle = { Proceedings of the 9th Python in Science Conference },
+  pages     = { 51 - 56 },
+  year      = { 2010 },
+  editor    = { St\'efan van der Walt and Jarrod Millman }
 }
 
 
@@ -197,4 +223,37 @@ for efficient twitter sentiment analysis},
   timestamp = {Mon, 13 Aug 2018 16:46:27 +0200},
   biburl    = {https://dblp.org/rec/bib/journals/corr/LiomaB17},
   bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+%Opinion mining and sentiment analysis
+@article{Pang:2008:OMS:1454711.1454712,
+ author = {Pang, Bo and Lee, Lillian},
+ title = {Opinion Mining and Sentiment Analysis},
+ journal = {Found. Trends Inf. Retr.},
+ issue_date = {January 2008},
+ volume = {2},
+ number = {1-2},
+ month = jan,
+ year = {2008},
+ issn = {1554-0669},
+ pages = {1--135},
+ numpages = {135},
+ url = {http://dx.doi.org/10.1561/1500000011},
+ doi = {10.1561/1500000011},
+ acmid = {1454712},
+ publisher = {Now Publishers Inc.},
+ address = {Hanover, MA, USA},
+} 
+
+% OCFS
+@Inproceedings{ocfs-optimal-orthogonal-centroid-feature-selection-for-text-categorization,
+author = {Yan, Jun and Liu, Ning and Zhang, Benyu and Yan, Shuicheng and Chen, Zheng and Cheng, Qiansheng and Fan, Weiguo and Ma, Wei-Ying},
+title = {OCFS: optimal orthogonal centroid feature selection for text categorization},
+booktitle = {28th annual international ACM SIGIR conference on Research and development in information retrieval},
+year = {2005},
+month = {January},
+publisher = {Association for Computing Machinery, Inc.},
+url = {https://www.microsoft.com/en-us/research/publication/ocfs-optimal-orthogonal-centroid-feature-selection-for-text-categorization/},
+pages = {122-129},
+edition = {28th annual international ACM SIGIR conference on Research and development in information retrieval},
 }

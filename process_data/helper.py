@@ -79,13 +79,13 @@ def filter_tab(input, outpath):
     df = pd.read_csv(input, index_col=None, sep='\t', header=None, names=['id', 'sentiment', 'text', 'to_delete'],
                      escapechar='“')
     df = df.drop_duplicates(subset="id", keep="first")
-    df = df.reset_index(drop=True)
     # workaround somehow, some lines are not being read produced as proper csv
     #  we remove the entries with \t hindering the proper output. we are losing approximatively 500 documents
     patternDel = "\t"
     filt = df['text'].str.contains(patternDel)
     df = df[~filt]
     df.sample(frac=1)
+    df = df.reset_index(drop=True)
     df.to_csv(outpath + "semval2017_task4_subtask_a_shuffled.csv", header=None, encoding="utf-8", escapechar='“',
               columns=['sentiment', 'text'],
               index=True)

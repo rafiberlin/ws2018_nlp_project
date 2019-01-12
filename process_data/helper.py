@@ -28,7 +28,7 @@ def correct_spelling(word):
     """
     correct_word = word
 
-    attached_punctuation = re.match(r"[?.!;:']$+", word)
+    attached_punctuation = re.match(r"[?.!;:']+$", word)
     if not attached_punctuation:
         attached_punctuation = ''
 

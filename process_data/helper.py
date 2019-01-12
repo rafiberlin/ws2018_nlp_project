@@ -26,22 +26,30 @@ def correct_spelling(word):
     :param word:
     :return: corrected word if possible, original word otherwise
     """
-    correct_word = word
 
-    attached_punctuation = re.match(r"[?.!;:']+$", word)
-    if not attached_punctuation:
-        attached_punctuation = ''
-
-    cutoff_prob = 0.9
+    cutoff_prob = 0.5
     word_wlf = reduce_lengthening(word)
+    correct_word = word_wlf
+    punctuation_found = re.search(r"[?.!;:']+$", word_wlf)
+    if punctuation_found:
+        # assign the word without punctuation
+        word_wlf = word_wlf[:punctuation_found.start()]
+    punctuation = ""
     suggested_words = suggest(word_wlf)
     for word, probability in suggested_words:
         if probability >= cutoff_prob:
             correct_word = word
+            if punctuation_found:
+                punctuation = punctuation_found.group(0)
             # to speed up things, this is really slow...
-            break
-            # cutoff_prob = probability
-    return correct_word + attached_punctuation
+            cutoff_prob = probability
+    return correct_word + punctuation
+
+
+assert (correct_spelling("#rafi!") == "#rafi!"), "Spelling function wrong"
+assert (correct_spelling("gjdksghfvljdslj!!!!!!") == "gjdksghfvljdslj!!"), "Spelling function wrong"
+assert (correct_spelling("paaartyyyyy!!!!!!") == "party!!"), "Spelling function wrong"
+assert (correct_spelling("Donald") == "Donald"), "Spelling function wrong"
 
 
 def merge_files_as_binary(path, output, file_pattern="*.txt"):

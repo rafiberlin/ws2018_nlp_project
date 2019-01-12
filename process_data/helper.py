@@ -41,7 +41,6 @@ def correct_spelling(word):
             correct_word = word
             if punctuation_found:
                 punctuation = punctuation_found.group(0)
-            # to speed up things, this is really slow...
             cutoff_prob = probability
     return correct_word + punctuation
 

@@ -30,36 +30,44 @@ def correct_spelling(word, last_corrections=None):
         return last_corrections[word]
 
     cutoff_prob = 0.5
-    word_wlf = reduce_lengthening(word)
-    correct_word = word_wlf
-    punctuation_found = re.search(r"[?.!;:']+$", word_wlf)
+    reduced_word = reduce_lengthening(word)
+    guessed_word = reduced_word
+    original_guess = guessed_word
+    punctuation_found = re.search(r"[?.!;:']+$", reduced_word)
     punctuation = ""
     if punctuation_found:
         # assign the word without punctuation
-        word_wlf = word_wlf[:punctuation_found.start()]
-    suggested_words = suggest(word_wlf)
+        guessed_word = reduced_word[:punctuation_found.start()]
+        original_guess = guessed_word
+        punctuation = punctuation_found.group(0)
+    suggested_words = suggest(guessed_word)
 
     for word, probability in suggested_words:
-        # dont correct if listed, reset the values
-        if word == word_wlf:
-            correct_word = word
-            punctuation = ""
+        # dont correct if listed, reset the
+        print(word, original_guess)
+        if word == original_guess:
+            guessed_word = original_guess
             break
         if probability >= cutoff_prob:
-            correct_word = word
+            guessed_word = word
             cutoff_prob = probability
-            if punctuation_found:
-                punctuation = punctuation_found.group(0)
 
+    final_guess = guessed_word + punctuation
     if last_corrections is not None:
-        last_corrections[word] = correct_word + punctuation
-    return correct_word + punctuation
+        last_corrections[word] = final_guess
+    print(final_guess)
+    return final_guess
+
 
 assert (correct_spelling("#rafi!") == "#rafi!"), "Spelling function wrong"
 assert (correct_spelling("gjdksghfvljdslj!!!!!!") == "gjdksghfvljdslj!!"), "Spelling function wrong"
 assert (correct_spelling("paaartyyyyy!!!!!!") == "party!!"), "Spelling function wrong"
 assert (correct_spelling("Donald") == "Donald"), "Spelling function wrong"
+assert (correct_spelling("My!") == "My!"), "Spelling function wrong"
 assert (correct_spelling("My") == "My"), "Spelling function wrong"
+
+
+# assert (correct_spelling("Ari") == "Ari"), "Spelling function wrong"
 
 
 def merge_files_as_binary(path, output, file_pattern="*.txt"):

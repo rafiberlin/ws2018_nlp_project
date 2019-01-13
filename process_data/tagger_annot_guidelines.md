@@ -1,3 +1,11 @@
+# Alyona's Remarks:
+1. Install Java Development Kit https://www.oracle.com/technetwork/java/javase/downloads/jdk11-downloads-5066655.html
+2. Download ARK Tagger version3 (Green label "featured") https://code.google.com/archive/p/ark-tweet-nlp/downloads
+3. In the run ark-tweet-nlp-0.3.2 directory run ./runTagger.sh examples/example_tweets.txt > output.csv 
+    4. The tagger creates a tab deliminated file, so to view it properly import the generated file through "Import..." function in Excel
+
+
+
 Annotation Guidelines for Twitter Part-of-Speech Tagging
 ========================================================
 

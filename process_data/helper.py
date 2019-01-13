@@ -16,7 +16,7 @@ def reduce_lengthening(text):
     return pattern.sub(r"\1\1", text)
 
 
-def correct_spelling(word):
+def correct_spelling(word, last_corrections=None):
     """
     Returns the most probable word, if the spelling probability is above 90%
     Example:
@@ -26,29 +26,40 @@ def correct_spelling(word):
     :param word:
     :return: corrected word if possible, original word otherwise
     """
+    if last_corrections is not None and word in dict.keys(last_corrections):
+        return last_corrections[word]
 
     cutoff_prob = 0.5
     word_wlf = reduce_lengthening(word)
     correct_word = word_wlf
     punctuation_found = re.search(r"[?.!;:']+$", word_wlf)
+    punctuation = ""
     if punctuation_found:
         # assign the word without punctuation
         word_wlf = word_wlf[:punctuation_found.start()]
-    punctuation = ""
     suggested_words = suggest(word_wlf)
+
     for word, probability in suggested_words:
+        # dont correct if listed, reset the values
+        if word == word_wlf:
+            correct_word = word
+            punctuation = ""
+            break
         if probability >= cutoff_prob:
             correct_word = word
+            cutoff_prob = probability
             if punctuation_found:
                 punctuation = punctuation_found.group(0)
-            cutoff_prob = probability
-    return correct_word + punctuation
 
+    if last_corrections is not None:
+        last_corrections[word] = correct_word + punctuation
+    return correct_word + punctuation
 
 assert (correct_spelling("#rafi!") == "#rafi!"), "Spelling function wrong"
 assert (correct_spelling("gjdksghfvljdslj!!!!!!") == "gjdksghfvljdslj!!"), "Spelling function wrong"
 assert (correct_spelling("paaartyyyyy!!!!!!") == "party!!"), "Spelling function wrong"
 assert (correct_spelling("Donald") == "Donald"), "Spelling function wrong"
+assert (correct_spelling("My") == "My"), "Spelling function wrong"
 
 
 def merge_files_as_binary(path, output, file_pattern="*.txt"):
@@ -104,6 +115,7 @@ def clean_data(input, output):
     :param output:
     :return:
     """
+    spelling_corrections = {}
     with open(output, mode="w", encoding="utf-8") as outfile:
         with open(input, mode="r", encoding="utf-8") as infile:
             for line in infile:
@@ -118,7 +130,7 @@ def clean_data(input, output):
                 line = re.sub(
                     r'(https?:\/\/)(\s)*(www\.)?(\s)*((\w|\s)+\.)*([\w\-\s]+\/)*([\w\-]+)((\?)?[\w\s]*=\s*[\w\%&]*)*',
                     "http://genericurl.com", line)
-                cleaned_line = ' '.join([correct_spelling(word) for word in line.split()])
+                cleaned_line = ' '.join([correct_spelling(word, spelling_corrections) for word in line.split()])
                 outfile.write(cleaned_line + "\n")
 
 
@@ -132,7 +144,6 @@ def create_files_for_analysis(path):
     print("Finish")
 
 
-MAIN_PATH = "F:\\UniPotdsam\\WS2018\\Subtask_A\\"
-
+MAIN_PATH = "F:\\UniPotdsam\\WS2018\\Subtask_A_\\"
 # clean_data still buggy.
 create_files_for_analysis(MAIN_PATH)

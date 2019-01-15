@@ -5,6 +5,7 @@ import os
 import re
 import csv
 from nltk.stem import WordNetLemmatizer
+from pathlib import Path
 
 
 def reduce_lengthening(text):
@@ -138,13 +139,15 @@ def filter_tab(input, outpath):
     filt = df['text'].str.contains(patternDel)
     df = df[~filt]
     df = df.reset_index(drop=True)
-    df.sample(frac=1,replace=True)
+    df.sample(frac=1, replace=True)
     df = df.reset_index(drop=True)
     file_encoding = "utf-8-sig"
-    df.to_csv(outpath + "semval2017_task4_subtask_a_shuffled.csv", header=None, encoding=file_encoding, quoting=csv.QUOTE_ALL,
+    df.to_csv(outpath + "semval2017_task4_subtask_a_shuffled.csv", header=None, encoding=file_encoding,
+              quoting=csv.QUOTE_ALL,
               columns=['sentiment', 'text'],
               index=True)
-    df.to_csv(outpath + "semval2017_task4_subtask_a_text_only.csv", header=None, encoding=file_encoding, quoting=csv.QUOTE_ALL,
+    df.to_csv(outpath + "semval2017_task4_subtask_a_text_only.csv", header=None, encoding=file_encoding,
+              quoting=csv.QUOTE_ALL,
               columns=['text'], index=False)
 
 
@@ -193,6 +196,7 @@ def create_files_for_analysis(path):
     print("Finish")
 
 
-MAIN_PATH = "F:\\UniPotdsam\\WS2018\\Subtask_A_\\"
+parent_dir = Path(__file__).parents[1]
+MAIN_PATH = os.path.join(parent_dir.__str__(), "dataset/")  # "F:\\UniPotdsam\\WS2018\\Subtask_A_\\"
 # clean_data still buggy.
 create_files_for_analysis(MAIN_PATH)

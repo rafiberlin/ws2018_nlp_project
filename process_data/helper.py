@@ -29,22 +29,32 @@ def correct_spelling(word, last_corrections=None):
     if last_corrections is not None and word in dict.keys(last_corrections):
         return last_corrections[word]
 
-    cutoff_prob = 0.5
+    cutoff_prob = 0.91
     reduced_word = reduce_lengthening(word)
     guessed_word = reduced_word
     original_guess = guessed_word
-    punctuation_found = re.search(r"[?.!;:']+$", reduced_word)
+    punctuation_regex = r"[?.!;:']+$"
+    non_word_prefix_regex = r"^[\W]+"
+    punctuation_found = re.search(punctuation_regex, reduced_word)
+    prefix_found = re.search(non_word_prefix_regex, reduced_word)
+
     punctuation = ""
+    prefix = ""
     if punctuation_found:
         # assign the word without punctuation
         guessed_word = reduced_word[:punctuation_found.start()]
         original_guess = guessed_word
         punctuation = punctuation_found.group(0)
+    if prefix_found:
+        guessed_word = guessed_word[prefix_found.end():]
+        original_guess = guessed_word
+        prefix = prefix_found.group(0)
+
     suggested_words = suggest(guessed_word)
 
     for word, probability in suggested_words:
-        # dont correct if listed, reset the
-        print(word, original_guess)
+        # dont correct if listed, rollback
+        # print(word, original_guess, probability)
         if word == original_guess:
             guessed_word = original_guess
             break
@@ -52,22 +62,26 @@ def correct_spelling(word, last_corrections=None):
             guessed_word = word
             cutoff_prob = probability
 
-    final_guess = guessed_word + punctuation
+    final_guess = prefix + guessed_word + punctuation
     if last_corrections is not None:
         last_corrections[word] = final_guess
-    print(final_guess)
+
     return final_guess
 
 
 assert (correct_spelling("#rafi!") == "#rafi!"), "Spelling function wrong"
 assert (correct_spelling("gjdksghfvljdslj!!!!!!") == "gjdksghfvljdslj!!"), "Spelling function wrong"
-assert (correct_spelling("paaartyyyyy!!!!!!") == "party!!"), "Spelling function wrong"
+assert (correct_spelling("paaartyyyyy!!!!!!") == "paartyy!!"), "Spelling function wrong"
 assert (correct_spelling("Donald") == "Donald"), "Spelling function wrong"
 assert (correct_spelling("My!") == "My!"), "Spelling function wrong"
 assert (correct_spelling("My") == "My"), "Spelling function wrong"
+assert (correct_spelling("#Singer") == "#Singer"), "Spelling function wrong"
+assert (correct_spelling("Burbank") == "Burbank"), "Spelling function wrong"
+assert (correct_spelling("Dammit") == "Dammit"), "Spelling function wrong"
 
-
-# assert (correct_spelling("Ari") == "Ari"), "Spelling function wrong"
+# List of known issues
+assert (correct_spelling("#Sims") == "#Aims"), "Spelling function wrong"
+assert (correct_spelling("Ari") == "Ri"), "Spelling function wrong"  # Ari like in Ariana Grande...
 
 
 def merge_files_as_binary(path, output, file_pattern="*.txt"):
@@ -154,4 +168,4 @@ def create_files_for_analysis(path):
 
 MAIN_PATH = "F:\\UniPotdsam\\WS2018\\Subtask_A_\\"
 # clean_data still buggy.
-create_files_for_analysis(MAIN_PATH)
+# create_files_for_analysis(MAIN_PATH)

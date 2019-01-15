@@ -3,6 +3,7 @@ import pandas as pd
 import glob
 import os
 import re
+import csv
 from nltk.stem import WordNetLemmatizer
 
 
@@ -137,13 +138,13 @@ def filter_tab(input, outpath):
     filt = df['text'].str.contains(patternDel)
     df = df[~filt]
     df = df.reset_index(drop=True)
-    df = df.sample(frac=1)
+    df.sample(frac=1,replace=True)
     df = df.reset_index(drop=True)
     file_encoding = "utf-8-sig"
-    df.to_csv(outpath + "semval2017_task4_subtask_a_shuffled.csv", header=None, encoding=file_encoding, escapechar='“',
+    df.to_csv(outpath + "semval2017_task4_subtask_a_shuffled.csv", header=None, encoding=file_encoding, quoting=csv.QUOTE_ALL,
               columns=['sentiment', 'text'],
               index=True)
-    df.to_csv(outpath + "semval2017_task4_subtask_a_text_only.csv", header=None, encoding=file_encoding, escapechar='“',
+    df.to_csv(outpath + "semval2017_task4_subtask_a_text_only.csv", header=None, encoding=file_encoding, quoting=csv.QUOTE_ALL,
               columns=['text'], index=False)
 
 

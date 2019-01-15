@@ -137,7 +137,7 @@ def filter_tab(input, outpath):
     filt = df['text'].str.contains(patternDel)
     df = df[~filt]
     df = df.reset_index(drop=True)
-    df.sample(frac=1)
+    df = df.sample(frac=1)
     df = df.reset_index(drop=True)
     file_encoding = "utf-8-sig"
     df.to_csv(outpath + "semval2017_task4_subtask_a_shuffled.csv", header=None, encoding=file_encoding, escapechar='“',

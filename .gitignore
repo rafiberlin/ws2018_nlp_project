@@ -1,4 +1,7 @@
 .idea
+#dependencies loaded by PyCharm
+venv
+
 
 #macOS
 .DS_Store

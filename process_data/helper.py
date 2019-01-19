@@ -3,6 +3,12 @@ import pandas as pd
 import glob
 import os
 import re
+import csv
+from nltk.stem import WordNetLemmatizer
+from pathlib import Path
+import html
+
+from ekphrasis.classes.spellcorrect import SpellCorrector
 
 
 def reduce_lengthening(text):
@@ -16,58 +22,131 @@ def reduce_lengthening(text):
     return pattern.sub(r"\1\1", text)
 
 
-def correct_spelling(word, last_corrections=None):
+def remove_backslash_carefully(word, last_corrections={}):
     """
-    Returns the most probable word, if the spelling probability is above 90%
+    Only remove the starting backslash if all characters coming afterwards are word characters (should not destroy emojis)
+    :param word:
+    :param last_corrections:
+    :return:
+    """
+
+    corrected_word = word
+
+    if last_corrections is not None and word in dict.keys(last_corrections):
+        return last_corrections[word]
+
+    if word.startswith("\\"):
+        backslash_end_regex = r"^\\[\w]+"
+        word_only = re.search(backslash_end_regex, word)
+        if word_only:
+            corrected_word = corrected_word[1:]
+            last_corrections[word] = corrected_word
+    if word.endswith("\\"):
+        backslash_end_regex = r"[\w]+\\$"
+        word_only = re.search(backslash_end_regex, word)
+        if word_only:
+            corrected_word = corrected_word[:-1]
+            last_corrections[word] = corrected_word
+    return corrected_word
+
+
+def apply_word_corrections(word, last_corrections=None):
+    """
+    correct a given word
+    :param word:
+    :param last_corrections: dictionary to store words where backslash was removed
+    :return:
+    """
+    word = reduce_lengthening(word)
+    word = remove_backslash_carefully(word, last_corrections)
+    return word
+
+
+def correct_spelling(word, last_corrections=None, to_lower=False,
+                     stopwords=["@GENERICUSER", "http://genericurl.com", "EMAIL@GENERIC.COM"]):
+    """
+    Returns the most probable word, if the spelling probability is above 91%
     Example:
     t = correct_spelling("amazzzzziiiiiiing")
     #prints amazing
     print(t)
+    Function harms more than it fixes things...
     :param word:
-    :return: corrected word if possible, original word otherwise
+    :param last_corrections: dictionnary to store spelling corections. Can speed up the processing for huge texts
+    :param to_lower:
+    :return:
     """
+
+    if word in stopwords:
+        return word
+
+    if to_lower:
+        word = word.lower()
+
     if last_corrections is not None and word in dict.keys(last_corrections):
         return last_corrections[word]
 
-    cutoff_prob = 0.5
+    lemmatizer = WordNetLemmatizer()
+
+    cutoff_prob = 0.91
     reduced_word = reduce_lengthening(word)
     guessed_word = reduced_word
     original_guess = guessed_word
-    punctuation_found = re.search(r"[?.!;:']+$", reduced_word)
+    punctuation_regex = r"[\W]+$"
+    non_word_prefix_regex = r"^[\W]+"
+    punctuation_found = re.search(punctuation_regex, reduced_word)
+    prefix_found = re.search(non_word_prefix_regex, reduced_word)
+
     punctuation = ""
+    prefix = ""
     if punctuation_found:
         # assign the word without punctuation
         guessed_word = reduced_word[:punctuation_found.start()]
-        original_guess = guessed_word
         punctuation = punctuation_found.group(0)
-    suggested_words = suggest(guessed_word)
+    if prefix_found:
+        # evoid to repeat the word, if the word does not contain any alphanumeric characters
+        if not punctuation_found or prefix_found.start() != punctuation_found.start():
+            guessed_word = guessed_word[prefix_found.end():]
+            prefix = prefix_found.group(0)
 
-    for word, probability in suggested_words:
-        # dont correct if listed, reset the
-        print(word, original_guess)
-        if word == original_guess:
+    original_guess = guessed_word
+    original_lemma = lemmatizer.lemmatize(guessed_word)
+    guessed_word = original_lemma
+    suggested_words = suggest(guessed_word)
+    for suggested_word, probability in suggested_words:
+
+        # dont correct if listed, rollback. Using lemma as work around for automatic plural corrections
+        if suggested_word == original_lemma:
             guessed_word = original_guess
             break
         if probability >= cutoff_prob:
-            guessed_word = word
+            guessed_word = suggested_word
             cutoff_prob = probability
 
-    final_guess = guessed_word + punctuation
+    final_guess = prefix + guessed_word + punctuation
     if last_corrections is not None:
         last_corrections[word] = final_guess
-    print(final_guess)
     return final_guess
 
 
 assert (correct_spelling("#rafi!") == "#rafi!"), "Spelling function wrong"
 assert (correct_spelling("gjdksghfvljdslj!!!!!!") == "gjdksghfvljdslj!!"), "Spelling function wrong"
-assert (correct_spelling("paaartyyyyy!!!!!!") == "party!!"), "Spelling function wrong"
+assert (correct_spelling("paaartyyyyy!!!!!!") == "paartyy!!"), "Spelling function wrong"
 assert (correct_spelling("Donald") == "Donald"), "Spelling function wrong"
 assert (correct_spelling("My!") == "My!"), "Spelling function wrong"
 assert (correct_spelling("My") == "My"), "Spelling function wrong"
-
-
-# assert (correct_spelling("Ari") == "Ari"), "Spelling function wrong"
+assert (correct_spelling("#Singer") == "#Singer"), "Spelling function wrong"
+assert (correct_spelling("Burbank") == "Burbank"), "Spelling function wrong"
+assert (correct_spelling("Dammit") == "Dammit"), "Spelling function wrong"
+assert (correct_spelling("--") == "--"), "Test"
+assert (correct_spelling("-") == "-"), "Test"
+assert (correct_spelling("Musics", None, True) == "musics"), "Spelling function wrong"
+# List of known issues. There is also a problem where the speccling function adds non word chracter erandomly...
+assert (correct_spelling("#Sims") == "#Aims"), "Spelling function wrong"
+assert (correct_spelling("Ari") == "Ri"), "Spelling function wrong"  # Ari like in Ariana Grande...
+assert (correct_spelling("NYC", None, True) == "ny"), "Spelling function wrong"
+assert (correct_spelling("Don't", None, True) == "dont"), "Spelling function wrong"
+assert (correct_spelling("#Trump", None, True) == "#tramp"), "Spelling function wrong"
 
 
 def merge_files_as_binary(path, output, file_pattern="*.txt"):
@@ -87,27 +166,44 @@ def merge_files_as_binary(path, output, file_pattern="*.txt"):
                     outfile.write(line)
 
 
-def filter_tab(input, outpath):
+def filter_unwanted_characters(input, outpath, shuffle=False):
     """
     Remove broken lines (which can't be output to proper csv because they contain a tab)
     :param input: complete path to an input file
     :param output: complete path to an output file
     :return:
     """
-    df = pd.read_csv(input, index_col=None, sep='\t', header=None, names=['id', 'sentiment', 'text', 'to_delete'],
-                     escapechar='“')
+    df = pd.read_csv(input, index_col=None, sep='\t', header=None, names=['id', 'sentiment', 'text', 'to_delete'])
     df = df.drop_duplicates(subset="id", keep="first")
     # workaround somehow, some lines are not being read produced as proper csv
     #  we remove the entries with \t hindering the proper output. we are losing approximatively 500 documents
+
     patternDel = "\t"
     filt = df['text'].str.contains(patternDel)
     df = df[~filt]
-    df.sample(frac=1)
     df = df.reset_index(drop=True)
-    df.to_csv(outpath + "semval2017_task4_subtask_a_shuffled.csv", header=None, encoding="utf-8", escapechar='“',
+    # Remove quotes and tab
+    df['text'] = df.text.str.replace('\'', '')
+    df['text'] = df.text.str.replace('\"', '')
+    df['text'] = df.text.str.replace('\t', '')
+    # html decoding
+    df['text'] = df.text.apply(html.unescape)
+
+    if shuffle:
+        df = df.sample(frac=1)
+        df = df.reset_index(drop=True)
+    file_encoding = "utf-8-sig"
+
+    df.to_csv(outpath + "semval2017_task4_subtask_a_shuffled.csv", header=None, encoding=file_encoding,
+              # quoting=csv.QUOTE_ALL,
+              quoting=csv.QUOTE_ALL,
               columns=['sentiment', 'text'],
               index=True)
-    df.to_csv(outpath + "semval2017_task4_subtask_a_text_only.csv", header=None, encoding="utf-8", escapechar='“',
+    escapechar_textonly = " "
+    df.to_csv(outpath + "semval2017_task4_subtask_a_text_only.csv", header=None, encoding=file_encoding,
+              # quoting=csv.QUOTE_ALL,
+              quoting=csv.QUOTE_NONE,
+              escapechar=escapechar_textonly,
               columns=['text'], index=False)
 
 
@@ -124,9 +220,16 @@ def clean_data(input, output):
     :return:
     """
     spelling_corrections = {}
-    with open(output, mode="w", encoding="utf-8") as outfile:
-        with open(input, mode="r", encoding="utf-8") as infile:
+    # speller = SpellCorrector(corpus="english")
+
+    file_enoding = "utf-8-sig"
+    with open(output, mode="w", encoding=file_enoding, newline='') as outfile:
+        with open(input, mode="r", encoding=file_enoding, newline='') as infile:
             for line in infile:
+                # replace number
+                # source https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch06s11.html
+                line = re.sub(r"[0-9]{1,3}(,[0-9]{3})\.[0-9]+", "GENERICNUMBER", line)
+
                 # replace email addresses by generic email token
                 # source: https://emailregex.com/
                 line = re.sub(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", "EMAIL@GENERIC.COM", line)
@@ -136,22 +239,116 @@ def clean_data(input, output):
                 # replace URL by a generic URL token
                 # https://stackoverflow.com/questions/11331982/how-to-remove-any-url-within-a-string-in-python
                 line = re.sub(
-                    r'(https?:\/\/)(\s)*(www\.)?(\s)*((\w|\s)+\.)*([\w\-\s]+\/)*([\w\-]+)((\?)?[\w\s]*=\s*[\w\%&]*)*',
+                    r'http\S+',
+                    # r'(https?:\/\/)(\s)*(www\.)?(\s)*((\w|\s)+\.)*([\w\-\s]+\/)*([\w\-]+)((\?)?[\w\s]*=\s*[\w\%&]*)*',
                     "http://genericurl.com", line)
-                cleaned_line = ' '.join([correct_spelling(word, spelling_corrections) for word in line.split()])
+                # replace any formatted / unformatted numbers and replaces it
+                line = re.sub(
+                    r'\b\d[\d,.]*\b',
+                    "GENERICNUMBER", line)
+                # Remove : and - surrounded by characters
+                line = re.sub('\s[:-]\s', " ", line)
+
+                # cleaned_line = ' '.join([correct_spelling(word, spelling_corrections, True) for word in line.split()])
+                # cleaned_line = ' '.join([correct_spelling2(word, spelling_corrections, True,
+                #                                           ["@GENERICUSER", "http://genericurl.com",
+                #                                            "EMAIL@GENERIC.COM"], speller) for word in line.split()])
+                cleaned_line = ' '.join(
+                    [apply_word_corrections(word, spelling_corrections).lower() for word in line.split()])
                 outfile.write(cleaned_line + "\n")
+                # cleaned_line = ' '.join([word for word in line.split()])
+                # outfile.write(line + "\n")
 
 
-def create_files_for_analysis(path):
+def correct_spelling2(word, last_corrections=None, to_lower=False,
+                      stopwords=["@GENERICUSER", "http://genericurl.com", "EMAIL@GENERIC.COM", "GENERICNUMBER"],
+                      speller=SpellCorrector(corpus="english")):
+    """
+    Based on ekphrasis
+    Function harms more than it fixes things...
+    :param word:
+    :param last_corrections: dictionnary to store spelling corections. Can speed up the processing for huge texts
+    :param to_lower:
+    :return:
+    """
+
+    if word in stopwords:
+        return word
+
+    if to_lower:
+        word = word.lower()
+    if last_corrections is not None and word in dict.keys(last_corrections):
+        return last_corrections[word]
+
+    reduced_word = reduce_lengthening(word)
+    guessed_word = reduced_word
+    punctuation_regex = r"[\W]+$"
+    non_word_prefix_regex = r"^[\W]+"
+    punctuation_found = re.search(punctuation_regex, reduced_word)
+    prefix_found = re.search(non_word_prefix_regex, reduced_word)
+
+    punctuation = ""
+    prefix = ""
+    if punctuation_found:
+        # assign the word without punctuation
+        guessed_word = reduced_word[:punctuation_found.start()]
+        punctuation = punctuation_found.group(0)
+    if prefix_found:
+        # evoid to repeat the word, if the word does not contain any alphanumeric characters
+        if not punctuation_found or prefix_found.start() != punctuation_found.start():
+            guessed_word = guessed_word[prefix_found.end():]
+            prefix = prefix_found.group(0)
+    guessed_word = speller.correct(guessed_word)
+
+    final_guess = prefix + guessed_word + punctuation
+    if last_corrections is not None:
+        last_corrections[word] = final_guess
+    return final_guess
+
+
+assert (correct_spelling2("#rafi!") == "#rafi!"), "Spelling function wrong"
+assert (correct_spelling2("gjdksghfvljdslj!!!!!!") == "gjdksghfvljdslj!!"), "Spelling function wrong"
+assert (correct_spelling2("paaartyyyyy!!!!!!") == "party!!"), "Spelling function wrong"
+# List of known issues. There is also a problem where the speccling function adds non word chracter erandomly...
+assert (correct_spelling2("#Sims") == "#aims"), "Spelling function wrong"
+assert (correct_spelling2("Ari") == "sri"), "Spelling function wrong"  # Ari like in Ariana Grande...
+assert (correct_spelling2("NYC", None, True) == "nyc"), "Spelling function wrong"
+assert (correct_spelling2("Don't", None, True) == "dont"), "Spelling function wrong"
+assert (correct_spelling2("#Trump", None, False) == "#trump"), "Spelling function wrong"
+
+
+def create_files_for_analysis(path, shuffle=False):
     print("Start")
     merge_files_as_binary(path, path + "semval2017_task4_subtask_a_all_raw.csv")
-    filter_tab(path + "semval2017_task4_subtask_a_all_raw.csv", path)
-    print("Cleaning")
+    filter_unwanted_characters(path + "semval2017_task4_subtask_a_all_raw.csv", path)
+    # print("Cleaning")
     clean_data(path + "semval2017_task4_subtask_a_text_only.csv",
                path + "semval2017_task4_subtask_a_text_cleaned.csv")
     print("Finish")
 
 
-MAIN_PATH = "F:\\UniPotdsam\\WS2018\\Subtask_A_\\"
+parent_dir = Path(__file__).parents[1]
+MAIN_PATH = os.path.join(parent_dir.__str__(), "dataset/")  # "F:\\UniPotdsam\\WS2018\\Subtask_A_\\"
+shuffle_data = True
 # clean_data still buggy.
-create_files_for_analysis(MAIN_PATH)
+create_files_for_analysis(MAIN_PATH, shuffle_data)
+
+"""
+df = pd.read_csv(os.path.join(parent_dir.__str__(), "dataset/test.csv"), index_col=None, sep=',', header=None,
+                 names=['id', 'sentiment', 'text', 'to_delete'])
+df = df.drop_duplicates(subset="id", keep="first")
+print(df["text"][15])
+df['text'] = df['text'].str.replace('\'', '')
+df['text'] = df['text'].str.replace('\\\"', '')
+df['text'] = df['text'].str.replace('"', '')
+df['text'] = df['text'].str.replace(r'\\[\W]+', '', regex=True)
+df['text'] = df.text.apply(html.unescape)
+print(df["text"][15])
+file_encoding = "utf-8-sig"
+df.to_csv(os.path.join(parent_dir.__str__(), "dataset/test2.csv"), header=None, encoding=file_encoding,
+          # quoting=csv.QUOTE_ALL,
+          quoting=csv.QUOTE_NONE,
+          columns=['sentiment', 'text'],
+          escapechar=" ",
+          index=True)
+"""

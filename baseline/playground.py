@@ -28,6 +28,8 @@ def get_tagged_sentences(folder, filename, file_extension=".csv", max_rows=20000
 
     for tagged_sentence in tagged_sentences[:max_rows]:
         words, tags = zip(*tagged_sentence)
+        #undo tokenize done by ark tagger adding white space, if needed by scikit
+        #sentences_only.append(" ".join(list(words)))
         sentences_only.append(list(words))
         tags_only.append(list(tags))
     return sentences_only, tags_only
@@ -60,12 +62,13 @@ labels = get_labels(LABELS)
 
 common_stop_words = set(stopwords.words('english'))
 
+#work around to prevent scikit performing tokenizing on already tokenized documents...
 bag_of_words = CountVectorizer(
     analyzer='word',
     tokenizer=do_not_tokenize,
     preprocessor=do_not_tokenize,
     token_pattern=None,
-    stopwords="english"
+    #stop_words="english"
 )
 
 tfidf = TfidfVectorizer(
@@ -73,7 +76,7 @@ tfidf = TfidfVectorizer(
     tokenizer=do_not_tokenize,
     preprocessor=do_not_tokenize,
     token_pattern=None,
-    stopwords="english"
+    #stop_words="english"
 )
 
 bow_classifier = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial', max_iter=700)

@@ -37,7 +37,7 @@ def convertTrain(dataPath):
     count = CountVectorizer()
     bagOfWords = count.fit_transform(tweetsMat)
     X = bagOfWords.toarray()
-    X = (X > 1).astype(int)
+    X = (X >= 1).astype(int)
 
     # Show feature names (vocabulary)
     # feature_names = count.get_feature_names()
@@ -63,11 +63,11 @@ def convertTest(dataPath, count):
     testtweetsMat = testtweetsMat.values
     bagOfWords_test = count.transform(testtweetsMat)
     X = bagOfWords_test.toarray()
-    X = (X > 1).astype(int)
+    X = (X >= 1).astype(int)
     return X, Y
 
 
-if __name__ == "__main__":
+def main():
     # Read data from textfile, drop tweet ID and original tweets
     path = os.getcwd()
     dataPath = os.path.join(path, 'process_data/clean_data_result_8000.txt')
@@ -85,3 +85,7 @@ if __name__ == "__main__":
     Xtest, Ytest = convertTest(dataPath, count)
     accTest = clf.score(Xtest, Ytest)
     print(accTrain, accTest)
+
+
+if __name__ == "__main__":
+    main()

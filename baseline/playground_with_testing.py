@@ -8,7 +8,7 @@ import numpy as np
 import os
 
 
-def get_tagged_sentences(folder, filename, file_extension=".csv", max_rows=40000):
+def get_tagged_sentences(folder, filename, file_extension=".csv", max_rows=60000):
     """
 
     :param folder:     Folder to the tagged sentences
@@ -19,7 +19,7 @@ def get_tagged_sentences(folder, filename, file_extension=".csv", max_rows=40000
     """
     corpus = conll.ConllCorpusReader(folder, file_extension, ('words', 'pos'))
     tagged_sentences = corpus.tagged_sents(filename)
-    num_rows = 30000
+    num_rows = 55000
 
     sentences_only = []
     tags_only = []
@@ -43,7 +43,7 @@ def get_tagged_sentences(folder, filename, file_extension=".csv", max_rows=40000
     return sentences_only, tags_only, test_sentences
 
 
-def get_labels(shuffled_file, max_rows=40000):
+def get_labels(shuffled_file, max_rows=60000):
     """
     used to get encoded labels (negative =0, positive 1, neutral 2) from the /dataset/shuffled.csv file
     :param shuffled_file:
@@ -54,8 +54,8 @@ def get_labels(shuffled_file, max_rows=40000):
     df = pd.read_csv(shuffled_file, sep=',', header=None, names=['ID', 'Label', 'Orig'], quoting=csv.QUOTE_ALL,
                      encoding='utf8', nrows=max_rows)
     df = df.drop(['ID', 'Orig'], axis=1)
-    labels = df[:30000].replace({'Label': {'negative': 0, 'positive': 1, 'neutral': 2}})
-    test_labels = df[30000:40000].replace({'Label': {'negative': 0, 'positive': 1, 'neutral': 2}})
+    labels = df[:55000].replace({'Label': {'negative': 0, 'positive': 1, 'neutral': 2}})
+    test_labels = df[55000:60000].replace({'Label': {'negative': 0, 'positive': 1, 'neutral': 2}})
     return labels, test_labels
 
 
@@ -71,7 +71,7 @@ if __name__ == "__main__":
     docs, tags, test_docs = get_tagged_sentences(MAIN_FOLDER, TAGGED_SENTENCES)
     labels, test_labels = get_labels(LABELS)
 
-    # common_stop_words = set(stopwords.words('english'))
+    common_stop_words = set(stopwords.words('english'))
 
     # work around to prevent scikit performing tokenizing on already tokenized documents...
     bag_of_words = CountVectorizer(
@@ -79,7 +79,7 @@ if __name__ == "__main__":
         tokenizer=do_not_tokenize,
         preprocessor=do_not_tokenize,
         token_pattern=None,
-        # stop_words="english"
+        stop_words="english"
     )
 
     tfidf = TfidfVectorizer(
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         tokenizer=do_not_tokenize,
         preprocessor=do_not_tokenize,
         token_pattern=None,
-        # stop_words="english"
+        stop_words="english"
     )
 
     bow_classifier = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial', max_iter=700)

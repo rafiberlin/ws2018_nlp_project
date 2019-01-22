@@ -7,7 +7,7 @@ import csv
 from nltk.stem import WordNetLemmatizer
 from pathlib import Path
 import html
-
+import nltk.corpus.reader.conll as conll
 from ekphrasis.classes.spellcorrect import SpellCorrector
 
 
@@ -327,28 +327,68 @@ def create_files_for_analysis(path, shuffle=False):
     print("Finish")
 
 
-parent_dir = Path(__file__).parents[1]
-MAIN_PATH = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/")
-shuffle_data = True
-#clean_data still buggy. TODO backslash handling not optimal
-create_files_for_analysis(MAIN_PATH, shuffle_data)
+def extract_range(iterable, start_range=None, end_range=None):
+    """
+    return a copy of the rows given the start and end range
+    :param iterable:
+    :param start_range:
+    :param end_range:
+    :return:
+    """
+    num_rows = len(iterable)
+    if not start_range:
+        start_range = 0
+    if not end_range:
+        end_range = num_rows
+    if start_range > end_range:
+        start_range = end_range
 
-"""
-df = pd.read_csv(os.path.join(parent_dir.__str__(), "dataset/test.csv"), index_col=None, sep=',', header=None,
-                 names=['id', 'sentiment', 'text', 'to_delete'])
-df = df.drop_duplicates(subset="id", keep="first")
-print(df["text"][15])
-df['text'] = df['text'].str.replace('\'', '')
-df['text'] = df['text'].str.replace('\\\"', '')
-df['text'] = df['text'].str.replace('"', '')
-df['text'] = df['text'].str.replace(r'\\[\W]+', '', regex=True)
-df['text'] = df.text.apply(html.unescape)
-print(df["text"][15])
-file_encoding = "utf-8-sig"
-df.to_csv(os.path.join(parent_dir.__str__(), "dataset/test2.csv"), header=None, encoding=file_encoding,
-          # quoting=csv.QUOTE_ALL,
-          quoting=csv.QUOTE_NONE,
-          columns=['sentiment', 'text'],
-          escapechar=" ",
-          index=True)
-"""
+    return iterable[start_range:end_range]
+
+
+def get_tagged_sentences(folder, filename, file_extension=".csv", start_range=None, end_range=None):
+    """
+
+    :param folder:     Folder to the tagged sentences
+    :param filename: the file to parse
+    :param file_extension: ending of the file toi be parsed
+    :return: three lists, one with the tokenized sentences, one with the tags,
+            one with tokenized sentences for testing
+    """
+    corpus = conll.ConllCorpusReader(folder, file_extension, ('words', 'pos'))
+    tagged_sentences = corpus.tagged_sents(filename)
+
+    sentences_only = []
+    tags_only = []
+
+    for tagged_sentence in extract_range(tagged_sentences, start_range, end_range):
+        words, tags = zip(*tagged_sentence)
+        # undo tokenize done by ark tagger adding white space, if needed by scikit
+        # sentences_only.append(" ".join(list(words)))
+        sentences_only.append(list(words))
+        tags_only.append(list(tags))
+    return sentences_only, tags_only
+
+
+def get_labels(shuffled_file, start_range=None, end_range=None):
+    """
+    used to get encoded labels (negative =0, positive 1, neutral 2) from the /dataset/shuffled.csv file
+    :param shuffled_file:
+    :param max_rows:
+    :return: labels and labels for testing data as pandas.dataframe objects
+    """
+
+    df = pd.read_csv(shuffled_file, sep=',', header=None, names=['ID', 'Label', 'Orig'], quoting=csv.QUOTE_ALL,
+                     encoding='utf8')
+    df = df.drop(['ID', 'Orig'], axis=1)
+    labels = df.replace({'Label': {'negative': 0, 'positive': 1, 'neutral': 2}})
+
+    return extract_range(df, start_range, end_range)
+
+
+if __name__ == "__main__":
+    parent_dir = Path(__file__).parents[1]
+    MAIN_PATH = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/")
+    shuffle_data = True
+    # clean_data still buggy. TODO backslash handling not optimal
+    create_files_for_analysis(MAIN_PATH, shuffle_data)

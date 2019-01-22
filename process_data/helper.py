@@ -194,13 +194,13 @@ def filter_unwanted_characters(input, outpath, shuffle=False):
         df = df.reset_index(drop=True)
     file_encoding = "utf-8-sig"
 
-    df.to_csv(outpath + "semval2017_task4_subtask_a_shuffled.csv", header=None, encoding=file_encoding,
+    df.to_csv(outpath + "shuffled.csv", header=None, encoding=file_encoding,
               # quoting=csv.QUOTE_ALL,
               quoting=csv.QUOTE_ALL,
               columns=['sentiment', 'text'],
               index=True)
     escapechar_textonly = " "
-    df.to_csv(outpath + "semval2017_task4_subtask_a_text_only.csv", header=None, encoding=file_encoding,
+    df.to_csv(outpath + "text_only.csv", header=None, encoding=file_encoding,
               # quoting=csv.QUOTE_ALL,
               quoting=csv.QUOTE_NONE,
               escapechar=escapechar_textonly,
@@ -319,18 +319,18 @@ assert (correct_spelling2("#Trump", None, False) == "#trump"), "Spelling functio
 
 def create_files_for_analysis(path, shuffle=False):
     print("Start")
-    merge_files_as_binary(path, path + "semval2017_task4_subtask_a_all_raw.csv")
-    filter_unwanted_characters(path + "semval2017_task4_subtask_a_all_raw.csv", path)
+    merge_files_as_binary(path, path + "all_raw.csv")
+    filter_unwanted_characters(path + "all_raw.csv", path)
     # print("Cleaning")
-    clean_data(path + "semval2017_task4_subtask_a_text_only.csv",
-               path + "semval2017_task4_subtask_a_text_cleaned.csv")
+    clean_data(path + "text_only.csv",
+               path + "text_cleaned.csv")
     print("Finish")
 
 
 parent_dir = Path(__file__).parents[1]
-MAIN_PATH = os.path.join(parent_dir.__str__(), "dataset/")  # "F:\\UniPotdsam\\WS2018\\Subtask_A_\\"
+MAIN_PATH = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/")
 shuffle_data = True
-# clean_data still buggy.
+#clean_data still buggy. TODO backslash handling not optimal
 create_files_for_analysis(MAIN_PATH, shuffle_data)
 
 """

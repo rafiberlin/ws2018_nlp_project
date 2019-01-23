@@ -32,7 +32,7 @@ def get_tagged_sentences(folder, filename, file_extension=".csv", max_rows=60000
     for tagged_sentence in tagged_sentences[:num_rows]:
         words, tags = zip(*tagged_sentence)
         # undo tokenize done by ark tagger adding white space, if needed by scikit
-        # sentences_only.append(" ".join(list(words)))
+        #sentences_only.append(" ".join(list(words)))
         sentences_only.append(list(words))
         tags_only.append(list(tags))
 
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     # Testing: BoW
     bagOfWords_test = bag_of_words.transform(test_docs)
     X = bagOfWords_test.toarray()
-    X = (X > 1).astype(int)
+    X = (X >= 1).astype(int)
     predictions = bow_classifier.predict(X)
     acc_test = bow_classifier.score(X, test_class_labels)
     #acc_test = bow_classifier.score(predictions, test_class_labels)
@@ -119,7 +119,7 @@ if __name__ == "__main__":
     # Testing: TF-IDF
     tfidf_test = tfidf.transform(test_docs)
     X = tfidf_test.toarray()
-    X = (X > 1).astype(int)
+    #X = (X > 1).astype(int)
     predictions = tf_idf_classifier.predict(X)
     acc_test = tf_idf_classifier.score(X, test_class_labels)
     #acc_test = bow_classifier.score(predictions, test_class_labels)

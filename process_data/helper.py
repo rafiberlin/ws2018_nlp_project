@@ -9,6 +9,7 @@ from pathlib import Path
 import html
 import nltk.corpus.reader.conll as conll
 from ekphrasis.classes.spellcorrect import SpellCorrector
+import matplotlib.pyplot as plt
 
 
 def reduce_lengthening(text):
@@ -384,6 +385,27 @@ def get_labels(shuffled_file, start_range=None, end_range=None):
     labels = df.replace({'Label': {'negative': 0, 'positive': 1, 'neutral': 2}})
 
     return extract_range(df, start_range, end_range)
+
+
+def build_pie_chart(data_frame_labels, chart_title="Label distribution in the SemEval 2017 data set",
+                    filename="dataset/label_chart.png"):
+    """
+    Creates a pie chart. (pop up)
+    :param data_frame_labels: as returned by process_data.helper.get_labels()
+    :param chart_title: The name of the chart
+    :param filename: The name of the chart
+    :return:
+    """
+    val_counts = data_frame_labels.Label.value_counts()
+    label_count = [val_counts["positive"], val_counts["negative"], val_counts["neutral"]]
+    #print("count", label_count)
+    label = ['positive', 'negative', 'neutral']
+    colors = ['lightblue', 'orange', 'lightgray']
+    explode = (0.1, 0.1, 0.1)  # only "explode" the 2nd slice (i.e. 'Hogs')
+    plt.pie(label_count, explode=explode, colors=colors, labels=label,
+            autopct='%1.1f%%', shadow=True)
+    plt.title(chart_title, bbox={'facecolor': '0.95', 'pad': 5})
+    plt.savefig(filename)
 
 
 if __name__ == "__main__":

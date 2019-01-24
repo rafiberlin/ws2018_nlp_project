@@ -1,5 +1,6 @@
 from process_data.helper import *
 
+
 # Main Entry Point
 
 if __name__ == "__main__":
@@ -21,6 +22,9 @@ if __name__ == "__main__":
     all_docs, all_tags = get_tagged_sentences(DATA_SET_PATH, TAGGED_SENTENCES)
     all_labels = get_labels(shuffled_file=LABELS)
 
+    build_pie_chart(all_labels)
+
+    """
     train_docs = extract_range(all_docs, TRAINING_RANGE[0], TRAINING_RANGE[1])
     train_labels = extract_range(all_labels, TRAINING_RANGE[0], TRAINING_RANGE[1])
     train_tags = extract_range(all_tags, TRAINING_RANGE[0], TRAINING_RANGE[1])
@@ -32,3 +36,4 @@ if __name__ == "__main__":
     test_docs = extract_range(all_docs, TEST_RANGE[0], TEST_RANGE[1])
     test_labels = extract_range(all_labels, TEST_RANGE[0], TEST_RANGE[1])
     test_tags = extract_range(all_tags, TEST_RANGE[0], TEST_RANGE[1])
+    """

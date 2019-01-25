@@ -129,24 +129,24 @@ def correct_spelling(word, last_corrections=None, to_lower=False,
     return final_guess
 
 
-assert (correct_spelling("#rafi!") == "#rafi!"), "Spelling function wrong"
-assert (correct_spelling("gjdksghfvljdslj!!!!!!") == "gjdksghfvljdslj!!"), "Spelling function wrong"
-assert (correct_spelling("paaartyyyyy!!!!!!") == "paartyy!!"), "Spelling function wrong"
-assert (correct_spelling("Donald") == "Donald"), "Spelling function wrong"
-assert (correct_spelling("My!") == "My!"), "Spelling function wrong"
-assert (correct_spelling("My") == "My"), "Spelling function wrong"
-assert (correct_spelling("#Singer") == "#Singer"), "Spelling function wrong"
-assert (correct_spelling("Burbank") == "Burbank"), "Spelling function wrong"
-assert (correct_spelling("Dammit") == "Dammit"), "Spelling function wrong"
-assert (correct_spelling("--") == "--"), "Test"
-assert (correct_spelling("-") == "-"), "Test"
-assert (correct_spelling("Musics", None, True) == "musics"), "Spelling function wrong"
-# List of known issues. There is also a problem where the speccling function adds non word chracter erandomly...
-assert (correct_spelling("#Sims") == "#Aims"), "Spelling function wrong"
-assert (correct_spelling("Ari") == "Ri"), "Spelling function wrong"  # Ari like in Ariana Grande...
-assert (correct_spelling("NYC", None, True) == "ny"), "Spelling function wrong"
-assert (correct_spelling("Don't", None, True) == "dont"), "Spelling function wrong"
-assert (correct_spelling("#Trump", None, True) == "#tramp"), "Spelling function wrong"
+# assert (correct_spelling("#rafi!") == "#rafi!"), "Spelling function wrong"
+# assert (correct_spelling("gjdksghfvljdslj!!!!!!") == "gjdksghfvljdslj!!"), "Spelling function wrong"
+# assert (correct_spelling("paaartyyyyy!!!!!!") == "paartyy!!"), "Spelling function wrong"
+# assert (correct_spelling("Donald") == "Donald"), "Spelling function wrong"
+# assert (correct_spelling("My!") == "My!"), "Spelling function wrong"
+# assert (correct_spelling("My") == "My"), "Spelling function wrong"
+# assert (correct_spelling("#Singer") == "#Singer"), "Spelling function wrong"
+# assert (correct_spelling("Burbank") == "Burbank"), "Spelling function wrong"
+# assert (correct_spelling("Dammit") == "Dammit"), "Spelling function wrong"
+# assert (correct_spelling("--") == "--"), "Test"
+# assert (correct_spelling("-") == "-"), "Test"
+# assert (correct_spelling("Musics", None, True) == "musics"), "Spelling function wrong"
+# # List of known issues. There is also a problem where the speccling function adds non word chracter erandomly...
+# assert (correct_spelling("#Sims") == "#Aims"), "Spelling function wrong"
+# assert (correct_spelling("Ari") == "Ri"), "Spelling function wrong"  # Ari like in Ariana Grande...
+# assert (correct_spelling("NYC", None, True) == "ny"), "Spelling function wrong"
+# assert (correct_spelling("Don't", None, True) == "dont"), "Spelling function wrong"
+# assert (correct_spelling("#Trump", None, True) == "#tramp"), "Spelling function wrong"
 
 
 def merge_files_as_binary(path, output, file_pattern="*.txt"):
@@ -386,9 +386,13 @@ def get_labels(shuffled_file, start_range=None, end_range=None):
     return extract_range(df, start_range, end_range)
 
 
-if __name__ == "__main__":
+def main():
     parent_dir = Path(__file__).parents[1]
     MAIN_PATH = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/")
     shuffle_data = True
     # clean_data still buggy. TODO backslash handling not optimal
     create_files_for_analysis(MAIN_PATH, shuffle_data)
+
+
+if __name__ == "__main__":
+    main()

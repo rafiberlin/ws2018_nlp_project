@@ -64,7 +64,7 @@ def do_not_tokenize(doc):
 
 
 if __name__ == "__main__":
-    MAIN_FOLDER = "../dataset/"
+    MAIN_FOLDER = "dataset"
     path = os.path.join(os.getcwd(), MAIN_FOLDER)
     TAGGED_SENTENCES = os.path.join(path, 'text_cleaned_pos.csv')
     LABELS = os.path.join(path, 'shuffled.csv')

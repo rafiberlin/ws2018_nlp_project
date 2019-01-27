@@ -98,7 +98,7 @@ def main():
         tokenizer=do_not_tokenize,
         preprocessor=do_not_tokenize,
         token_pattern=None,
-        stop_words="english"
+        #stop_words="english"
     )
 
     tfidf = TfidfVectorizer(
@@ -106,7 +106,7 @@ def main():
         tokenizer=do_not_tokenize,
         preprocessor=do_not_tokenize,
         token_pattern=None,
-        stop_words="english"
+        #stop_words="english"
     )
 
     # Convert data into features for training

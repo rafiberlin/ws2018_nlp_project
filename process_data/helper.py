@@ -410,7 +410,12 @@ def build_pie_chart(data_frame_labels, chart_title="Label distribution in the Se
 
 if __name__ == "__main__":
     parent_dir = Path(__file__).parents[1]
-    MAIN_PATH = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/")
-    shuffle_data = True
+    TRAIN_PATH = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/train/")
+    shuffle_data = False
     # clean_data still buggy. TODO backslash handling not optimal
-    create_files_for_analysis(MAIN_PATH, shuffle_data)
+    create_files_for_analysis(TRAIN_PATH, shuffle_data)
+
+    TEST_PATH = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/test/")
+    shuffle_data = False
+    # clean_data still buggy. TODO backslash handling not optimal
+    create_files_for_analysis(TEST_PATH, shuffle_data)

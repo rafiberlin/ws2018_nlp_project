@@ -9,6 +9,7 @@ from pathlib import Path
 import html
 import nltk.corpus.reader.conll as conll
 from ekphrasis.classes.spellcorrect import SpellCorrector
+import matplotlib.pyplot as plt
 
 
 def reduce_lengthening(text):
@@ -386,13 +387,35 @@ def get_labels(shuffled_file, start_range=None, end_range=None):
     return extract_range(df, start_range, end_range)
 
 
-def main():
-    parent_dir = Path(__file__).parents[1]
-    MAIN_PATH = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/")
-    shuffle_data = True
-    # clean_data still buggy. TODO backslash handling not optimal
-    create_files_for_analysis(MAIN_PATH, shuffle_data)
+def build_pie_chart(data_frame_labels, chart_title="Label distribution in the SemEval 2017 data set",
+                    filename="dataset/label_chart.png"):
+    """
+    Creates a pie chart. (pop up)
+    :param data_frame_labels: as returned by process_data.helper.get_labels()
+    :param chart_title: The name of the chart
+    :param filename: The name of the chart
+    :return:
+    """
+    val_counts = data_frame_labels.Label.value_counts()
+    label_count = [val_counts["positive"], val_counts["negative"], val_counts["neutral"]]
+    #print("count", label_count)
+    label = ['positive', 'negative', 'neutral']
+    colors = ['lightblue', 'orange', 'lightgray']
+    explode = (0.1, 0.1, 0.1)  # only "explode" the 2nd slice (i.e. 'Hogs')
+    plt.pie(label_count, explode=explode, colors=colors, labels=label,
+            autopct='%1.1f%%', shadow=True)
+    plt.title(chart_title, bbox={'facecolor': '0.95', 'pad': 5})
+    plt.savefig(filename)
 
 
 if __name__ == "__main__":
-    main()
+    parent_dir = Path(__file__).parents[1]
+    TRAIN_PATH = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/train/")
+    shuffle_data = False
+    # clean_data still buggy. TODO backslash handling not optimal
+    create_files_for_analysis(TRAIN_PATH, shuffle_data)
+
+    TEST_PATH = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/test/")
+    shuffle_data = False
+    # clean_data still buggy. TODO backslash handling not optimal
+    create_files_for_analysis(TEST_PATH, shuffle_data)

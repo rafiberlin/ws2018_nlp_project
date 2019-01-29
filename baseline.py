@@ -1,5 +1,6 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.metrics import f1_score
 from nltk.corpus import stopwords
 import nltk.corpus.reader.conll as conll
 from process_data.helper import get_labels, get_tagged_sentences, extract_range
@@ -90,7 +91,25 @@ def main():
     train_docs, test_docs = docs[:trainEnd], docs[testStart:]
     train_labels, test_labels = labels[:trainEnd], labels[testStart:]
 
-    common_stop_words = set(stopwords.words('english'))
+    # common_stop_words = set(stopwords.words('english'))
+    # THIS IS BLOCK IS TO SIMULATE SEMEVAL STOP. IGNORE FOR NOW
+    # TRAIN_FOLDER = "dataset/raw_data_by_year/train"
+    # TEST_FOLDER = "dataset/raw_data_by_year/test"
+    # train_path = os.path.join(os.getcwd(), TRAIN_FOLDER)
+    # test_path = os.path.join(os.getcwd(), TEST_FOLDER)
+    # TRAIN_TAGGED_SENTENCES = os.path.join(train_path, 'text_cleaned_pos.csv')
+    # TEST_TAGGED_SENTENCES = os.path.join(test_path, 'text_cleaned_pos.csv')
+    # TRAIN_LABELS = os.path.join(train_path, 'shuffled.csv')
+    # TEST_LABELS = os.path.join(test_path, 'shuffled.csv')
+    # train_docs, train_tags = get_tagged_sentences(TRAIN_FOLDER, TRAIN_TAGGED_SENTENCES, start_range= 1)
+    # train_labels = get_labels(TRAIN_LABELS, start_range=1)
+    # test_docs, test_tags = get_tagged_sentences(TEST_FOLDER, TEST_TAGGED_SENTENCES, start_range= 1)
+    # test_labels = get_labels(TEST_LABELS, start_range=1)
+    # dataLen = len(train_labels)
+    # trainEnd = math.floor(0.8 * dataLen) # 70% for train
+    # # testStart = math.floor(0.8 * dataLen) # 20% for test
+    # train_docs = train_docs[:trainEnd]
+    # train_labels = train_labels[:trainEnd]
 
     # work around to prevent scikit performing tokenizing on already tokenized documents...
     bag_of_words = CountVectorizer(
@@ -142,6 +161,18 @@ def main():
     tfidf_test_acc = tf_idf_classifier.score(tfidf_test, test_labels)
     print("Testing score BOW", bow_test_acc)
     print("Training score TFIDF", tfidf_test_acc)
+
+    # F1 Score for BoW and TF-IDF
+    bow_predicted = bow_classifier.predict(bow_test)
+    tfidf_predicted = tf_idf_classifier.predict(tfidf_test)
+    bow_f1 = f1_score(test_labels, bow_predicted, average=None, labels=['neutral', 'positive', 'negative'])
+    tfidf_f1 = f1_score(test_labels, tfidf_predicted, average=None, labels=['neutral', 'positive', 'negative'])
+    bow_macro = f1_score(test_labels, bow_predicted, average='macro', labels=['neutral', 'positive', 'negative'])
+    tfidf_macro = f1_score(test_labels, tfidf_predicted, average='macro', labels=['neutral', 'positive', 'negative'])
+    print("F1 score BOW for neutral, positive, negative", bow_f1)
+    print("F1 score TFIDF for neutral, positive, negative", tfidf_f1)
+    print("F1 score BOW for macro-average", bow_macro)
+    print("F1 score TFIDF for macro-average", tfidf_macro)
 
 
 if __name__ == "__main__":

@@ -390,7 +390,7 @@ def get_labels(shuffled_file, start_range=None, end_range=None):
 def build_pie_chart(data_frame_labels, chart_title="Label distribution in the SemEval 2017 data set",
                     filename="dataset/label_chart.png"):
     """
-    Creates a pie chart. (pop up)
+    Creates a pie chart.
     :param data_frame_labels: as returned by process_data.helper.get_labels()
     :param chart_title: The name of the chart
     :param filename: The name of the chart

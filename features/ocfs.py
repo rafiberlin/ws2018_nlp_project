@@ -5,6 +5,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 from baseline.baseline import do_not_tokenize
 import pandas as pd
 import numpy as np
+from sklearn.linear_model import LogisticRegression
 
 
 def calculate_ocfs_score(fitted_docs, labels):
@@ -27,6 +28,18 @@ def calculate_ocfs_score(fitted_docs, labels):
     # print(np.square(class_mean.iloc[idx,] - all_mean))
     # print(class_mean.loc[class_mean['Label'] == "positive"])
     return ocfs
+
+
+def retrieve_features_to_remove(ocfs, lowest_val, highest_val):
+    """
+    Return the index of the features to discard, based on some boundary values
+    :param ocfs:
+    :param lowest_val:
+    :param highest_val:
+    :return:
+    """
+
+    return [idx for idx, val in enumerate(ocfs) if val < lowest_val or val > highest_val]
 
 
 if __name__ == "__main__":
@@ -56,4 +69,23 @@ if __name__ == "__main__":
     )
     bow_train = bag_of_words.fit_transform(dev_docs)
 
-    calculate_ocfs_score(bow_train, dev_labels)
+    ocfs = calculate_ocfs_score(bow_train, dev_labels)
+    feature_idx = retrieve_features_to_remove(ocfs, 10 ** -7, 10 ** -2)
+    vocabulary = dict(map(reversed, bag_of_words.vocabulary_.items()))
+    words_to_ignore = [vocabulary[idx] for idx in feature_idx]
+
+    dev_labels = np.ravel(dev_labels)
+
+    # Removing the features by setting them to zero...
+    pd_bow_train = pd.DataFrame(bow_train.toarray())
+    for idx in feature_idx:
+        pd_bow_train.iloc[:, idx] = 0
+
+    # Train classifier on Bag of Words (Term Presence) and TF-IDF
+    bow_classifier = LogisticRegression(random_state=0, solver='lbfgs',
+                                        multi_class='multinomial',
+                                        max_iter=5000
+                                        ).fit(bow_train, dev_labels)
+    bow_test_acc = bow_classifier.score(pd_bow_train, dev_labels)
+
+    print(bow_test_acc)

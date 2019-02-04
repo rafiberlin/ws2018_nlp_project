@@ -1,6 +1,6 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, recall_score
 from nltk.corpus import stopwords
 import nltk.corpus.reader.conll as conll
 from process_data.helper import get_labels, get_tagged_sentences, extract_range
@@ -160,7 +160,7 @@ def main():
     bow_test_acc = bow_classifier.score(bow_test, test_labels)
     tfidf_test_acc = tf_idf_classifier.score(tfidf_test, test_labels)
     print("Testing score BOW", bow_test_acc)
-    print("Training score TFIDF", tfidf_test_acc)
+    print("Testing score TFIDF", tfidf_test_acc)
 
     # F1 Score for BoW and TF-IDF
     bow_predicted = bow_classifier.predict(bow_test)
@@ -173,6 +173,9 @@ def main():
     print("F1 score TFIDF for neutral, positive, negative", tfidf_f1)
     print("F1 score BOW for macro-average", bow_macro)
     print("F1 score TFIDF for macro-average", tfidf_macro)
+    bow_recall = recall_score(test_labels, bow_predicted, average='macro', labels=['neutral', 'positive', 'negative'])
+    tfidf_recall = recall_score(test_labels, tfidf_predicted, average='macro', labels=['neutral', 'positive', 'negative'])
+    print(bow_recall, tfidf_recall)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,7 @@
+#Python cache
+.pyc
+
+
 .idea
 #dependencies loaded by PyCharm
 venv

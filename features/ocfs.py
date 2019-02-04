@@ -48,9 +48,12 @@ if __name__ == "__main__":
     TAGGED_SENTENCES = os.path.join(DATA_SET_PATH, 'text_cleaned_pos.csv')
     LABELS = os.path.join(DATA_SET_PATH, 'shuffled.csv')
 
-    DEV_RANGE = (0, 6000)
-    TEST_RANGE = (DEV_RANGE[1], 18000)
-    TRAINING_RANGE = (TEST_RANGE[1], 61212)
+    #DEV_RANGE = (0, 6000)
+    #TEST_RANGE = (DEV_RANGE[1], 18000)
+    #TRAINING_RANGE = (TEST_RANGE[1], 61212)
+    TRAINING_RANGE = (0, math.floor(0.7 * 61212))
+    DEV_RANGE = (math.floor(0.7 * 61212), math.floor(0.8 * 61212))
+    TEST_RANGE = (math.floor(0.8 * 61212), 61212)
 
     all_docs, all_tags = get_tagged_sentences(DATA_SET_PATH, TAGGED_SENTENCES)
     all_labels = get_labels(shuffled_file=LABELS)

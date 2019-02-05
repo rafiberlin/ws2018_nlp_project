@@ -390,7 +390,7 @@ def get_labels(shuffled_file, start_range=None, end_range=None):
 def build_pie_chart(data_frame_labels, chart_title="Label distribution in the SemEval 2017 data set",
                     filename="dataset/label_chart.png"):
     """
-    Creates a pie chart. (pop up)
+    Creates a pie chart.
     :param data_frame_labels: as returned by process_data.helper.get_labels()
     :param chart_title: The name of the chart
     :param filename: The name of the chart
@@ -398,7 +398,7 @@ def build_pie_chart(data_frame_labels, chart_title="Label distribution in the Se
     """
     val_counts = data_frame_labels.Label.value_counts()
     label_count = [val_counts["positive"], val_counts["negative"], val_counts["neutral"]]
-    #print("count", label_count)
+    # print("count", label_count)
     label = ['positive', 'negative', 'neutral']
     colors = ['lightblue', 'orange', 'lightgray']
     explode = (0.1, 0.1, 0.1)  # only "explode" the 2nd slice (i.e. 'Hogs')

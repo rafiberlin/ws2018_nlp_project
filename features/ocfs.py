@@ -6,6 +6,7 @@ from baseline.baseline import do_not_tokenize
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
+import math
 
 
 def calculate_ocfs_score(fitted_docs, labels):
@@ -27,6 +28,7 @@ def calculate_ocfs_score(fitted_docs, labels):
     ocfs = np.sum([np.square(class_mean.loc[label,] - all_mean) for label in class_mean.index], axis=0)
     # print(np.square(class_mean.iloc[idx,] - all_mean))
     # print(class_mean.loc[class_mean['Label'] == "positive"])
+
     return ocfs
 
 
@@ -41,19 +43,18 @@ def retrieve_features_to_remove(ocfs, lowest_val, highest_val):
 
     return [idx for idx, val in enumerate(ocfs) if val < lowest_val or val > highest_val]
 
-
-if __name__ == "__main__":
+def main():
     parent_dir = Path(__file__).parents[1]
     DATA_SET_PATH = os.path.join(parent_dir, "dataset/raw_data_by_year/train/")
     TAGGED_SENTENCES = os.path.join(DATA_SET_PATH, 'text_cleaned_pos.csv')
     LABELS = os.path.join(DATA_SET_PATH, 'shuffled.csv')
 
-    #DEV_RANGE = (0, 6000)
-    #TEST_RANGE = (DEV_RANGE[1], 18000)
-    #TRAINING_RANGE = (TEST_RANGE[1], 61212)
-    TRAINING_RANGE = (0, math.floor(0.7 * 61212))
-    DEV_RANGE = (math.floor(0.7 * 61212), math.floor(0.8 * 61212))
-    TEST_RANGE = (math.floor(0.8 * 61212), 61212)
+    DEV_RANGE = (0, 6000)
+    TEST_RANGE = (DEV_RANGE[1], 18000)
+    TRAINING_RANGE = (TEST_RANGE[1], 61212)
+    #TRAINING_RANGE = (0, math.floor(0.7 * 61212))
+    #DEV_RANGE = (TRAINING_RANGE[1], math.floor(0.8 * 61212))
+    #TEST_RANGE = (DEV_RANGE[1], 61212)
 
     all_docs, all_tags = get_tagged_sentences(DATA_SET_PATH, TAGGED_SENTENCES)
     all_labels = get_labels(shuffled_file=LABELS)
@@ -92,3 +93,7 @@ if __name__ == "__main__":
     bow_test_acc = bow_classifier.score(pd_bow_train, dev_labels)
 
     print(bow_test_acc)
+
+
+if __name__ == "__main__":
+    main()

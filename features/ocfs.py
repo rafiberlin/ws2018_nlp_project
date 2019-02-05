@@ -1,4 +1,5 @@
 import os
+import math
 from process_data.helper import get_tagged_sentences, get_labels, extract_range
 from pathlib import Path
 from sklearn.feature_extraction.text import CountVectorizer
@@ -17,14 +18,15 @@ def calculate_ocfs_score(fitted_docs, labels):
     """
     fitted_docs_pd_frame = pd.DataFrame(fitted_docs.toarray())
     fitted_docs_pd_frame["Label"] = labels["Label"]
+    totalSamples = len(fitted_docs_pd_frame)
     all_mean = fitted_docs_pd_frame.mean(axis=0)
     class_mean = fitted_docs_pd_frame.groupby("Label").mean()
-
+    classSamples = fitted_docs_pd_frame.groupby("Label").size()
     # Sorry for that one, I tried to keep it compact due to memory issues
     # The argument of np.sum is a list of the mean of features for each class
     # when the mean of a featur is calculated for a class, it gets added along the rows (axis=0)
     # to get a feature score for each feature...
-    ocfs = np.sum([np.square(class_mean.loc[label,] - all_mean) for label in class_mean.index], axis=0)
+    ocfs = np.sum([(classSamples[label]/totalSamples)*np.square(class_mean.loc[label,] - all_mean) for label in class_mean.index], axis=0)
     # print(np.square(class_mean.iloc[idx,] - all_mean))
     # print(class_mean.loc[class_mean['Label'] == "positive"])
     return ocfs
@@ -41,19 +43,22 @@ def retrieve_features_to_remove(ocfs, lowest_val, highest_val):
 
     return [idx for idx, val in enumerate(ocfs) if val < lowest_val or val > highest_val]
 
-
-if __name__ == "__main__":
-    parent_dir = Path(__file__).parents[1]
+def main():
+    # parent_dir = Path(__file__).parents[1]
+    parent_dir = os.getcwd() # my sys.path is different from PyCharm
     DATA_SET_PATH = os.path.join(parent_dir, "dataset/raw_data_by_year/train/")
     TAGGED_SENTENCES = os.path.join(DATA_SET_PATH, 'text_cleaned_pos.csv')
     LABELS = os.path.join(DATA_SET_PATH, 'shuffled.csv')
 
-    DEV_RANGE = (0, 6000)
-    TEST_RANGE = (DEV_RANGE[1], 18000)
-    TRAINING_RANGE = (TEST_RANGE[1], 61212)
-
     all_docs, all_tags = get_tagged_sentences(DATA_SET_PATH, TAGGED_SENTENCES)
-    all_labels = get_labels(shuffled_file=LABELS)
+    all_labels = get_labels(LABELS)
+    samplesLen = len(all_labels)
+    testEnd = math.floor(0.3 * samplesLen)  # 20% for test
+    devEnd = math.floor(0.1 * samplesLen)  # 10% for dev
+
+    DEV_RANGE = (0, devEnd)
+    TEST_RANGE = (devEnd, testEnd)
+    TRAINING_RANGE = (testEnd, samplesLen)
 
     dev_docs = extract_range(all_docs, DEV_RANGE[0], DEV_RANGE[1])
     dev_labels = extract_range(all_labels, DEV_RANGE[0], DEV_RANGE[1])
@@ -89,3 +94,6 @@ if __name__ == "__main__":
     bow_test_acc = bow_classifier.score(pd_bow_train, dev_labels)
 
     print(bow_test_acc)
+
+if __name__ == "__main__":
+    main()

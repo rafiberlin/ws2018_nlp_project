@@ -1,4 +1,6 @@
 import os
+import sys
+sys.path.insert(0, os.getcwd())
 import math
 from process_data.helper import get_tagged_sentences, get_labels, extract_range
 from pathlib import Path
@@ -7,6 +9,8 @@ from baseline.baseline import do_not_tokenize
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression
+from sklearn.preprocessing import normalize
+from scipy.sparse import csr_matrix
 
 
 def calculate_ocfs_score(fitted_docs, labels):
@@ -55,7 +59,7 @@ def main():
     samplesLen = len(all_labels)
     testEnd = math.floor(0.3 * samplesLen)  # 20% for test
     devEnd = math.floor(0.1 * samplesLen)  # 10% for dev
-
+    
     DEV_RANGE = (0, devEnd)
     TEST_RANGE = (devEnd, testEnd)
     TRAINING_RANGE = (testEnd, samplesLen)
@@ -74,12 +78,34 @@ def main():
     )
     bow_train = bag_of_words.fit_transform(dev_docs)
 
+    # pos_features = CountVectorizer(
+    #     analyzer='word',
+    #     tokenizer=do_not_tokenize,
+    #     preprocessor=do_not_tokenize,
+    #     token_pattern=None,
+    #     # stop_words="english",
+    #     vocabulary=['N', 'V', 'A', 'R']
+    # )
+
+    # pos_train = pos_features.fit_transform(all_tags)
+    # # print(all_tags)
+    # print(pos_features.get_feature_names())
+    # print(pos_train.toarray())
+
+    # pos_train = pos_train.toarray()
+    # weight = np.array([5, 3, 2, 1])  # 5 for N, 3 for V, 2 for A, 1 for R
+    # pos_multiplied = np.multiply(pos_train, weight)
+    # print(pos_multiplied)
+
     ocfs = calculate_ocfs_score(bow_train, dev_labels)
     feature_idx = retrieve_features_to_remove(ocfs, 10 ** -7, 10 ** -2)
+    print(bow_train.shape)
+    print(len(feature_idx))
     vocabulary = dict(map(reversed, bag_of_words.vocabulary_.items()))
     words_to_ignore = [vocabulary[idx] for idx in feature_idx]
 
     dev_labels = np.ravel(dev_labels)
+    all_labels = np.ravel(all_labels)
 
     # Removing the features by setting them to zero...
     pd_bow_train = pd.DataFrame(bow_train.toarray())
@@ -94,6 +120,33 @@ def main():
     bow_test_acc = bow_classifier.score(pd_bow_train, dev_labels)
 
     print(bow_test_acc)
+
+    # Create POS features
+    pos_vocab = {'N': 2, 'V':3, 'A':4, 'R':5}  # 5 for N, 3 for V, 2 for A, 1 for R
+    indptr = [0]
+    indices = []
+    data = []
+    vocabulary = {}
+    for d, e in zip(all_docs, all_tags):
+        for term, pos in zip(d, e):
+            index = vocabulary.setdefault(term, len(vocabulary))
+            indices.append(index)
+            val = pos_vocab.setdefault(pos, 0)
+            data.append(val)
+        indptr.append(len(indices))
+    pos_train = csr_matrix((data, indices, indptr), dtype=float)
+    print(pos_train)
+    pos_train_normalized = normalize(pos_train, norm='l1', copy=False)
+    print(pos_train_normalized)
+    pos_classifier = LogisticRegression(random_state=0, solver='lbfgs',
+                                        multi_class='multinomial',
+                                        max_iter=5000
+                                        ).fit(pos_train_normalized, all_labels)
+    pos_train_acc = pos_classifier.score(pos_train_normalized, all_labels)
+    print(pos_train_acc)
+    
+ 
+
 
 if __name__ == "__main__":
     main()

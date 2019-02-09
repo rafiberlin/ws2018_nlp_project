@@ -126,7 +126,7 @@ def main():
                                             end_range=END_RANGE, split_pos=False)
 
     pos_groups = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
-    tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
+    # tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
 
     all_docs = []
     all_tags = []

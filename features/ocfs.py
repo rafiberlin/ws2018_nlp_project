@@ -11,6 +11,7 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import normalize
 from scipy.sparse import csr_matrix
+from collections import defaultdict
 
 
 def calculate_ocfs_score(fitted_docs, labels):
@@ -36,8 +37,8 @@ def calculate_ocfs_score(fitted_docs, labels):
     # ocfs = np.sum([(classSamples[label]/totalSamples)*np.square(class_mean.loc[label,] - all_mean) for label in class_mean.index], axis=0)
     # # print(np.square(class_mean.iloc[idx,] - all_mean))
     # # print(class_mean.loc[class_mean['Label'] == "positive"])
-    docs = pd.SparseDataFrame(fitted_docs)
-    docs = docs.fillna(0) 
+    docs = pd.SparseDataFrame(fitted_docs, default_fill_value=0)
+    # docs = docs.fillna(0) 
     docs["Label"] = labels["Label"]
     totalSamples = len(docs)
     allMean = fitted_docs.mean(axis=0)   #  Don't know why mean with dataframe directly yields inaccurate results
@@ -75,9 +76,10 @@ def gen_pos_features(docs, tags, weight):
     for d, e in zip(docs, tags):
         for term, pos in zip(d, e):
             index = vocabulary.setdefault(term, len(vocabulary))
-            indices.append(index)
-            val = weight.setdefault(pos, 0)
-            data.append(val)
+            if pos in weight.keys():
+                indices.append(index)
+                val = weight[pos]
+                data.append(val)
         indptr.append(len(indices))
     pos_train = csr_matrix((data, indices, indptr), dtype=float)
     pos_train_normalized = normalize(pos_train, norm='l1', copy=False)
@@ -129,8 +131,8 @@ def main():
         # stop_words="english"
         binary=True  # replaces bow_train = (bow_train >= 1).astype(int)
     )
-    bow_train = bag_of_words.fit_transform(all_docs)
-    ocfs = calculate_ocfs_score(bow_train, all_labels)
+    bow_train = bag_of_words.fit_transform(dev_docs)
+    ocfs = calculate_ocfs_score(bow_train, dev_labels)
     feature_idx = retrieve_features_to_remove(ocfs, 10 ** -7, 10 ** -2)
     print(bow_train.shape)
     # print(feature_idx)
@@ -152,19 +154,26 @@ def main():
     bow_classifier = LogisticRegression(random_state=0, solver='lbfgs',
                                         multi_class='multinomial',
                                         max_iter=5000
-                                        ).fit(pd_bow_train, all_labels)
-    bow_test_acc = bow_classifier.score(pd_bow_train, all_labels)
+                                        ).fit(pd_bow_train, dev_labels)
+    bow_test_acc = bow_classifier.score(pd_bow_train, dev_labels)
 
     print(bow_test_acc)
+   
 
-    # pos_vocab = {'N': 2, 'V':3, 'A':4, 'R':5}  # 5 for N, 3 for V, 2 for A, 1 for R
-    # pos_train = gen_pos_features(all_docs, all_tags, pos_vocab)
-    # pos_classifier = LogisticRegression(random_state=0, solver='lbfgs',
-    #                                     multi_class='multinomial',
-    #                                     max_iter=5000
-    #                                     ).fit(pos_train, all_labels)
-    # pos_train_acc = pos_classifier.score(pos_train, all_labels)
-    # print(pos_train_acc)
-    
+    pos_vocab = {'N': 2, 'V':3, 'A':4, 'R':5}  # 5 for N, 3 for V, 2 for A, 1 for R
+    pos_train = gen_pos_features(dev_docs, dev_tags, pos_vocab)
+    # pos_train = csr_matrix.eliminate_zeros(pos_train)
+    # print(pos_train.tocoo())
+    # ocfs_pos = calculate_ocfs_score(pos_train, dev_labels)
+    # feature_idx_pos = retrieve_features_to_remove(ocfs_pos, 10 ** -7, 10 ** -2)
+    # pd_pos_train = drop_cols(pos_train, feature_idx_pos)
+    pos_classifier = LogisticRegression(random_state=0, solver='lbfgs',
+                                        multi_class='multinomial',
+                                        max_iter=5000
+                                        ).fit(pos_train, dev_labels)
+    pos_train_acc = pos_classifier.score(pos_train, dev_labels)
+    print(pos_train_acc)
+    print(bow_train)
+    print(pos_train)
 if __name__ == "__main__":
     main()

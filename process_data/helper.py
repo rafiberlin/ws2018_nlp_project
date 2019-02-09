@@ -10,7 +10,8 @@ import html
 import nltk.corpus.reader.conll as conll
 from ekphrasis.classes.spellcorrect import SpellCorrector
 import matplotlib.pyplot as plt
-from nltk.corpus import stopwords
+from nltk.corpus import stopwords as nltk_stopwords
+
 
 def reduce_lengthening(text):
     """
@@ -347,7 +348,8 @@ def extract_range(iterable, start_range=None, end_range=None):
     return iterable[start_range:end_range]
 
 
-def get_tagged_sentences(folder, filename, file_extension=".csv", start_range=None, end_range=None, split_pos=True):
+def get_tagged_sentences(folder, filename, file_extension=".csv", start_range=None, end_range=None, split_pos=True,
+                         perform_preprocessing=True):
     """
 
     :param folder:     Folder to the tagged sentences
@@ -357,15 +359,14 @@ def get_tagged_sentences(folder, filename, file_extension=".csv", start_range=No
     :return: one or 2 lists, see param split_pos
     """
     corpus = conll.ConllCorpusReader(folder, file_extension, ('words', 'pos'))
-    tagged_sentences = corpus.tagged_sents(filename)
-
+    tagged_sentences = extract_range(corpus.tagged_sents(filename), start_range, end_range)
     if not split_pos:
         return tagged_sentences
 
     sentences_only = []
     tags_only = []
 
-    for tagged_sentence in extract_range(tagged_sentences, start_range, end_range):
+    for tagged_sentence in tagged_sentences:
         words, tags = zip(*tagged_sentence)
         # undo tokenize done by ark tagger adding white space, if needed by scikit
         # sentences_only.append(" ".join(list(words)))
@@ -410,9 +411,10 @@ def build_pie_chart(data_frame_labels, chart_title="Label distribution in the Se
     plt.title(chart_title, bbox={'facecolor': '0.95', 'pad': 5})
     plt.savefig(filename)
 
-def pre_processing(tagged_sentence, pos_grouping={"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]},
+
+def pre_processing(tagged_sentence, pos_grouping=None,
                    default_pos="DEFAULT",
-                   stopwords=set(stopwords.words('english')), to_lower=True):
+                   stopwords=None, to_lower=True):
     """
     Apply some pre-processing on pre tagged sentences. Stopwords, POS Grouping, lowering case
     :param tagged_sentence:
@@ -422,6 +424,11 @@ def pre_processing(tagged_sentence, pos_grouping={"V": ["V"], "A": ["A"], "N": [
     :param to_lower:
     :return: tagged sentences with removed stopped words and different pos grouping
     """
+    if pos_grouping is None:
+        pos_grouping = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
+
+    if stopwords is None:
+        stopwords = set(nltk_stopwords.words('english'))
 
     processed_sentences = []
     for sentence in tagged_sentence:
@@ -445,7 +452,8 @@ def pre_processing(tagged_sentence, pos_grouping={"V": ["V"], "A": ["A"], "N": [
         processed_sentences.append(new_sentence)
     return processed_sentences
 
-if __name__ == "__main__":
+
+def main():
     parent_dir = Path(__file__).parents[1]
     TRAIN_PATH = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/train/")
     shuffle_data = False
@@ -456,3 +464,7 @@ if __name__ == "__main__":
     shuffle_data = False
     # clean_data still buggy. TODO backslash handling not optimal
     create_files_for_analysis(TEST_PATH, shuffle_data)
+
+
+if __name__ == "__main__":
+    main()

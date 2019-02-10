@@ -78,7 +78,8 @@ def gen_pos_features(docs, tags, weight):
         #print(d, len(d), len(e))
         temp_index = defaultdict(int)
         for term, pos in zip(d, e):
-            index = vocabulary.setdefault(term, len(vocabulary))
+            word_key = (term, pos,)
+            index = vocabulary.setdefault(word_key, len(vocabulary))
             val = weight.setdefault(pos, 0)
             temp_index[index] += val
 
@@ -89,10 +90,7 @@ def gen_pos_features(docs, tags, weight):
         # indptr.append(indptr[-1] + len(e))
         indptr.append(len(indices))
     pos_train = csr_matrix((data, indices, indptr), dtype=float)
-    print("Before normalizing", pos_train)
     pos_train_normalized = normalize(pos_train, norm='l1', copy=False)
-    print("After normalizing", pos_train_normalized)
-    # print(temp_index)
     return pos_train_normalized, vocabulary, pos_train_normalized.shape
 
 
@@ -113,8 +111,9 @@ def convert(docs, tags, weight, vocabulary, dim):
         #print(d, len(d), len(e))
         temp_index = defaultdict(int)
         for term, pos in zip(d, e):
-            if term in vocabulary.keys():
-                index = vocabulary[term]
+            word_key = (term, pos,)
+            if word_key in vocabulary.keys():
+                index = vocabulary[word_key]
                 val = weight.setdefault(pos, 0)
                 temp_index[index] += val
         # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
@@ -152,7 +151,7 @@ def main():
     LABELS = os.path.join(DATA_SET_PATH, 'shuffled.csv')
 
     START_RANGE = 0
-    END_RANGE = 3000  # Set to None to get the whole set...
+    END_RANGE = None  # Set to None to get the whole set...
 
     tagged_sentences = get_tagged_sentences(DATA_SET_PATH, TAGGED_SENTENCES, start_range=START_RANGE,
                                             end_range=END_RANGE, split_pos=False)
@@ -233,8 +232,9 @@ def main():
     pos_vocab = {'N': 2, 'V': 3, 'A': 4, 'R': 5}  # 5 for N, 3 for V, 2 for A, 1 for R
     pos_train, word_idx, dim = gen_pos_features(train_docs, train_tags, pos_vocab)
     # print("POS SHAPE", pos_train.shape)
-    print("Result before ocfs", pos_train)
     ocfs_pos = calculate_ocfs_score(pos_train, train_labels)
+    print("Max value ocfs", ocfs.max())
+    print("Min value ocfs", ocfs.min())
     pos_feature_idx = retrieve_features_to_remove(ocfs_pos, 10 ** -7, 10 ** -2)
     pd_pos_train = drop_cols(pos_train, pos_feature_idx)
     pos_classifier = LogisticRegression(random_state=0, solver='lbfgs',

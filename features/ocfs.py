@@ -1,6 +1,5 @@
 import os
 import sys
-
 sys.path.insert(0, os.getcwd())
 import math
 from process_data.helper import get_tagged_sentences, get_labels, extract_range, pre_processing
@@ -80,9 +79,8 @@ def gen_pos_features(docs, tags, weight):
         temp_index = defaultdict(int)
         for term, pos in zip(d, e):
             index = vocabulary.setdefault(term, len(vocabulary))
-            temp_index[index] += 1
             val = weight.setdefault(pos, 0)
-            temp_index[index] = temp_index[index] * val
+            temp_index[index] += val
 
         # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
         for key in sorted(temp_index.keys()):
@@ -91,7 +89,9 @@ def gen_pos_features(docs, tags, weight):
         # indptr.append(indptr[-1] + len(e))
         indptr.append(len(indices))
     pos_train = csr_matrix((data, indices, indptr), dtype=float)
+    print("Before normalizing", pos_train)
     pos_train_normalized = normalize(pos_train, norm='l1', copy=False)
+    print("After normalizing", pos_train_normalized)
     # print(temp_index)
     return pos_train_normalized, vocabulary, pos_train_normalized.shape
 
@@ -115,10 +115,8 @@ def convert(docs, tags, weight, vocabulary, dim):
         for term, pos in zip(d, e):
             if term in vocabulary.keys():
                 index = vocabulary[term]
-                temp_index[index] += 1
                 val = weight.setdefault(pos, 0)
-                temp_index[index] = temp_index[index] * val
-
+                temp_index[index] += val
         # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
         for key in sorted(temp_index.keys()):
             indices.append(key)
@@ -147,8 +145,8 @@ def drop_cols(matrix, drop_idx):
 
 
 def main():
-    #parent_dir = Path(__file__).parents[1]
-    parent_dir = os.getcwd() # my sys.path is different from PyCharm
+    parent_dir = Path(__file__).parents[1]
+    #parent_dir = os.getcwd() # my sys.path is different from PyCharm
     DATA_SET_PATH = os.path.join(parent_dir, "dataset")
     TAGGED_SENTENCES = os.path.join(DATA_SET_PATH, 'text_cleaned_pos.csv')
     LABELS = os.path.join(DATA_SET_PATH, 'shuffled.csv')
@@ -160,7 +158,7 @@ def main():
                                             end_range=END_RANGE, split_pos=False)
 
     pos_groups = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
-    # # tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
+    tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
 
     all_docs = []
     all_tags = []
@@ -235,6 +233,7 @@ def main():
     pos_vocab = {'N': 2, 'V': 3, 'A': 4, 'R': 5}  # 5 for N, 3 for V, 2 for A, 1 for R
     pos_train, word_idx, dim = gen_pos_features(train_docs, train_tags, pos_vocab)
     # print("POS SHAPE", pos_train.shape)
+    print("Result before ocfs", pos_train)
     ocfs_pos = calculate_ocfs_score(pos_train, train_labels)
     pos_feature_idx = retrieve_features_to_remove(ocfs_pos, 10 ** -7, 10 ** -2)
     pd_pos_train = drop_cols(pos_train, pos_feature_idx)

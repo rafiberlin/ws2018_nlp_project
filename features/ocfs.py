@@ -173,7 +173,7 @@ def drop_cols(matrix, drop_idx):
 class posVectorizer:
     def __init__(self, weight):
         self.weight = weight
-        self.vocabulary = None
+        self.vocabulary = defaultdict(int)
         self.dim = None
 
     def fit(self, docs, tags):
@@ -184,29 +184,40 @@ class posVectorizer:
         :param weight:
         :return:
         """
+
+        data, indices, indptr = self._core_fit_logic(docs, tags)
+        posMat = csr_matrix((data, indices, indptr), dtype=float)
+        posMat_normalized = normalize(posMat, norm='l1', copy=False)
+        self.dim = posMat_normalized.shape
+        return posMat_normalized
+
+    def _core_fit_logic(self, docs, tags, use_transform=False):
+        """
+        Given documents and labels, return the necessary parameters for a csr matrix
+        :param docs:
+        :param tags:
+        :param use_transform: if False, to be used in the transform function. If True, to be used in the fit function
+        :return: data, indices, indptr
+        """
+
         indptr = [0]
         indices = []
         data = []
-        vocabulary = {}
         for d, e in zip(docs, tags):
             temp_index = defaultdict(int)
             for term, pos in zip(d, e):
                 word_key = (term, pos,)
-                index = vocabulary.setdefault(word_key, len(vocabulary))
-                val = self.weight.setdefault(pos, 0)
-                temp_index[index] += val
+                if (use_transform and word_key in self.vocabulary.keys()) or not use_transform:
+                    index = self.vocabulary.setdefault(word_key, len(self.vocabulary))
+                    val = self.weight.setdefault(pos, 0)
+                    temp_index[index] += val
 
             # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
             for key in sorted(temp_index.keys()):
                 indices.append(key)
                 data.append(temp_index[key])
-            # indptr.append(indptr[-1] + len(e))
             indptr.append(len(indices))
-        posMat = csr_matrix((data, indices, indptr), dtype=float)
-        posMat_normalized = normalize(posMat, norm='l1', copy=False)
-        self.vocabulary = vocabulary
-        self.dim = posMat_normalized.shape
-        return posMat_normalized
+        return data, indices, indptr
 
     def transform(self, docs, tags):
         """
@@ -215,25 +226,8 @@ class posVectorizer:
         :param tags:
         :return:
         """
-        indptr = [0]
-        indices = []
-        data = []
         column = self.dim[1]
-        for d, e in zip(docs, tags):
-            temp_index = defaultdict(int)
-            for term, pos in zip(d, e):
-                word_key = (term, pos,)
-                if word_key in self.vocabulary.keys():
-                    index = self.vocabulary[word_key]
-                    val = self.weight.setdefault(pos, 0)
-                    temp_index[index] += val
-
-            # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
-            for key in sorted(temp_index.keys()):
-                indices.append(key)
-                data.append(temp_index[key])
-            # indptr.append(indptr[-1] + len(e))
-            indptr.append(len(indices))
+        data, indices, indptr = self._core_fit_logic(docs, tags, True)
         posMat = csr_matrix((data, indices, indptr), shape=(len(docs), column), dtype=float)
         posMat_normalized = normalize(posMat, norm='l1', copy=False)
         return posMat_normalized

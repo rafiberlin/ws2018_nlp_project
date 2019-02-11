@@ -83,72 +83,72 @@ def retrieve_features_to_remove(ocfs, lowest_val, highest_val):
 
     return [idx for idx, val in enumerate(ocfs) if val < lowest_val or val > highest_val]
 
+#  DEPRECATED, USE posVectorizer METHOD INSTEAD
+# def gen_pos_features(docs, tags, weight): 
+#     """
+#     Generate POS features for given docs and tags based on specific weighting scheme.
+#     :param docs:
+#     :param tags:
+#     :param weight:
+#     :return:
+#     """
+#     indptr = [0]
+#     indices = []
+#     data = []
+#     vocabulary = {}
+#     for d, e in zip(docs, tags):
+#         #print(d, len(d), len(e))
+#         temp_index = defaultdict(int)
+#         for term, pos in zip(d, e):
+#             index = vocabulary.setdefault(term, len(vocabulary))
+#             temp_index[index] += 1
+#             val = weight.setdefault(pos, 0)
+#             temp_index[index] = temp_index[index] * val
 
-def gen_pos_features(docs, tags, weight):
-    """
-    Generate POS features for given docs and tags based on specific weighting scheme.
-    :param docs:
-    :param tags:
-    :param weight:
-    :return:
-    """
-    indptr = [0]
-    indices = []
-    data = []
-    vocabulary = {}
-    for d, e in zip(docs, tags):
-        #print(d, len(d), len(e))
-        temp_index = defaultdict(int)
-        for term, pos in zip(d, e):
-            index = vocabulary.setdefault(term, len(vocabulary))
-            temp_index[index] += 1
-            val = weight.setdefault(pos, 0)
-            temp_index[index] = temp_index[index] * val
+#         # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
+#         for key in sorted(temp_index.keys()):
+#             indices.append(key)
+#             data.append(temp_index[key])
+#         # indptr.append(indptr[-1] + len(e))
+#         indptr.append(len(indices))
+#     pos_train = csr_matrix((data, indices, indptr), dtype=float)
+#     pos_train_normalized = normalize(pos_train, norm='l1', copy=False)
+#     # print(temp_index)
+#     return pos_train_normalized, vocabulary, pos_train_normalized.shape
 
-        # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
-        for key in sorted(temp_index.keys()):
-            indices.append(key)
-            data.append(temp_index[key])
-        # indptr.append(indptr[-1] + len(e))
-        indptr.append(len(indices))
-    pos_train = csr_matrix((data, indices, indptr), dtype=float)
-    pos_train_normalized = normalize(pos_train, norm='l1', copy=False)
-    # print(temp_index)
-    return pos_train_normalized, vocabulary, pos_train_normalized.shape
+#  DEPRECATED, USE posVectorizer METHOD INSTEAD
+# def convert(docs, tags, weight, vocabulary, dim):
+#     """
+#     docstring here
+#     :param docs: 
+#     :param tags: 
+#     :param weight: 
+#     :param vocabulary: 
+#     :return:
+#     """
+#     indptr = [0]
+#     indices = []
+#     data = []
+#     column = dim[1]
+#     for d, e in zip(docs, tags):
+#         #print(d, len(d), len(e))
+#         temp_index = defaultdict(int)
+#         for term, pos in zip(d, e):
+#             if term in vocabulary.keys():
+#                 index = vocabulary[term]
+#                 temp_index[index] += 1
+#                 val = weight.setdefault(pos, 0)
+#                 temp_index[index] = temp_index[index] * val
 
-
-def convert(docs, tags, weight, vocabulary, dim):
-    """
-    docstring here
-    :param docs: 
-    :param tags: 
-    :param weight: 
-    :param vocabulary: 
-    :return:
-    """
-    indptr = [0]
-    indices = []
-    data = []
-    column = dim[1]
-    for d, e in zip(docs, tags):
-        #print(d, len(d), len(e))
-        temp_index = defaultdict(int)
-        for term, pos in zip(d, e):
-            if term in vocabulary.keys():
-                index = vocabulary[term]
-                temp_index[index] += 1
-                val = weight.setdefault(pos, 0)
-                temp_index[index] = temp_index[index] * val
-
-        # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
-        for key in sorted(temp_index.keys()):
-            indices.append(key)
-            data.append(temp_index[key])
-        # indptr.append(indptr[-1] + len(e))
-        indptr.append(len(indices))
-    pos_train = csr_matrix((data, indices, indptr), shape=(len(docs), column), dtype=float)
-    pos_train_normalized = normalize(pos_train, norm='l1', copy=False)
-    return pos_train_normalized
+#         # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
+#         for key in sorted(temp_index.keys()):
+#             indices.append(key)
+#             data.append(temp_index[key])
+#         # indptr.append(indptr[-1] + len(e))
+#         indptr.append(len(indices))
+#     pos_train = csr_matrix((data, indices, indptr), shape=(len(docs), column), dtype=float)
+#     pos_train_normalized = normalize(pos_train, norm='l1', copy=False)
+#     return pos_train_normalized
 
 
 def drop_cols(matrix, drop_idx):
@@ -167,8 +167,75 @@ def drop_cols(matrix, drop_idx):
     return tempMat.tocsr()
 
 
+class posVectorizer:
+    def __init__(self, weight):
+        self.weight = weight
+
+    def fit(self, docs, tags):
+        """
+        Generate POS features for given docs and tags based on specific weighting scheme.
+        :param docs:
+        :param tags:
+        :param weight:
+        :return:
+        """
+        indptr = [0]
+        indices = []
+        data = []
+        vocabulary = {}
+        for d, e in zip(docs, tags):
+            temp_index = defaultdict(int)
+            for term, pos in zip(d, e):
+                index = vocabulary.setdefault(term, len(vocabulary))
+                temp_index[index] += 1
+                val = self.weight.setdefault(pos, 0)
+                temp_index[index] = temp_index[index] * val
+
+            # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
+            for key in sorted(temp_index.keys()):
+                indices.append(key)
+                data.append(temp_index[key])
+            # indptr.append(indptr[-1] + len(e))
+            indptr.append(len(indices))
+        posMat = csr_matrix((data, indices, indptr), dtype=float)
+        posMat_normalized = normalize(posMat, norm='l1', copy=False)
+        self.vocabulary = vocabulary
+        self.dim = posMat_normalized.shape
+        return posMat_normalized
+
+    def transform(self, docs, tags):
+        """
+        docstring here
+        :param docs:
+        :param tags:
+        :return:
+        """
+        indptr = [0]
+        indices = []
+        data = []
+        column = self.dim[1]
+        for d, e in zip(docs, tags):
+            temp_index = defaultdict(int)
+            for term, pos in zip(d, e):
+                if term in self.vocabulary.keys():
+                    index = self.vocabulary[term]
+                    temp_index[index] += 1
+                    val = self.weight.setdefault(pos, 0)
+                    temp_index[index] = temp_index[index] * val
+
+        # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
+            for key in sorted(temp_index.keys()):
+                indices.append(key)
+                data.append(temp_index[key])
+        # indptr.append(indptr[-1] + len(e))
+            indptr.append(len(indices))
+        posMat = csr_matrix((data, indices, indptr), shape=(len(docs), column), dtype=float)
+        posMat_normalized = normalize(posMat, norm='l1', copy=False)
+        return posMat_normalized
+
+
 def main():
-    #parent_dir = Path(__file__).parents[1]
+    #  parent_dir = Path(__file__).parents[1]
     parent_dir = os.getcwd() # my sys.path is different from PyCharm
     DATA_SET_PATH = os.path.join(parent_dir, "dataset")
     TAGGED_SENTENCES = os.path.join(DATA_SET_PATH, 'text_cleaned_pos.csv')
@@ -258,7 +325,9 @@ def main():
     # print(bow_test_acc)
 
     pos_vocab = {'N': 2, 'V': 3, 'A': 4, 'R': 5}  # 5 for N, 3 for V, 2 for A, 1 for R
-    pos_train, word_idx, dim = gen_pos_features(train_docs, train_tags, pos_vocab)
+    # pos_train, word_idx, dim = gen_pos_features(train_docs, train_tags, pos_vocab)
+    posFeatures = posVectorizer(pos_vocab)
+    pos_train = posFeatures.fit(train_docs, train_tags)
     ocfs_pos = calculate_ocfs_score(pos_train, train_labels)
     pos_feature_idx = retrieve_features_to_remove(ocfs_pos, 10 ** -7, 10 ** -2)
     pd_pos_train = drop_cols(pos_train, pos_feature_idx)
@@ -269,7 +338,8 @@ def main():
     pos_train_acc = pos_classifier.score(pd_pos_train, train_labels)
 
     # pos_test = gen_pos_features(test_docs, test_tags, pos_vocab)
-    pos_test = convert(test_docs, test_tags, pos_vocab, word_idx, dim)
+    # pos_test = convert(test_docs, test_tags, pos_vocab, word_idx, dim)
+    pos_test = posFeatures.transform(test_docs, test_tags)
     pd_pos_test = drop_cols(pos_test, pos_feature_idx)
     pos_test_acc = pos_classifier.score(pd_pos_test, test_labels)
     print(pos_train_acc)

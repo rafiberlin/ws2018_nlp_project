@@ -192,8 +192,7 @@ class posVectorizer:
             temp_index = defaultdict(int)
             for term, pos in zip(d, e):
                 word_key = (term, pos,)
-                vocabulary.setdefault(word_key, len(vocabulary))
-                index = vocabulary[word_key]
+                index = vocabulary.setdefault(word_key, len(vocabulary))
                 val = self.weight.setdefault(pos, 0)
                 temp_index[index] += val
 

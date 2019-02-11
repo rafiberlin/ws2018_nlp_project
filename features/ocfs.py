@@ -13,6 +13,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import normalize
 from scipy.sparse import csr_matrix
 from collections import defaultdict
+import time
 
 
 def calculate_ocfs_score(fitted_docs, labels):
@@ -22,6 +23,20 @@ def calculate_ocfs_score(fitted_docs, labels):
     :param labels: Matrix as returned by extract_range() when used to extract the labels
     :return: a vector of OCFS scores
     """
+    def calculateMean(label):
+        """
+        Crude implementation of mean, but faster for sparse
+        matrix compared to pandas.DataFrame.mean()
+        :param label:
+        :return:
+        """
+        df = docs.loc[docs["Label"] == label]
+        df = df.drop(['Label'], axis=1)
+        dfLen = len(df)
+        mat = df.to_coo().tocsr()
+        mean = mat.sum(axis=0, dtype=float)/dfLen
+        mean = pd.Series(np.ravel(mean))
+        return mean
     # fitted_docs_pd_frame = pd.DataFrame(fitted_docs.toarray())
     # fitted_docs_pd_frame["Label"] = labels["Label"]
     # print(fitted_docs_pd_frame)
@@ -38,15 +53,21 @@ def calculate_ocfs_score(fitted_docs, labels):
     # ocfs = np.sum([(classSamples[label]/totalSamples)*np.square(class_mean.loc[label,] - all_mean) for label in class_mean.index], axis=0)
     # # print(np.square(class_mean.iloc[idx,] - all_mean))
     # # print(class_mean.loc[class_mean['Label'] == "positive"])
-    docs = pd.SparseDataFrame(fitted_docs, default_fill_value=0)
+    docs = pd.SparseDataFrame(fitted_docs)
+    docs = docs.fillna(0)
     docs["Label"] = labels
     totalSamples = len(docs)
-    allMean = fitted_docs.mean(axis=0)  # Don't know why mean with dataframe directly yields inaccurate results
+    # Don't know why mean with dataframe directly yields inaccurate results
+    allMean = fitted_docs.mean(axis=0)
     allMean = pd.Series(np.ravel(allMean))
-    classMean = docs.groupby("Label").mean()
+    classgroup = docs.groupby("Label")
     classSamples = docs.groupby("Label").size()
+    classMean = {}
+
+    for label in classSamples.index:
+        classMean[label] = calculateMean(label)
     ocfs = np.sum(
-        [(classSamples[label] / totalSamples) * np.square(classMean.loc[label] - allMean) for label in classMean.index],
+        [(classSamples[label] / totalSamples) * np.square(classMean[label] - allMean) for label in classSamples.index],
         axis=0)
     return ocfs
 
@@ -154,7 +175,7 @@ def main():
     LABELS = os.path.join(DATA_SET_PATH, 'shuffled.csv')
 
     START_RANGE = 0
-    END_RANGE = 3000  # Set to None to get the whole set...
+    END_RANGE = None  # Set to None to get the whole set...
 
     tagged_sentences = get_tagged_sentences(DATA_SET_PATH, TAGGED_SENTENCES, start_range=START_RANGE,
                                             end_range=END_RANGE, split_pos=False)
@@ -200,7 +221,7 @@ def main():
         # stop_words="english"
         binary=True  # replaces bow_train = (bow_train >= 1).astype(int)
     )
-    bow_train = bag_of_words.fit_transform(all_docs)
+    bow_train = bag_of_words.fit_transform(train_docs)
     # dev_labels = np.ravel(dev_labels)
     all_labels = np.ravel(all_labels)
     train_labels = np.ravel(train_labels)
@@ -208,13 +229,13 @@ def main():
     #
     # print("BOW" , bow_train.shape)
     # print("BOW", bow_train)
-    ocfs = calculate_ocfs_score(bow_train, all_labels)
-    feature_idx = retrieve_features_to_remove(ocfs, 10 ** -7, 10 ** -2)
+    # ocfs = calculate_ocfs_score(bow_train, train_labels)
+    # feature_idx = retrieve_features_to_remove(ocfs, 10 ** -7, 10 ** -2)
     # print(bow_train.shape)
     # print(feature_idx)
     # print(len(feature_idx))
-    vocabulary = dict(map(reversed, bag_of_words.vocabulary_.items()))
-    words_to_ignore = [vocabulary[idx] for idx in feature_idx]
+    # vocabulary = dict(map(reversed, bag_of_words.vocabulary_.items()))
+    # words_to_ignore = [vocabulary[idx] for idx in feature_idx]
 
     # Removing the features by setting them to zero...
     # pd_bow_train = pd.DataFrame(bow_train.toarray())
@@ -223,18 +244,21 @@ def main():
     # pd_bow_train = drop_cols(bow_train, feature_idx)
     # print(pd_bow_train.shape)
     #
-    # # Train classifier on Bag of Words (Term Presence) and TF-IDF
+    # Train classifier on Bag of Words (Term Presence) and TF-IDF
     # bow_classifier = LogisticRegression(random_state=0, solver='lbfgs',
     #                                     multi_class='multinomial',
     #                                     max_iter=5000
-    #                                     ).fit(pd_bow_train, all_labels)
-    # bow_test_acc = bow_classifier.score(pd_bow_train, all_labels)
+    #                                     ).fit(pd_bow_train, train_labels)
+    # bow_train_acc = bow_classifier.score(pd_bow_train, train_labels)
+    # pd_bow_test = bag_of_words.transform(test_docs)
+    # pd_bow_test = drop_cols(pd_bow_test, feature_idx)
+    # bow_test_acc = bow_classifier.score(pd_bow_test, test_labels)
 
+    # print(bow_train_acc)
     # print(bow_test_acc)
 
     pos_vocab = {'N': 2, 'V': 3, 'A': 4, 'R': 5}  # 5 for N, 3 for V, 2 for A, 1 for R
     pos_train, word_idx, dim = gen_pos_features(train_docs, train_tags, pos_vocab)
-    # print("POS SHAPE", pos_train.shape)
     ocfs_pos = calculate_ocfs_score(pos_train, train_labels)
     pos_feature_idx = retrieve_features_to_remove(ocfs_pos, 10 ** -7, 10 ** -2)
     pd_pos_train = drop_cols(pos_train, pos_feature_idx)
@@ -250,8 +274,6 @@ def main():
     pos_test_acc = pos_classifier.score(pd_pos_test, test_labels)
     print(pos_train_acc)
     print(pos_test_acc)
-    print(pos_train.shape)
-    print(pos_test.shape)
 
 
 if __name__ == "__main__":

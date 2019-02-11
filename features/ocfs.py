@@ -23,6 +23,7 @@ def calculate_ocfs_score(fitted_docs, labels):
     :param labels: Matrix as returned by extract_range() when used to extract the labels
     :return: a vector of OCFS scores
     """
+
     def calculateMean(label):
         """
         Crude implementation of mean, but faster for sparse
@@ -34,9 +35,10 @@ def calculate_ocfs_score(fitted_docs, labels):
         df = df.drop(['Label'], axis=1)
         dfLen = len(df)
         mat = df.to_coo().tocsr()
-        mean = mat.sum(axis=0, dtype=float)/dfLen
+        mean = mat.sum(axis=0, dtype=float) / dfLen
         mean = pd.Series(np.ravel(mean))
         return mean
+
     # fitted_docs_pd_frame = pd.DataFrame(fitted_docs.toarray())
     # fitted_docs_pd_frame["Label"] = labels["Label"]
     # print(fitted_docs_pd_frame)
@@ -83,8 +85,9 @@ def retrieve_features_to_remove(ocfs, lowest_val, highest_val):
 
     return [idx for idx, val in enumerate(ocfs) if val < lowest_val or val > highest_val]
 
+
 #  DEPRECATED, USE posVectorizer METHOD INSTEAD
-# def gen_pos_features(docs, tags, weight): 
+# def gen_pos_features(docs, tags, weight):
 #     """
 #     Generate POS features for given docs and tags based on specific weighting scheme.
 #     :param docs:
@@ -120,10 +123,10 @@ def retrieve_features_to_remove(ocfs, lowest_val, highest_val):
 # def convert(docs, tags, weight, vocabulary, dim):
 #     """
 #     docstring here
-#     :param docs: 
-#     :param tags: 
-#     :param weight: 
-#     :param vocabulary: 
+#     :param docs:
+#     :param tags:
+#     :param weight:
+#     :param vocabulary:
 #     :return:
 #     """
 #     indptr = [0]
@@ -154,8 +157,8 @@ def retrieve_features_to_remove(ocfs, lowest_val, highest_val):
 def drop_cols(matrix, drop_idx):
     """
     Drop column given index to be dropped.Based on https://stackoverflow.com/questions/23966923/delete-columns-of-matrix-of-csr-format-in-python
-    :param matrix: 
-    :param drop_idx: 
+    :param matrix:
+    :param drop_idx:
     :return:
     """
     drop_idx = np.unique(drop_idx)
@@ -170,6 +173,8 @@ def drop_cols(matrix, drop_idx):
 class posVectorizer:
     def __init__(self, weight):
         self.weight = weight
+        self.vocabulary = None
+        self.dim = None
 
     def _generate_sparse_data(self, docs, tags, fit_flag=True, idx_vocabulary={}):
         indptr = [0]
@@ -179,17 +184,16 @@ class posVectorizer:
         for d, e in zip(docs, tags):
             temp_index = defaultdict(int)
             for term, pos in zip(d, e):
+                word_key = (term, pos)
                 if fit_flag:  # for fitting
-                    index = vocabulary.setdefault(term, len(vocabulary))
-                    temp_index[index] += 1
+                    index = vocabulary.setdefault(word_key, len(vocabulary))
                     val = self.weight.setdefault(pos, 0)
-                    temp_index[index] = temp_index[index] * val
+                    temp_index[index] += val
                 else:  # for transform
                     if term in vocabulary.keys():
-                        index = vocabulary[term]
-                        temp_index[index] += 1
+                        index = vocabulary[word_key]
                         val = self.weight.setdefault(pos, 0)
-                        temp_index[index] = temp_index[index] * val
+                        temp_index[index] += val
 
             # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
             for key in sorted(temp_index.keys()):
@@ -228,8 +232,8 @@ class posVectorizer:
 
 
 def main():
-    #  parent_dir = Path(__file__).parents[1]
-    parent_dir = os.getcwd() # my sys.path is different from PyCharm
+    parent_dir = Path(__file__).parents[1]
+    # parent_dir = os.getcwd() # my sys.path is different from PyCharm
     DATA_SET_PATH = os.path.join(parent_dir, "dataset")
     TAGGED_SENTENCES = os.path.join(DATA_SET_PATH, 'text_cleaned_pos.csv')
     LABELS = os.path.join(DATA_SET_PATH, 'shuffled.csv')
@@ -241,7 +245,7 @@ def main():
                                             end_range=END_RANGE, split_pos=False)
 
     pos_groups = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
-    # # tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
+    # tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
 
     all_docs = []
     all_tags = []
@@ -322,7 +326,7 @@ def main():
     posFeatures = posVectorizer(pos_vocab)
     pos_train = posFeatures.fit(train_docs, train_tags)
     ocfs_pos = calculate_ocfs_score(pos_train, train_labels)
-    pos_feature_idx = retrieve_features_to_remove(ocfs_pos, 10 ** -7, 10 ** -2)
+    pos_feature_idx = retrieve_features_to_remove(ocfs_pos, 10 ** -7, 10 ** -1)
     pd_pos_train = drop_cols(pos_train, pos_feature_idx)
     pos_classifier = LogisticRegression(random_state=0, solver='lbfgs',
                                         multi_class='multinomial',
@@ -337,6 +341,8 @@ def main():
     pos_test_acc = pos_classifier.score(pd_pos_test, test_labels)
     print(pos_train_acc)
     print(pos_test_acc)
+    # print(pd_pos_train.shape)
+    # print(pd_pos_test.shape)
 
 
 if __name__ == "__main__":

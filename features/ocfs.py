@@ -170,7 +170,7 @@ def drop_cols(matrix, drop_idx):
     return tempMat.tocsr()
 
 
-class posVectorizer:
+class PosVectorizer:
     def __init__(self, weight):
         self.weight = weight
         self.vocabulary = defaultdict(int)
@@ -325,7 +325,7 @@ def main():
 
     pos_vocab = {'N': 2, 'V': 3, 'A': 4, 'R': 5}  # 5 for N, 3 for V, 2 for A, 1 for R
     # pos_train, word_idx, dim = gen_pos_features(train_docs, train_tags, pos_vocab)
-    posFeatures = posVectorizer(pos_vocab)
+    posFeatures = PosVectorizer(pos_vocab)
     pos_train = posFeatures.fit(train_docs, train_tags)
     ocfs_pos = calculate_ocfs_score(pos_train, train_labels)
     pos_feature_idx = retrieve_features_to_remove(ocfs_pos, 10 ** -7, 10 ** -1)

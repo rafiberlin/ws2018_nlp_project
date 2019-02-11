@@ -171,6 +171,34 @@ class posVectorizer:
     def __init__(self, weight):
         self.weight = weight
 
+    def _generate_sparse_data(self, docs, tags, fit_flag=True, idx_vocabulary={}):
+        indptr = [0]
+        indices = []
+        data = []
+        vocabulary = idx_vocabulary
+        for d, e in zip(docs, tags):
+            temp_index = defaultdict(int)
+            for term, pos in zip(d, e):
+                if fit_flag:  # for fitting
+                    index = vocabulary.setdefault(term, len(vocabulary))
+                    temp_index[index] += 1
+                    val = self.weight.setdefault(pos, 0)
+                    temp_index[index] = temp_index[index] * val
+                else:  # for transform
+                    if term in vocabulary.keys():
+                        index = vocabulary[term]
+                        temp_index[index] += 1
+                        val = self.weight.setdefault(pos, 0)
+                        temp_index[index] = temp_index[index] * val
+
+            # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
+            for key in sorted(temp_index.keys()):
+                indices.append(key)
+                data.append(temp_index[key])
+            # indptr.append(indptr[-1] + len(e))
+            indptr.append(len(indices))
+        return data, indices, indptr, vocabulary
+
     def fit(self, docs, tags):
         """
         Generate POS features for given docs and tags based on specific weighting scheme.
@@ -179,27 +207,9 @@ class posVectorizer:
         :param weight:
         :return:
         """
-        indptr = [0]
-        indices = []
-        data = []
-        vocabulary = {}
-        for d, e in zip(docs, tags):
-            temp_index = defaultdict(int)
-            for term, pos in zip(d, e):
-                index = vocabulary.setdefault(term, len(vocabulary))
-                temp_index[index] += 1
-                val = self.weight.setdefault(pos, 0)
-                temp_index[index] = temp_index[index] * val
-
-            # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
-            for key in sorted(temp_index.keys()):
-                indices.append(key)
-                data.append(temp_index[key])
-            # indptr.append(indptr[-1] + len(e))
-            indptr.append(len(indices))
+        data, indices, indptr, self.vocabulary = self._generate_sparse_data(docs, tags)
         posMat = csr_matrix((data, indices, indptr), dtype=float)
         posMat_normalized = normalize(posMat, norm='l1', copy=False)
-        self.vocabulary = vocabulary
         self.dim = posMat_normalized.shape
         return posMat_normalized
 
@@ -210,25 +220,8 @@ class posVectorizer:
         :param tags:
         :return:
         """
-        indptr = [0]
-        indices = []
-        data = []
         column = self.dim[1]
-        for d, e in zip(docs, tags):
-            temp_index = defaultdict(int)
-            for term, pos in zip(d, e):
-                if term in self.vocabulary.keys():
-                    index = self.vocabulary[term]
-                    temp_index[index] += 1
-                    val = self.weight.setdefault(pos, 0)
-                    temp_index[index] = temp_index[index] * val
-
-        # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
-            for key in sorted(temp_index.keys()):
-                indices.append(key)
-                data.append(temp_index[key])
-        # indptr.append(indptr[-1] + len(e))
-            indptr.append(len(indices))
+        data, indices, indptr, self.vocabulary = self._generate_sparse_data(docs, tags, fit_flag=False, idx_vocabulary=self.vocabulary)
         posMat = csr_matrix((data, indices, indptr), shape=(len(docs), column), dtype=float)
         posMat_normalized = normalize(posMat, norm='l1', copy=False)
         return posMat_normalized

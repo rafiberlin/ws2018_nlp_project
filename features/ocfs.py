@@ -1,5 +1,6 @@
 import os
 import sys
+
 sys.path.insert(0, os.getcwd())
 import math
 from process_data.helper import get_tagged_sentences, get_labels, extract_range, pre_processing
@@ -22,6 +23,7 @@ def calculate_ocfs_score(fitted_docs, labels):
     :param labels: Matrix as returned by extract_range() when used to extract the labels
     :return: a vector of OCFS scores
     """
+
     def calculateMean(label):
         """
         Crude implementation of mean, but faster for sparse
@@ -33,9 +35,10 @@ def calculate_ocfs_score(fitted_docs, labels):
         df = df.drop(['Label'], axis=1)
         dfLen = len(df)
         mat = df.to_coo().tocsr()
-        mean = mat.sum(axis=0, dtype=float)/dfLen
+        mean = mat.sum(axis=0, dtype=float) / dfLen
         mean = pd.Series(np.ravel(mean))
         return mean
+
     # fitted_docs_pd_frame = pd.DataFrame(fitted_docs.toarray())
     # fitted_docs_pd_frame["Label"] = labels["Label"]
     # print(fitted_docs_pd_frame)
@@ -83,76 +86,79 @@ def retrieve_features_to_remove(ocfs, lowest_val, highest_val):
     return [idx for idx, val in enumerate(ocfs) if val < lowest_val or val > highest_val]
 
 
-def gen_pos_features(docs, tags, weight):
-    """
-    Generate POS features for given docs and tags based on specific weighting scheme.
-    :param docs:
-    :param tags:
-    :param weight:
-    :return:
-    """
-    indptr = [0]
-    indices = []
-    data = []
-    vocabulary = {}
-    for d, e in zip(docs, tags):
-        #print(d, len(d), len(e))
-        temp_index = defaultdict(int)
-        for term, pos in zip(d, e):
-            word_key = (term, pos,)
-            index = vocabulary.setdefault(word_key, len(vocabulary))
-            val = weight.setdefault(pos, 0)
-            temp_index[index] += val
+#  DEPRECATED, USE posVectorizer METHOD INSTEAD
+# def gen_pos_features(docs, tags, weight):
+#     """
+#     Generate POS features for given docs and tags based on specific weighting scheme.
+#     :param docs:
+#     :param tags:
+#     :param weight:
+#     :return:
+#     """
+#     indptr = [0]
+#     indices = []
+#     data = []
+#     vocabulary = {}
+#     for d, e in zip(docs, tags):
+#         #print(d, len(d), len(e))
+#         temp_index = defaultdict(int)
+#         for term, pos in zip(d, e):
+#             index = vocabulary.setdefault(term, len(vocabulary))
+#             temp_index[index] += 1
+#             val = weight.setdefault(pos, 0)
+#             temp_index[index] = temp_index[index] * val
 
-        # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
-        for key in sorted(temp_index.keys()):
-            indices.append(key)
-            data.append(temp_index[key])
-        # indptr.append(indptr[-1] + len(e))
-        indptr.append(len(indices))
-    pos_train = csr_matrix((data, indices, indptr), dtype=float)
-    pos_train_normalized = normalize(pos_train, norm='l1', copy=False)
-    return pos_train_normalized, vocabulary, pos_train_normalized.shape
+#         # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
+#         for key in sorted(temp_index.keys()):
+#             indices.append(key)
+#             data.append(temp_index[key])
+#         # indptr.append(indptr[-1] + len(e))
+#         indptr.append(len(indices))
+#     pos_train = csr_matrix((data, indices, indptr), dtype=float)
+#     pos_train_normalized = normalize(pos_train, norm='l1', copy=False)
+#     # print(temp_index)
+#     return pos_train_normalized, vocabulary, pos_train_normalized.shape
 
+#  DEPRECATED, USE posVectorizer METHOD INSTEAD
+# def convert(docs, tags, weight, vocabulary, dim):
+#     """
+#     docstring here
+#     :param docs:
+#     :param tags:
+#     :param weight:
+#     :param vocabulary:
+#     :return:
+#     """
+#     indptr = [0]
+#     indices = []
+#     data = []
+#     column = dim[1]
+#     for d, e in zip(docs, tags):
+#         #print(d, len(d), len(e))
+#         temp_index = defaultdict(int)
+#         for term, pos in zip(d, e):
+#             if term in vocabulary.keys():
+#                 index = vocabulary[term]
+#                 temp_index[index] += 1
+#                 val = weight.setdefault(pos, 0)
+#                 temp_index[index] = temp_index[index] * val
 
-def convert(docs, tags, weight, vocabulary, dim):
-    """
-    docstring here
-    :param docs: 
-    :param tags: 
-    :param weight: 
-    :param vocabulary: 
-    :return:
-    """
-    indptr = [0]
-    indices = []
-    data = []
-    column = dim[1]
-    for d, e in zip(docs, tags):
-        #print(d, len(d), len(e))
-        temp_index = defaultdict(int)
-        for term, pos in zip(d, e):
-            word_key = (term, pos,)
-            if word_key in vocabulary.keys():
-                index = vocabulary[word_key]
-                val = weight.setdefault(pos, 0)
-                temp_index[index] += val
-        # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
-        for key in sorted(temp_index.keys()):
-            indices.append(key)
-            data.append(temp_index[key])
-        # indptr.append(indptr[-1] + len(e))
-        indptr.append(len(indices))
-    pos_train = csr_matrix((data, indices, indptr), shape=(len(docs), column), dtype=float)
-    pos_train_normalized = normalize(pos_train, norm='l1', copy=False)
-    return pos_train_normalized
+#         # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
+#         for key in sorted(temp_index.keys()):
+#             indices.append(key)
+#             data.append(temp_index[key])
+#         # indptr.append(indptr[-1] + len(e))
+#         indptr.append(len(indices))
+#     pos_train = csr_matrix((data, indices, indptr), shape=(len(docs), column), dtype=float)
+#     pos_train_normalized = normalize(pos_train, norm='l1', copy=False)
+#     return pos_train_normalized
 
 
 def drop_cols(matrix, drop_idx):
     """
     Drop column given index to be dropped.Based on https://stackoverflow.com/questions/23966923/delete-columns-of-matrix-of-csr-format-in-python
-    :param matrix: 
-    :param drop_idx: 
+    :param matrix:
+    :param drop_idx:
     :return:
     """
     drop_idx = np.unique(drop_idx)
@@ -164,9 +170,79 @@ def drop_cols(matrix, drop_idx):
     return tempMat.tocsr()
 
 
+class posVectorizer:
+    def __init__(self, weight):
+        self.weight = weight
+        self.vocabulary = None
+        self.dim = None
+
+    def fit(self, docs, tags):
+        """
+        Generate POS features for given docs and tags based on specific weighting scheme.
+        :param docs:
+        :param tags:
+        :param weight:
+        :return:
+        """
+        indptr = [0]
+        indices = []
+        data = []
+        vocabulary = {}
+        for d, e in zip(docs, tags):
+            temp_index = defaultdict(int)
+            for term, pos in zip(d, e):
+                word_key = (term, pos,)
+                vocabulary.setdefault(word_key, len(vocabulary))
+                index = vocabulary[word_key]
+                val = self.weight.setdefault(pos, 0)
+                temp_index[index] += val
+
+            # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
+            for key in sorted(temp_index.keys()):
+                indices.append(key)
+                data.append(temp_index[key])
+            # indptr.append(indptr[-1] + len(e))
+            indptr.append(len(indices))
+        posMat = csr_matrix((data, indices, indptr), dtype=float)
+        posMat_normalized = normalize(posMat, norm='l1', copy=False)
+        self.vocabulary = vocabulary
+        self.dim = posMat_normalized.shape
+        return posMat_normalized
+
+    def transform(self, docs, tags):
+        """
+        docstring here
+        :param docs:
+        :param tags:
+        :return:
+        """
+        indptr = [0]
+        indices = []
+        data = []
+        column = self.dim[1]
+        for d, e in zip(docs, tags):
+            temp_index = defaultdict(int)
+            for term, pos in zip(d, e):
+                word_key = (term, pos,)
+                if word_key in self.vocabulary.keys():
+                    index = self.vocabulary[word_key]
+                    val = self.weight.setdefault(pos, 0)
+                    temp_index[index] += val
+
+            # avoid to create 2 times the same indices within a same document, indices need to be sorted as well
+            for key in sorted(temp_index.keys()):
+                indices.append(key)
+                data.append(temp_index[key])
+            # indptr.append(indptr[-1] + len(e))
+            indptr.append(len(indices))
+        posMat = csr_matrix((data, indices, indptr), shape=(len(docs), column), dtype=float)
+        posMat_normalized = normalize(posMat, norm='l1', copy=False)
+        return posMat_normalized
+
+
 def main():
     parent_dir = Path(__file__).parents[1]
-    #parent_dir = os.getcwd() # my sys.path is different from PyCharm
+    # parent_dir = os.getcwd() # my sys.path is different from PyCharm
     DATA_SET_PATH = os.path.join(parent_dir, "dataset")
     TAGGED_SENTENCES = os.path.join(DATA_SET_PATH, 'text_cleaned_pos.csv')
     LABELS = os.path.join(DATA_SET_PATH, 'shuffled.csv')
@@ -255,12 +331,11 @@ def main():
     # print(bow_test_acc)
 
     pos_vocab = {'N': 2, 'V': 3, 'A': 4, 'R': 5}  # 5 for N, 3 for V, 2 for A, 1 for R
-    pos_train, word_idx, dim = gen_pos_features(train_docs, train_tags, pos_vocab)
+    # pos_train, word_idx, dim = gen_pos_features(train_docs, train_tags, pos_vocab)
+    posFeatures = posVectorizer(pos_vocab)
+    pos_train = posFeatures.fit(train_docs, train_tags)
     ocfs_pos = calculate_ocfs_score(pos_train, train_labels)
-    print("Max value ocfs", ocfs.max())
-    print("Min value ocfs", ocfs.min())
-    pos_feature_idx = retrieve_features_to_remove(ocfs_pos, 10 ** -8, 10 ** -1)
-    print("Number of features removed", len(pos_feature_idx))
+    pos_feature_idx = retrieve_features_to_remove(ocfs_pos, 10 ** -7, 10 ** -1)
     pd_pos_train = drop_cols(pos_train, pos_feature_idx)
     pos_classifier = LogisticRegression(random_state=0, solver='lbfgs',
                                         multi_class='multinomial',
@@ -269,11 +344,14 @@ def main():
     pos_train_acc = pos_classifier.score(pd_pos_train, train_labels)
 
     # pos_test = gen_pos_features(test_docs, test_tags, pos_vocab)
-    pos_test = convert(test_docs, test_tags, pos_vocab, word_idx, dim)
+    # pos_test = convert(test_docs, test_tags, pos_vocab, word_idx, dim)
+    pos_test = posFeatures.transform(test_docs, test_tags)
     pd_pos_test = drop_cols(pos_test, pos_feature_idx)
     pos_test_acc = pos_classifier.score(pd_pos_test, test_labels)
     print(pos_train_acc)
     print(pos_test_acc)
+    print(pd_pos_train.shape)
+    print(pd_pos_test.shape)
 
 
 if __name__ == "__main__":

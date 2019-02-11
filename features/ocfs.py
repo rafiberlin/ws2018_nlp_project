@@ -13,6 +13,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import normalize
 from scipy.sparse import csr_matrix
 from collections import defaultdict
+from sklearn.pipeline import Pipeline
+from sklearn.base import BaseEstimator, TransformerMixin
 import time
 
 
@@ -32,19 +34,19 @@ def drop_cols(matrix, drop_idx):
     return tempMat.tocsr()
 
 
-class PosVectorizer:
+class PosVectorizer(BaseEstimator, TransformerMixin):
     def __init__(self, weight):
         self.weight = weight
         self.vocabulary = defaultdict(int)
         self.dim = None
 
-    def _generate_sparse_data(self, docs, tags, fit_flag=True):
+    def _generate_sparse_data(self, docs, fit_flag=True):
         indptr = [0]
         indices = []
         data = []
-        for d, e in zip(docs, tags):
+        for doc in docs:
             temp_index = defaultdict(int)
-            for term, pos in zip(d, e):
+            for term, pos in doc:
                 word_key = (term, pos)
                 ## Either fitting or Transforming
                 if fit_flag or (not fit_flag and word_key in self.vocabulary.keys()):
@@ -59,7 +61,7 @@ class PosVectorizer:
             indptr.append(len(indices))
         return data, indices, indptr
 
-    def fit(self, docs, tags):
+    def fit(self, docs, class_labels=None):
         """
         Generate POS features for given docs and tags based on specific weighting scheme.
         :param docs:
@@ -68,13 +70,13 @@ class PosVectorizer:
         :return:
         """
         self.vocabulary.clear()
-        data, indices, indptr = self._generate_sparse_data(docs, tags)
+        data, indices, indptr = self._generate_sparse_data(docs)
         posMat = csr_matrix((data, indices, indptr), dtype=float)
         posMat_normalized = normalize(posMat, norm='l1', copy=False)
         self.dim = posMat_normalized.shape
-        return posMat_normalized
+        return self
 
-    def transform(self, docs, tags):
+    def transform(self, docs):
         """
         docstring here
         :param docs:
@@ -82,13 +84,13 @@ class PosVectorizer:
         :return:
         """
         column = self.dim[1]
-        data, indices, indptr = self._generate_sparse_data(docs, tags, fit_flag=False)
+        data, indices, indptr = self._generate_sparse_data(docs, fit_flag=False)
         posMat = csr_matrix((data, indices, indptr), shape=(len(docs), column), dtype=float)
         posMat_normalized = normalize(posMat, norm='l1', copy=False)
         return posMat_normalized
 
 
-class OCFS:
+class OCFS(BaseEstimator, TransformerMixin):
     def __init__(self, number_to_delete=10000):
         """
         Constructor
@@ -184,99 +186,89 @@ def main():
     LABELS = os.path.join(DATA_SET_PATH, 'shuffled.csv')
 
     START_RANGE = 0
-    END_RANGE = 30000  # Set to None to get the whole set...
-    NUMBER_OF_FEATURES_TO_DELETE = 30000
+    END_RANGE = None  # Set to None to get the whole set...
     tagged_sentences = get_tagged_sentences(DATA_SET_PATH, TAGGED_SENTENCES, start_range=START_RANGE,
                                             end_range=END_RANGE, split_pos=False)
 
     pos_groups = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
     tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
 
-    all_docs = []
-    all_tags = []
-
-    for tagged_sentence in tagged_sentences:
-        words, tags = zip(*tagged_sentence)
-        all_docs.append(list(words))
-        all_tags.append(list(tags))
-
     all_labels = get_labels(LABELS, start_range=START_RANGE, end_range=END_RANGE)
 
-    dataLen = len(all_labels)
-    trainEnd = math.floor(0.7 * dataLen)  # 70% for train
-    testStart = math.floor(0.8 * dataLen)  # 20% for test
-    train_docs, test_docs = all_docs[:trainEnd], all_docs[testStart:]
-    train_labels, test_labels = all_labels[:trainEnd], all_labels[testStart:]
-    train_tags, test_tags = all_tags[:trainEnd], all_tags[testStart:]
+    DATA_LEN = len(all_labels)
+    TRAIN_END = math.floor(0.7 * DATA_LEN)  # 70% for train
+    TRAIN_START = math.floor(0.8 * DATA_LEN)  # 20% for test
+    NUMBER_OF_FEATURES_TO_DELETE = 30
 
-    # work around to prevent scikit performing tokenizing on already tokenized documents...
-    bag_of_words = CountVectorizer(
-        analyzer='word',
-        tokenizer=do_not_tokenize,
-        preprocessor=do_not_tokenize,
-        token_pattern=None,
-        # stop_words="english"
-        binary=True  # replaces bow_train = (bow_train >= 1).astype(int)
-    )
+    train_docs, test_docs = tagged_sentences[:TRAIN_END], tagged_sentences[TRAIN_START:]
+    train_labels, test_labels = all_labels[:TRAIN_END], all_labels[TRAIN_START:]
 
     # dev_labels = np.ravel(dev_labels)
     all_labels = np.ravel(all_labels)
     train_labels = np.ravel(train_labels)
     test_labels = np.ravel(test_labels)
 
-    # bow_train = bag_of_words.fit_transform(train_docs)
-    # print("BOW" , bow_train.shape)
-    # print("BOW", bow_train)
-    # ocfs = calculate_ocfs_score(bow_train, train_labels)
-    # feature_idx = retrieve_features_to_remove(ocfs, 10 ** -7, 10 ** -2)
-    # print(bow_train.shape)
-    # print(feature_idx)
-    # print(len(feature_idx))
-    # vocabulary = dict(map(reversed, bag_of_words.vocabulary_.items()))
-    # words_to_ignore = [vocabulary[idx] for idx in feature_idx]
+    # work around to prevent scikit performing tokenizing on already tokenized documents...
+    bag_of_words = CountVectorizer(
+        analyzer='word',
+        tokenizer=do_not_tokenize,
+        preprocessor=do_not_tokenize,
+        binary=True  # replaces bow_train = (bow_train >= 1).astype(int)
+    )
 
-    # Removing the features by setting them to zero...
-    # pd_bow_train = pd.DataFrame(bow_train.toarray())
-    # for idx in feature_idx:
-    #     pd_bow_train.iloc[:, idx] = 0
-    # pd_bow_train = drop_cols(bow_train, feature_idx)
-    # print(pd_bow_train.shape)
-    #
-    # Train classifier on Bag of Words (Term Presence) and TF-IDF
-    # bow_classifier = LogisticRegression(random_state=0, solver='lbfgs',
-    #                                     multi_class='multinomial',
-    #                                     max_iter=5000
-    #                                     ).fit(pd_bow_train, train_labels)
-    # bow_train_acc = bow_classifier.score(pd_bow_train, train_labels)
-    # pd_bow_test = bag_of_words.transform(test_docs)
-    # pd_bow_test = drop_cols(pd_bow_test, feature_idx)
-    # bow_test_acc = bow_classifier.score(pd_bow_test, test_labels)
+    bow_classifier = LogisticRegression(random_state=0, solver='lbfgs',
+                                        multi_class='multinomial',
+                                        max_iter=5000
+                                        )
 
-    # print(bow_train_acc)
-    # print(bow_test_acc)
+    bow_pipeline = Pipeline([
+        ('bowweighing', bag_of_words),
+        ('bowclassifier', bow_classifier),
+    ])
+
+    bow_pipeline = bow_pipeline.fit(train_docs, train_labels)
+    bow_train_acc_pipeline = bow_pipeline.score(train_docs, train_labels)
+    bow_pipeline.fit(test_docs, test_labels)
+    bow_test_acc_pipeline = bow_pipeline.score(test_docs, test_labels)
+
+    print("BOW Pipeline Train", bow_train_acc_pipeline)
+    print("BOW Pipeline Test", bow_test_acc_pipeline)
 
     pos_vocab = {'N': 2, 'V': 3, 'A': 4, 'R': 5}  # 5 for N, 3 for V, 2 for A, 1 for R
-    # pos_train, word_idx, dim = gen_pos_features(train_docs, train_tags, pos_vocab)
-    posFeatures = PosVectorizer(pos_vocab)
-    pos_train = posFeatures.fit(train_docs, train_tags)
 
+    maxent_classifier = LogisticRegression(random_state=0, solver='lbfgs',
+                                           multi_class='multinomial',
+                                           max_iter=5000
+                                           )
+
+    posFeatures = PosVectorizer(pos_vocab)
+    pos_train = posFeatures.fit_transform(train_docs)
     ocfs = OCFS(NUMBER_OF_FEATURES_TO_DELETE)
     ocfs.fit(pos_train, train_labels)
     pd_pos_train = ocfs.transform(pos_train)
+    maxent_classifier.fit(pd_pos_train, train_labels)
 
-    pos_classifier = LogisticRegression(random_state=0, solver='lbfgs',
-                                        multi_class='multinomial',
-                                        max_iter=5000
-                                        ).fit(pd_pos_train, train_labels)
-    pos_train_acc = pos_classifier.score(pd_pos_train, train_labels)
-
-    pos_test = posFeatures.transform(test_docs, test_tags)
+    pos_test = posFeatures.transform(test_docs)
     pd_pos_test = ocfs.transform(pos_test)
-    pos_test_acc = pos_classifier.score(pd_pos_test, test_labels)
-    print(pos_train_acc)
-    print(pos_test_acc)
-    print(pd_pos_train.shape)
-    print(pd_pos_test.shape)
+    pos_train_acc = maxent_classifier.score(pd_pos_train, train_labels)
+    pos_test_acc = maxent_classifier.score(pd_pos_test, test_labels)
+
+    print("Manual Steps", pos_train_acc)
+    print("Manual Test", pos_test_acc)
+
+    pos_pipeline = Pipeline([
+        ('posweighing', PosVectorizer(pos_vocab)),
+        ('ocfs', OCFS(NUMBER_OF_FEATURES_TO_DELETE)),
+        ('classifier', maxent_classifier),
+    ])
+
+    pos_pipeline.fit(train_docs, train_labels)
+    pos_train_acc_pipeline = pos_pipeline.score(train_docs, train_labels)
+    pos_pipeline.fit(test_docs, test_labels)
+    pos_test_acc_pipeline = pos_pipeline.score(test_docs, test_labels)
+
+    print("POS Pipeline Train", pos_train_acc_pipeline)
+    print("POS Pipeline Test", pos_test_acc_pipeline)
 
 
 if __name__ == "__main__":

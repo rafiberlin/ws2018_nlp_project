@@ -90,6 +90,12 @@ class PosVectorizer:
 
 class OCFS:
     def __init__(self, number_to_delete=10000):
+        """
+        Constructor
+        :param number_to_delete: based on the number of features used during fit(),
+        converts the number_to_delete to  a percentile,
+        which is used to define the number of features to be removed
+        """
         self.number_to_delete = number_to_delete
         self.feature_to_delete = []
 

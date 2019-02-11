@@ -235,7 +235,8 @@ def main():
     ocfs_pos = calculate_ocfs_score(pos_train, train_labels)
     print("Max value ocfs", ocfs.max())
     print("Min value ocfs", ocfs.min())
-    pos_feature_idx = retrieve_features_to_remove(ocfs_pos, 10 ** -7, 10 ** -2)
+    pos_feature_idx = retrieve_features_to_remove(ocfs_pos, 10 ** -8, 10 ** -1)
+    print("Number of features removed", len(pos_feature_idx))
     pd_pos_train = drop_cols(pos_train, pos_feature_idx)
     pos_classifier = LogisticRegression(random_state=0, solver='lbfgs',
                                         multi_class='multinomial',

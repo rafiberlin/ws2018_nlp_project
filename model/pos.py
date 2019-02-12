@@ -12,10 +12,15 @@ import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.metrics import f1_score, classification_report
+import random
+from timeit import default_timer as timer
+import multiprocessing as mp
+from multiprocessing import Pool
 
 
 def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_scale, features_to_remove,
-                           union_transformer_weights=None, percentage_train_data=0.7, percentage_test_data=0.2):
+                           union_transformer_weights=None, percentage_train_data=0.7, percentage_test_data=0.2,
+                           use_multi_processing=False):
     """
 
     :param tagged_sentences:
@@ -43,12 +48,47 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
     train_labels = np.ravel(train_labels)
     test_labels = np.ravel(test_labels)
 
+    # Process the model training with all combination in parallel
+    if use_multi_processing:
+        cpu_cores = mp.cpu_count()
+    else:
+        cpu_cores = 1
+    original_size = len(all_pos_vocab)
+    middle = original_size // cpu_cores
+    list_of_jobs = split_list(all_pos_vocab, middle)
+    args = [[train_docs, test_docs, train_labels, test_labels, features_to_remove, weights, job] for job in
+            list_of_jobs]
+    with Pool(cpu_cores) as p:
+        results = p.map(argument_wrapper_for_run_model_for_all_combination,
+                        args)
+
+    return results
+
+
+def split_list(the_list, chunk_size):
+    """
+    From https://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks
+
+    :param the_list:
+    :param chunk_size:
+    :return:
+    """
+    result_list = []
+    while the_list:
+        result_list.append(the_list[:chunk_size])
+        the_list = the_list[chunk_size:]
+
+    return result_list
+
+
+def run_model_for_all_combination(train_docs, test_docs, train_labels, test_labels, features_to_remove, weights,
+                                  all_pos_vocab):
     best_model_parameters = []
     for pos_vocab in all_pos_vocab:
         scores = run_pos_model(train_docs, test_docs, train_labels, test_labels, pos_vocab,
                                number_of_features_to_delete=features_to_remove,
                                union_transformer_weights=weights)
-        print("Result for ", pos_vocab, scores)
+        # print("Result for ", pos_vocab, scores)
         if scores is not None:
             best_model_parameters.append((pos_vocab, scores,))
 
@@ -119,6 +159,10 @@ def run_pos_model(train_docs, test_docs, train_labels, test_labels, pos_vocab, n
 
     if accuracy_to_beat < pos_test_acc_unified_pipeline or f1_score_to_beat < unified_f1:
         return (pos_train_acc_unified_pipeline, pos_test_acc_unified_pipeline, unified_f1,)
+
+
+def argument_wrapper_for_run_model_for_all_combination(args):
+    return run_model_for_all_combination(*args)
 
 
 if __name__ == "__main__":

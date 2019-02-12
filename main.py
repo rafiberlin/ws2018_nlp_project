@@ -20,9 +20,14 @@ if __name__ == "__main__":
     union_weights = {'bow': 0.7, 'pos': 0.3, }
     training_percent = 0.7
     test_percent = 0.2
+    split_job = False
 
+    start = time.time()
     weight_list = return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_to_delete,
-                                         union_weights, training_percent, test_percent)
+                                         union_weights, training_percent, test_percent, split_job)
+
+    end = time.time()
+    print("Elapsed time", end - start)
 
     # Save results
     orig_stdout = sys.stdout

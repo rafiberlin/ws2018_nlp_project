@@ -15,7 +15,8 @@ from scipy.sparse import csr_matrix
 from collections import defaultdict
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, classification_report
+from itertools import combinations, product, combinations_with_replacement, permutations
 import time
 
 
@@ -197,7 +198,7 @@ def main():
     data_len = len(all_labels)
     train_end = math.floor(0.7 * data_len)  # 70% for train
     train_start = math.floor(0.8 * data_len)  # 20% for test
-    number_of_features_to_delete = 30
+    number_of_features_to_delete = 35000
 
     train_docs, test_docs = tagged_sentences[:train_end], tagged_sentences[train_start:]
     train_labels, test_labels = all_labels[:train_end], all_labels[train_start:]
@@ -225,14 +226,14 @@ def main():
         ('bowclassifier', bow_classifier),
     ])
 
-    bow_pipeline = bow_pipeline.fit(train_docs, train_labels)
-    bow_train_acc_pipeline = bow_pipeline.score(train_docs, train_labels)
-    bow_test_acc_pipeline = bow_pipeline.score(test_docs, test_labels)
-    bow_predicted = bow_pipeline.predict(test_docs)
-    bow_f1 = f1_score(test_labels, bow_predicted, average="macro", labels=['neutral', 'positive', 'negative'])
-    print("BOW Pipeline Train", bow_train_acc_pipeline)
-    print("BOW Pipeline Test", bow_test_acc_pipeline)
-    print("BOW Pipeline Test F1", bow_f1)
+    # bow_pipeline = bow_pipeline.fit(train_docs, train_labels)
+    # bow_train_acc_pipeline = bow_pipeline.score(train_docs, train_labels)
+    # bow_test_acc_pipeline = bow_pipeline.score(test_docs, test_labels)
+    # bow_predicted = bow_pipeline.predict(test_docs)
+    # bow_f1 = f1_score(test_labels, bow_predicted, average="macro", labels=['neutral', 'positive', 'negative'])
+    # print("BOW Pipeline Train", bow_train_acc_pipeline)
+    # print("BOW Pipeline Test", bow_test_acc_pipeline)
+    # print("BOW Pipeline Test F1", bow_f1)
 
     # 5 for N, 3 for V, 2 for A, 1 for R
     # pos_vocab = {'N': 2, 'V': 3, 'A': 4, 'R': 5}
@@ -264,14 +265,14 @@ def main():
         ('classifier', maxent_classifier),
     ])
 
-    pos_pipeline.fit(train_docs, train_labels)
-    pos_train_acc_pipeline = pos_pipeline.score(train_docs, train_labels)
-    pos_test_acc_pipeline = pos_pipeline.score(test_docs, test_labels)
-    pos_predicted = pos_pipeline.predict(test_docs)
-    pos_f1 = f1_score(test_labels, pos_predicted, average="macro", labels=['neutral', 'positive', 'negative'])
-    print("POS Pipeline Train", pos_train_acc_pipeline)
-    print("POS Pipeline Test", pos_test_acc_pipeline)
-    print("POS Pipeline Test F1", pos_f1)
+    # pos_pipeline.fit(train_docs, train_labels)
+    # pos_train_acc_pipeline = pos_pipeline.score(train_docs, train_labels)
+    # pos_test_acc_pipeline = pos_pipeline.score(test_docs, test_labels)
+    # pos_predicted = pos_pipeline.predict(test_docs)
+    # pos_f1 = f1_score(test_labels, pos_predicted, average="macro", labels=['neutral', 'positive', 'negative'])
+    # print("POS Pipeline Train", pos_train_acc_pipeline)
+    # print("POS Pipeline Test", pos_test_acc_pipeline)
+    # print("POS Pipeline Test F1", pos_f1)
 
     unified_pipeline = Pipeline([
         # Use FeatureUnion to combine the features from bow and pos
@@ -306,6 +307,21 @@ def main():
     print("Unified Pipeline Train", pos_train_acc_unified_pipeline)
     print("Unified Pipeline Test", pos_test_acc_unified_pipeline)
     print("Unified Pipeline Test F1", unified_f1)
+    classification_report(unified_predicted, test_labels)
+
+
+def create_pos_weight_combination(pos_groups, weighing_scale):
+    """
+    Return the list of all weighing combinations stored as dictionnary
+    ex: [{'V': 1, 'A': 1, 'N': 1, 'E': 1}, {'V': 1, 'A': 1, 'N': 1, 'E': 2}, ....]
+
+    :param pos_groups: {"V": ["V"], "A": ["A", "R"], "N": ["N"], "E": ["E"]}
+    :param weighing_scale: integer scale, from 1 to the value in weighing scale
+    :return:
+    """
+    group_keys = pos_groups.keys()
+    weights = list(range(1, weighing_scale + 1))
+    return [dict(zip(group_keys, list(combi))) for combi in product(set(weights), repeat=len(group_keys))]
 
 
 if __name__ == "__main__":

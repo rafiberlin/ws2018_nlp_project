@@ -3,7 +3,7 @@ import sys
 
 sys.path.insert(0, os.getcwd())
 import math
-from process_data.helper import get_tagged_sentences, get_labels, pre_processing
+from process_data.helper import get_tagged_sentences, get_labels, extract_range, pre_processing
 from pathlib import Path
 from sklearn.feature_extraction.text import CountVectorizer
 from baseline.baseline import do_not_tokenize
@@ -36,21 +36,11 @@ def drop_cols(matrix, drop_idx):
 
 class PosVectorizer(BaseEstimator, TransformerMixin):
     def __init__(self, weight):
-        """
-
-        :param weight:
-        """
         self.weight = weight
         self.vocabulary = defaultdict(int)
         self.dim = None
 
     def _generate_sparse_data(self, docs, fit_flag=True):
-        """
-
-        :param docs:
-        :param fit_flag:
-        :return:
-        """
         indptr = [0]
         indices = []
         data = []
@@ -58,7 +48,7 @@ class PosVectorizer(BaseEstimator, TransformerMixin):
             temp_index = defaultdict(int)
             for term, pos in doc:
                 word_key = (term, pos)
-                # Either fitting or Transforming
+                ## Either fitting or Transforming
                 if fit_flag or (not fit_flag and word_key in self.vocabulary.keys()):
                     index = self.vocabulary.setdefault(word_key, len(self.vocabulary))
                     val = self.weight.setdefault(pos, 0)
@@ -71,32 +61,33 @@ class PosVectorizer(BaseEstimator, TransformerMixin):
             indptr.append(len(indices))
         return data, indices, indptr
 
-    def fit(self, docs, train_labels=None):
+    def fit(self, docs, class_labels=None):
         """
         Generate POS features for given docs and tags based on specific weighting scheme.
         :param docs:
-        :param train_labels: Do not delete this parameter, it is needed by the scikit interface
+        :param tags:
+        :param weight:
         :return:
         """
-
         self.vocabulary.clear()
         data, indices, indptr = self._generate_sparse_data(docs)
-        pos_mat = csr_matrix((data, indices, indptr), dtype=float)
-        pos_mat_normalized = normalize(pos_mat, norm='l1', copy=False)
-        self.dim = pos_mat_normalized.shape
+        posMat = csr_matrix((data, indices, indptr), dtype=float)
+        posMat_normalized = normalize(posMat, norm='l1', copy=False)
+        self.dim = posMat_normalized.shape
         return self
 
     def transform(self, docs):
         """
         docstring here
         :param docs:
+        :param tags:
         :return:
         """
         column = self.dim[1]
         data, indices, indptr = self._generate_sparse_data(docs, fit_flag=False)
-        pos_mat = csr_matrix((data, indices, indptr), shape=(len(docs), column), dtype=float)
-        pos_mat_normalized = normalize(pos_mat, norm='l1', copy=False)
-        return pos_mat_normalized
+        posMat = csr_matrix((data, indices, indptr), shape=(len(docs), column), dtype=float)
+        posMat_normalized = normalize(posMat, norm='l1', copy=False)
+        return posMat_normalized
 
 
 class OCFS(BaseEstimator, TransformerMixin):
@@ -119,43 +110,43 @@ class OCFS(BaseEstimator, TransformerMixin):
         :return: a vector of OCFS scores
         """
 
-        def _calculate_mean(class_label):
+        def calculateMean(label):
             """
             Crude implementation of mean, but faster for sparse
             matrix compared to pandas.DataFrame.mean()
-            :param class_label:
+            :param label:
             :return:
             """
-            df = docs.loc[docs["Label"] == class_label]
+            df = docs.loc[docs["Label"] == label]
             df = df.drop(['Label'], axis=1)
-            df_len = len(df)
+            dfLen = len(df)
             mat = df.to_coo().tocsr()
-            mean = mat.sum(axis=0, dtype=float) / df_len
+            mean = mat.sum(axis=0, dtype=float) / dfLen
             mean = pd.Series(np.ravel(mean))
             return mean
 
         docs = pd.SparseDataFrame(fitted_docs)
         docs = docs.fillna(0)
         docs["Label"] = labels
-        total_samples = len(docs)
+        totalSamples = len(docs)
         # Don't know why mean with dataframe directly yields inaccurate results
-        all_mean = fitted_docs.mean(axis=0)
-        all_mean = pd.Series(np.ravel(all_mean))
-        docs.groupby("Label")
-        class_samples = docs.groupby("Label").size()
-        class_mean = {}
+        allMean = fitted_docs.mean(axis=0)
+        allMean = pd.Series(np.ravel(allMean))
+        classgroup = docs.groupby("Label")
+        classSamples = docs.groupby("Label").size()
+        classMean = {}
 
-        for label in class_samples.index:
-            class_mean[label] = _calculate_mean(label)
+        for label in classSamples.index:
+            classMean[label] = calculateMean(label)
         # Multiply by 1000 to avoid underflow
         ocfs = np.sum(
-            [1000 * (class_samples[label] / total_samples) * np.square(class_mean[label] - all_mean) for label in
-             class_samples.index],
+            [1000 * (classSamples[label] / totalSamples) * np.square(classMean[label] - allMean) for label in
+             classSamples.index],
             axis=0)
         return ocfs
 
     @classmethod
-    def _retrieve_features_to_remove(cls, ocfs, lowest_val, highest_val):
+    def _retrieve_features_to_remove(self, ocfs, lowest_val, highest_val):
         """
         Return the index of the features to discard, based on some boundary values
         :param ocfs:
@@ -190,30 +181,30 @@ class OCFS(BaseEstimator, TransformerMixin):
 def main():
     parent_dir = Path(__file__).parents[1]
     # parent_dir = os.getcwd() # my sys.path is different from PyCharm
-    data_set_path = os.path.join(parent_dir, "dataset")
-    tagged_sentences = os.path.join(data_set_path, 'text_cleaned_pos.csv')
-    labels = os.path.join(data_set_path, 'shuffled.csv')
+    DATA_SET_PATH = os.path.join(parent_dir, "dataset")
+    TAGGED_SENTENCES = os.path.join(DATA_SET_PATH, 'text_cleaned_pos.csv')
+    LABELS = os.path.join(DATA_SET_PATH, 'shuffled.csv')
 
-    start_range = 0
-    end_range = None  # Set to None to get the whole set...
-    tagged_sentences = get_tagged_sentences(data_set_path, tagged_sentences, start_range=start_range,
-                                            end_range=end_range, split_pos=False)
+    START_RANGE = 0
+    END_RANGE = None  # Set to None to get the whole set...
+    tagged_sentences = get_tagged_sentences(DATA_SET_PATH, TAGGED_SENTENCES, start_range=START_RANGE,
+                                            end_range=END_RANGE, split_pos=False)
 
     pos_groups = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
     tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
 
-    all_labels = get_labels(labels, start_range=start_range, end_range=end_range)
+    all_labels = get_labels(LABELS, start_range=START_RANGE, end_range=END_RANGE)
 
-    data_len = len(all_labels)
-    train_end = math.floor(0.7 * data_len)  # 70% for train
-    train_start = math.floor(0.8 * data_len)  # 20% for test
-    number_of_features_to_delete = 30
+    DATA_LEN = len(all_labels)
+    TRAIN_END = math.floor(0.7 * DATA_LEN)  # 70% for train
+    TRAIN_START = math.floor(0.8 * DATA_LEN)  # 20% for test
+    NUMBER_OF_FEATURES_TO_DELETE = 30
 
-    train_docs, test_docs = tagged_sentences[:train_end], tagged_sentences[train_start:]
-    train_labels, test_labels = all_labels[:train_end], all_labels[train_start:]
+    train_docs, test_docs = tagged_sentences[:TRAIN_END], tagged_sentences[TRAIN_START:]
+    train_labels, test_labels = all_labels[:TRAIN_END], all_labels[TRAIN_START:]
 
     # dev_labels = np.ravel(dev_labels)
-    # all_labels = np.ravel(all_labels)
+    all_labels = np.ravel(all_labels)
     train_labels = np.ravel(train_labels)
     test_labels = np.ravel(test_labels)
 
@@ -250,14 +241,14 @@ def main():
                                            max_iter=5000
                                            )
 
-    pos_feature = PosVectorizer(pos_vocab)
-    pos_train = pos_feature.fit_transform(train_docs)
-    ocfs = OCFS(number_of_features_to_delete)
+    posFeatures = PosVectorizer(pos_vocab)
+    pos_train = posFeatures.fit_transform(train_docs)
+    ocfs = OCFS(NUMBER_OF_FEATURES_TO_DELETE)
     ocfs.fit(pos_train, train_labels)
     pd_pos_train = ocfs.transform(pos_train)
     maxent_classifier.fit(pd_pos_train, train_labels)
 
-    pos_test = pos_feature.transform(test_docs)
+    pos_test = posFeatures.transform(test_docs)
     pd_pos_test = ocfs.transform(pos_test)
     pos_train_acc = maxent_classifier.score(pd_pos_train, train_labels)
     pos_test_acc = maxent_classifier.score(pd_pos_test, test_labels)
@@ -267,7 +258,7 @@ def main():
 
     pos_pipeline = Pipeline([
         ('posweighing', PosVectorizer(pos_vocab)),
-        ('ocfs', OCFS(number_of_features_to_delete)),
+        ('ocfs', OCFS(NUMBER_OF_FEATURES_TO_DELETE)),
         ('classifier', maxent_classifier),
     ])
 

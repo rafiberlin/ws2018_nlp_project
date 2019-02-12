@@ -13,8 +13,9 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import normalize
 from scipy.sparse import csr_matrix
 from collections import defaultdict
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.metrics import f1_score
 import time
 
 
@@ -154,18 +155,6 @@ class OCFS(BaseEstimator, TransformerMixin):
             axis=0)
         return ocfs
 
-    @classmethod
-    def _retrieve_features_to_remove(cls, ocfs, lowest_val, highest_val):
-        """
-        Return the index of the features to discard, based on some boundary values
-        :param ocfs:
-        :param lowest_val:
-        :param highest_val:
-        :return:
-        """
-
-        return [idx for idx, val in enumerate(ocfs) if val < lowest_val or val > highest_val]
-
     def fit(self, pos_train, train_labels):
         """
 
@@ -180,7 +169,7 @@ class OCFS(BaseEstimator, TransformerMixin):
             number_of_feature = self.number_to_delete
         percentile = int(round((self.number_to_delete / number_of_feature) * 100))
         lower_bound = np.percentile(ocfs_pos, percentile)
-        self.feature_to_delete = [idx for idx in range(ocfs_pos.shape[0]) if lower_bound > ocfs_pos[idx]]
+        self.feature_to_delete = [idx for idx in range(number_of_feature) if lower_bound > ocfs_pos[idx]]
         return self
 
     def transform(self, pos_train):
@@ -199,7 +188,8 @@ def main():
     tagged_sentences = get_tagged_sentences(data_set_path, tagged_sentences, start_range=start_range,
                                             end_range=end_range, split_pos=False)
 
-    pos_groups = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
+    # pos_groups = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
+    pos_groups = {"V": ["V"], "A": ["A", "R"], "N": ["N"], "E": ["E"]}
     tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
 
     all_labels = get_labels(labels, start_range=start_range, end_range=end_range)
@@ -237,14 +227,17 @@ def main():
 
     bow_pipeline = bow_pipeline.fit(train_docs, train_labels)
     bow_train_acc_pipeline = bow_pipeline.score(train_docs, train_labels)
-    bow_pipeline.fit(test_docs, test_labels)
     bow_test_acc_pipeline = bow_pipeline.score(test_docs, test_labels)
-
+    bow_predicted = bow_pipeline.predict(test_docs)
+    bow_f1 = f1_score(test_labels, bow_predicted, average="macro", labels=['neutral', 'positive', 'negative'])
     print("BOW Pipeline Train", bow_train_acc_pipeline)
     print("BOW Pipeline Test", bow_test_acc_pipeline)
+    print("BOW Pipeline Test F1", bow_f1)
 
-    pos_vocab = {'N': 2, 'V': 3, 'A': 4, 'R': 5}  # 5 for N, 3 for V, 2 for A, 1 for R
+    # 5 for N, 3 for V, 2 for A, 1 for R
+    # pos_vocab = {'N': 2, 'V': 3, 'A': 4, 'R': 5}
 
+    pos_vocab = {'N': 2, 'V': 3, 'A': 5, "DEFAULT": 1, "E": 4}
     maxent_classifier = LogisticRegression(random_state=0, solver='lbfgs',
                                            multi_class='multinomial',
                                            max_iter=5000
@@ -257,13 +250,13 @@ def main():
     pd_pos_train = ocfs.transform(pos_train)
     maxent_classifier.fit(pd_pos_train, train_labels)
 
-    pos_test = pos_feature.transform(test_docs)
-    pd_pos_test = ocfs.transform(pos_test)
-    pos_train_acc = maxent_classifier.score(pd_pos_train, train_labels)
-    pos_test_acc = maxent_classifier.score(pd_pos_test, test_labels)
-
-    print("Manual Steps", pos_train_acc)
-    print("Manual Test", pos_test_acc)
+    # Manual Steps, should delive r the same results as a pipeline
+    # pos_test = pos_feature.transform(test_docs)
+    # pd_pos_test = ocfs.transform(pos_test)
+    # pos_train_acc = maxent_classifier.score(pd_pos_train, train_labels)
+    # pos_test_acc = maxent_classifier.score(pd_pos_test, test_labels)
+    # print("Manual Steps", pos_train_acc)
+    # print("Manual Test", pos_test_acc)
 
     pos_pipeline = Pipeline([
         ('posweighing', PosVectorizer(pos_vocab)),
@@ -273,11 +266,46 @@ def main():
 
     pos_pipeline.fit(train_docs, train_labels)
     pos_train_acc_pipeline = pos_pipeline.score(train_docs, train_labels)
-    pos_pipeline.fit(test_docs, test_labels)
     pos_test_acc_pipeline = pos_pipeline.score(test_docs, test_labels)
-
+    pos_predicted = pos_pipeline.predict(test_docs)
+    pos_f1 = f1_score(test_labels, pos_predicted, average="macro", labels=['neutral', 'positive', 'negative'])
     print("POS Pipeline Train", pos_train_acc_pipeline)
     print("POS Pipeline Test", pos_test_acc_pipeline)
+    print("POS Pipeline Test F1", pos_f1)
+
+    unified_pipeline = Pipeline([
+        # Use FeatureUnion to combine the features from bow and pos
+        ('union', FeatureUnion(
+            transformer_list=[
+                # Pipeline for pulling features from the post's subject line
+                ('bow', Pipeline([
+                    ('bowweighing', bag_of_words),
+                ])),
+                # Pipeline for standard bag-of-words model for body
+                ('pos', Pipeline([
+                    ('posweighing', PosVectorizer(pos_vocab)),
+                    ('ocfs', OCFS(number_of_features_to_delete)),
+                ])),
+            ],
+            # weight components in FeatureUnion
+            transformer_weights={
+                'bow': 0.7,
+                'pos': 0.3,
+            },
+        )),
+        # Use a MaxEnt classifier on the combined features
+        ('classifier', maxent_classifier),
+    ])
+
+    unified_pipeline.fit(train_docs, train_labels)
+    pos_train_acc_unified_pipeline = unified_pipeline.score(train_docs, train_labels)
+    pos_test_acc_unified_pipeline = unified_pipeline.score(test_docs, test_labels)
+
+    unified_predicted = unified_pipeline.predict(test_docs)
+    unified_f1 = f1_score(test_labels, unified_predicted, average="macro", labels=['neutral', 'positive', 'negative'])
+    print("Unified Pipeline Train", pos_train_acc_unified_pipeline)
+    print("Unified Pipeline Test", pos_test_acc_unified_pipeline)
+    print("Unified Pipeline Test F1", unified_f1)
 
 
 if __name__ == "__main__":

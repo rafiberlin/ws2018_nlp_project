@@ -18,7 +18,7 @@ if __name__ == "__main__":
     all_labels = get_labels(labels, start_range=start_range, end_range=end_range)
     pos_groups = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
     weighing_scale = 5
-    feature_to_delete = 30
+    feature_to_delete = 30000
     union_weights = {'bow': 0.7, 'pos': 0.3, }
     training_percent = 0.7
     test_percent = 0.2

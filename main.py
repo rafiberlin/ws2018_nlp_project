@@ -1,10 +1,11 @@
 from process_data.helper import *
 from model.pos import *
-#import nltk
+
+# import nltk
 
 # Main Entry Point
 if __name__ == "__main__":
-    #nltk.download('stopwords')
+    # nltk.download('stopwords')
     parent_dir = os.getcwd()
     data_set_path = os.path.join(parent_dir, "dataset")
     tagged_sentences = os.path.join(data_set_path, 'text_cleaned_pos.csv')
@@ -25,6 +26,7 @@ if __name__ == "__main__":
     split_job = False
 
     start = time.time()
+    print("Training started")
     weight_list = return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_to_delete,
                                          union_weights, training_percent, test_percent, split_job)
 

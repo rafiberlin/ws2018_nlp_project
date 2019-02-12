@@ -163,8 +163,8 @@ def run_pos_model(train_docs, test_docs, train_labels, test_labels, pos_vocab, n
     unified_predicted = pos_bow_pipeline.predict(test_docs)
     unified_f1 = f1_score(test_labels, unified_predicted, average="macro", labels=['neutral', 'positive', 'negative'])
 
-    # if accuracy_to_beat < pos_test_acc_unified_pipeline or f1_score_to_beat < unified_f1:
-    return (pos_train_acc_unified_pipeline, pos_test_acc_unified_pipeline, unified_f1,)
+    if accuracy_to_beat < pos_test_acc_unified_pipeline or f1_score_to_beat < unified_f1:
+        return (pos_train_acc_unified_pipeline, pos_test_acc_unified_pipeline, unified_f1,)
 
 
 def argument_wrapper_for_run_model_for_all_combination(args):

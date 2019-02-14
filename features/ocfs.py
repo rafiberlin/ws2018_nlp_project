@@ -167,7 +167,7 @@ class OCFS(BaseEstimator, TransformerMixin):
         ocfs_pos = OCFS._calculate_ocfs_score(pos_train, train_labels)
         number_of_feature = ocfs_pos.shape[0]
         if number_of_feature < self.number_to_delete:
-            number_of_feature = self.number_to_delete
+            self.number_to_delete = number_of_feature
         percentile = int(round((self.number_to_delete / number_of_feature) * 100))
         lower_bound = np.percentile(ocfs_pos, percentile)
         self.feature_to_delete = [idx for idx in range(number_of_feature) if lower_bound > ocfs_pos[idx]]

@@ -450,6 +450,20 @@ def pre_processing(tagged_sentence, pos_grouping=None,
         processed_sentences.append(new_sentence)
     return processed_sentences
 
+def unicode_cleanup(os_path, list_of_broken_files):
+    """
+    given a list of mixed utf-8 enccoding, performs correct unicode escaping
+    :param os_path:
+    :param list_of_broken_files:
+    :return:
+    """
+    all_files = [os.path.join(os_path.__str__(), f) for f in list_of_broken_files]
+    for fname in all_files:
+        with open(fname, 'r') as f:
+            with open(fname, 'w', encoding="utf-8") as write_f:
+                for line in f:
+                    fixed_line = bytes(line, 'utf-8').decode('unicode-escape')
+                    write_f.write(fixed_line)
 
 def main():
     parent_dir = Path(__file__).parents[1]

@@ -1,87 +1,105 @@
 from sklearn.linear_model import LogisticRegression
-from sklearn.feature_extraction.text import CountVectorizer
-import pandas as pd
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
+from sklearn.metrics import f1_score
+from process_data.helper import get_labels, get_tagged_sentences, extract_range
 import numpy as np
 import os
-import csv
+import math
+from pathlib import Path
+
+def do_not_tokenize(doc):
+    """
+    Dummy function to trick scikit Vectorizer => avoid tokenizing, processing
+    :param doc:
+    :return:
+    """
+
+    return doc
 
 
-def cleanData(df, col):
-    """Perform some data cleaning to remove unwanted character/strings
-    Removing characters like : does not affect UTF-8 emoticons, but may affect :D, :), :("""
+def main():
+    """
+    Run the baseline and output resuls in the console (Accuracy + Macro F1 score for BOW and TFIDF)
+    :return:
+    """
 
-    df[col] = df[col].str.replace('\"', '') #remove double quote
-    df[col] = df[col].str.replace('\'', '') #remove quote
-    df[col] = df[col].str.replace(':', '') #remove colon, careful of removing emoticons, must use regex!!
-    df[col] = df[col].str.replace('\,', '') #remove comma
-    df[col] = df[col].str.replace('\.', '') #remove fullstop
+    # Do we still need punctuation removal? at least it can reduce feature space seeing that although
+    # the tokenization is good there is still to many useless punctuation.
+    MAIN_FOLDER = "dataset"
+    parent_dir = Path(__file__).parents[1]
+    path = os.path.join(parent_dir, MAIN_FOLDER)
+    TAGGED_SENTENCES = os.path.join(path, 'text_cleaned_pos.csv')
+    LABELS = os.path.join(path, 'shuffled.csv')
+    docs, tags = get_tagged_sentences(path, TAGGED_SENTENCES)
+    labels = get_labels(LABELS)
+    dataLen = len(labels)
+    trainEnd = math.floor(0.7 * dataLen)  # 70% for train
+    testStart = math.floor(0.8 * dataLen)  # 20% for test
+    train_docs, test_docs = docs[:trainEnd], docs[testStart:]
+    train_labels, test_labels = labels[:trainEnd], labels[testStart:]
 
-    return df
+    # work around to prevent scikit performing tokenizing on already tokenized documents...
+    bag_of_words = CountVectorizer(
+        analyzer='word',
+        tokenizer=do_not_tokenize,
+        preprocessor=do_not_tokenize,
+        token_pattern=None,
+        # stop_words="english"
+        binary=True # replaces bow_train = (bow_train >= 1).astype(int)
+    )
 
+    tfidf = TfidfVectorizer(
+        analyzer='word',
+        tokenizer=do_not_tokenize,
+        preprocessor=do_not_tokenize,
+        token_pattern=None,
+        # stop_words="english"
+    )
 
-def convertTrain(dataPath):
-    """Convert csv files into features and label matrix for training data"""
-    df = pd.read_csv(dataPath, sep='\t', header=None, names=['ID', 'Label', 'Orig', 'Tweets'], quoting=csv.QUOTE_ALL, encoding='utf8')
-    df = df.drop(['ID', 'Orig'], axis = 1)
-    df = df.dropna()
-    df = cleanData(df, 'Tweets')
+    # Convert data into features for training
+    bow_train = bag_of_words.fit_transform(train_docs)  # matrix is of type CSR
+    tfidf_train = tfidf.fit_transform(train_docs)
+    train_labels = np.ravel(train_labels)  # return flat array of labels
 
-    # Convert tweets into label
-    trueLabel = df['Label'].replace({'Label': {'negative' : 0, 'positive': 1, 'neutral':2}})
-    Y = trueLabel.values
+    # Train classifier on Bag of Words (Term Presence) and TF-IDF
+    bow_classifier = LogisticRegression(random_state=0, solver='lbfgs',
+                                        multi_class='multinomial',
+                                        max_iter=5000
+                                        ).fit(bow_train, train_labels)
+    tf_idf_classifier = LogisticRegression(random_state=0, solver='lbfgs',
+                                           multi_class='multinomial',
+                                           max_iter=5000
+                                           ).fit(tfidf_train, train_labels)
 
-    # Convert tweets into features
-    tweets = df['Tweets']
-    tweetsMat = tweets.iloc[:]
-    tweetsMat = tweetsMat.values
-    count = CountVectorizer()
-    bagOfWords = count.fit_transform(tweetsMat)
-    X = bagOfWords.toarray()
-    X = (X > 1).astype(int)
+    # Test on itself for BoW and TF-IDF
+    bow_train_acc = bow_classifier.score(bow_train, train_labels)
+    tfidf_train_acc = tf_idf_classifier.score(tfidf_train, train_labels)
+    print("Training score BOW", bow_train_acc)
+    print("Training score TFIDF", tfidf_train_acc)
 
-    # Show feature names (vocabulary)
-    # feature_names = count.get_feature_names()
-    # print(feature_names)
-    return X, Y, count
-    # Count to fit vectorizer for test data. Usually can be done in single step, however as vocabulary of training and test data differs, we can use this as temporary placeholder
+    # Convert data into features for testing
+    bow_test = bag_of_words.transform(test_docs)
+    tfidf_test = tfidf.transform(test_docs)
+    test_labels = np.ravel(test_labels)
 
+    # Test on test data
+    bow_test_acc = bow_classifier.score(bow_test, test_labels)
+    tfidf_test_acc = tf_idf_classifier.score(tfidf_test, test_labels)
+    print("Testing score BOW", bow_test_acc)
+    print("Testing score TFIDF", tfidf_test_acc)
 
-def convertTest(dataPath, count):
-    """Convert csv files into features and label matrix for test data"""
-    df = pd.read_csv(dataPath, sep='\t', header=None, names=['ID', 'Label', 'Orig', 'Tweets'], quoting=csv.QUOTE_ALL, encoding='utf8')
-    df = df.drop(['ID', 'Tweets'], axis = 1)
-    df = df.dropna()
-    df = cleanData(df, 'Orig')
-
-    # Convert tweets into label
-    testLabel = df['Label'].replace({'Label': {'negative' : 0, 'positive': 1, 'neutral':2}})
-    Y = testLabel.iloc[:20000].values
-
-    # Convert tweets into features
-    test_tweets = df['Orig']
-    testtweetsMat = test_tweets.iloc[:20000]    #Only do for first 20k tweets. Have memory error issue
-    testtweetsMat = testtweetsMat.values
-    bagOfWords_test = count.transform(testtweetsMat)
-    X = bagOfWords_test.toarray()
-    X = (X > 1).astype(int)
-    return X, Y
+    # F1 Score for BoW and TF-IDF
+    bow_predicted = bow_classifier.predict(bow_test)
+    tfidf_predicted = tf_idf_classifier.predict(tfidf_test)
+    bow_f1 = f1_score(test_labels, bow_predicted, average=None, labels=['neutral', 'positive', 'negative'])
+    tfidf_f1 = f1_score(test_labels, tfidf_predicted, average=None, labels=['neutral', 'positive', 'negative'])
+    bow_macro = f1_score(test_labels, bow_predicted, average='macro', labels=['neutral', 'positive', 'negative'])
+    tfidf_macro = f1_score(test_labels, tfidf_predicted, average='macro', labels=['neutral', 'positive', 'negative'])
+    print("F1 score BOW for neutral, positive, negative", bow_f1)
+    print("F1 score TFIDF for neutral, positive, negative", tfidf_f1)
+    print("F1 score BOW for macro-average", bow_macro)
+    print("F1 score TFIDF for macro-average", tfidf_macro)
 
 
 if __name__ == "__main__":
-    # Read data from textfile, drop tweet ID and original tweets
-    path = os.getcwd()
-    dataPath = os.path.join(path, 'process_data/clean_data_result_8000.txt')
-
-    # Train classifier
-    X, Y, count = convertTrain(dataPath)
-    clf = LogisticRegression(random_state=0, solver='lbfgs', multi_class='multinomial').fit(X, Y)
-    print("Training finished")
-
-    # Test on itself
-    accTrain = clf.score(X, Y)
-
-    # Test on 20k tweets
-    # Result using terms frequency is 0.9658666023398866 for accTrain and 0.7099 for accTest, the one that is ran use terms presence.
-    Xtest, Ytest = convertTest(dataPath, count)
-    accTest = clf.score(Xtest, Ytest)
-    print(accTrain, accTest)
+    main()

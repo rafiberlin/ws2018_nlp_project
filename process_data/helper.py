@@ -11,7 +11,7 @@ import nltk.corpus.reader.conll as conll
 from ekphrasis.classes.spellcorrect import SpellCorrector
 import matplotlib.pyplot as plt
 from nltk.corpus import stopwords as nltk_stopwords
-
+from os.path import dirname
 
 def reduce_lengthening(text):
     """
@@ -196,7 +196,8 @@ def filter_unwanted_characters(input, outpath, shuffle=False):
         df = df.reset_index(drop=True)
     file_encoding = "utf-8-sig"
 
-    df.to_csv(outpath + "shuffled.csv", header=None, encoding=file_encoding,
+    dataset_path = dirname(dirname(dirname(outpath)))
+    df.to_csv(os.path.join(dataset_path, "shuffled.csv"), header=None, encoding=file_encoding,
               # quoting=csv.QUOTE_ALL,
               quoting=csv.QUOTE_ALL,
               columns=['sentiment', 'text'],
@@ -324,6 +325,7 @@ def create_files_for_analysis(path, shuffle=False):
     merge_files_as_binary(path, path + "all_raw.csv")
     filter_unwanted_characters(path + "all_raw.csv", path)
     # print("Cleaning")
+    dataset_path = dirname(dirname(dirname(path)))
     clean_data(path + "text_only.csv",
                path + "text_cleaned.csv")
     print("Finish")

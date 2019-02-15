@@ -458,10 +458,10 @@ def main():
     # clean_data still buggy. TODO backslash handling not optimal
     create_files_for_analysis(TRAIN_PATH, shuffle_data)
 
-    TEST_PATH = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/test/")
-    shuffle_data = False
+    #TEST_PATH = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/test/")
+    #shuffle_data = False
     # clean_data still buggy. TODO backslash handling not optimal
-    create_files_for_analysis(TEST_PATH, shuffle_data)
+    #create_files_for_analysis(TEST_PATH, shuffle_data)
 
 
 if __name__ == "__main__":

@@ -1,3 +1,7 @@
+#Python cache
+.pyc
+
+
 .idea
 #dependencies loaded by PyCharm
 venv
@@ -19,3 +23,4 @@ venv
 *.cb
 *.cb2
 .*.lb
+*.pyc

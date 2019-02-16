@@ -2,7 +2,7 @@
 
 
 **Project**  
-Sentiment Analysis in Twitter context:  
+Sentiment Analysis in Twitter Context:  
 Incorporating Part-of-speech Tags as Features into a MaxEnt Classifier
 
 **Authors**   
@@ -26,8 +26,7 @@ To install the requirements please navigate to the directory of the project in t
 ├── features  <- implementation of feature selection technique  
 ├── model  <- implementation of feature engineering for MaxEnt classifier with POS  
 ├── process_data  <- implementation of data processing functions  
-├── process_data  <- implementation of data processing functions  
-├── main.py  <-  all functions necessary for training a model are called from here  
+├── main.py  <-  all functions necessary for training the POS model are called from here  
 ├── requirements.py  <-  all modules necessary to run scripts  
 
 

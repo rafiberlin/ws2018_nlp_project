@@ -3,7 +3,8 @@ import sys
 
 sys.path.insert(0, os.getcwd())
 import math
-from process_data.helper import get_tagged_sentences, get_labels, pre_processing
+from process_data.helper import get_tagged_sentences, get_labels
+from process_data.spell_correction import pre_processing
 from pathlib import Path
 from sklearn.feature_extraction.text import CountVectorizer
 from baseline.baseline import do_not_tokenize

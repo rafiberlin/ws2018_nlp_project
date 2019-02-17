@@ -1,3 +1,4 @@
+#Python cache
 *.pyc
 
 .idea
@@ -21,3 +22,4 @@ venv
 *.cb
 *.cb2
 .*.lb
+*.pyc

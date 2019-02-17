@@ -48,18 +48,18 @@ if __name__ == "__main__":
     labels = os.path.join(data_set_path, 'shuffled.csv')
 
     start_range = 0
-    end_range = 100  # Set to None to get the whole set...
+    end_range = None  # Set to None to get the whole set...
     tagged_sentences = get_tagged_sentences(data_set_path, tagged_sentences, start_range=start_range,
                                             end_range=end_range, split_pos=False)
 
     all_labels = get_labels(labels, start_range=start_range, end_range=end_range)
     pos_groups = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
     weighing_scale = 5
-    feature_to_delete = 30000
-    union_weights = {'bow': 0.7, 'pos': 0.3, }
+    feature_to_delete = 35000
+    union_weights = {'bow': 0.3, 'pos': 0.7, }
     training_percent = 0.7
     test_percent = 0.2
-    split_job = False
+    split_job = True
 
     file_prefix = create_prefix(pos_groups, weighing_scale, feature_to_delete, union_weights, training_percent,
                                 test_percent)

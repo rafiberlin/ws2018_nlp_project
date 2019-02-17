@@ -42,7 +42,7 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
     processed_tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
 
     # debugging multithread
-    # all_pos_vocab = create_pos_weight_combination(pos_groups, weighing_scale)[:5]
+    # all_pos_vocab = create_pos_weight_combination(pos_groups, weighing_scale)[:4]
     all_pos_vocab = create_pos_weight_combination(pos_groups, weighing_scale)
     data_len = len(all_labels)
     train_end = math.floor(percentage_train_data * data_len)  # 70% for train
@@ -59,6 +59,10 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
         cpu_cores = 1
     original_size = len(all_pos_vocab)
     middle = original_size // cpu_cores
+    # fix when only one combination is available
+    if middle == 0:
+        middle = original_size
+
     list_of_jobs = split_list(all_pos_vocab, middle)
     num_jobs = len(list_of_jobs)
 
@@ -104,7 +108,7 @@ def run_model_for_all_combination(train_docs, test_docs, train_labels, test_labe
 
 def run_pos_model(train_docs, test_docs, train_labels, test_labels, pos_vocab, number_of_features_to_delete=30000,
                   union_transformer_weights=None,
-                  accuracy_to_beat=0.6252552478967573, f1_score_to_beat=0.6252552478967573):
+                  accuracy_to_beat=0.0, f1_score_to_beat=0.0):
     """
 
     :param train_docs:
@@ -114,8 +118,8 @@ def run_pos_model(train_docs, test_docs, train_labels, test_labels, pos_vocab, n
     :param pos_vocab:
     :param number_of_features_to_delete:
     :param union_transformer_weights:
-    :param accuracy_to_beat:
-    :param f1_score_to_beat:
+    :param accuracy_to_beat: Reminder for BOW, 0.6252552478967573
+    :param f1_score_to_beat: Reminder for BOW, 0.5865028050367952):
     :return:
     """
 

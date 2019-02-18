@@ -119,6 +119,8 @@ if __name__ == "__main__":
          test_percent],
         [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 28000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
          test_percent],
+        [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 32000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+         test_percent],
     ]
     start = time.time()
     print("Started... ")

@@ -88,5 +88,5 @@ if __name__ == "__main__":
     if number_results < keep_best:
         keep_best = number_results
 
-    save_results(data_set_path, file_prefix + "f1_pos_bow.txt", merge_f1[:keep_best])
-    save_results(data_set_path, file_prefix + "accuracy_pos_bow.txt", merge_accuracy[:keep_best])
+    save_results(data_set_path, file_prefix + "_" + "f1_pos_bow.txt", merge_f1[:keep_best])
+    save_results(data_set_path, file_prefix + "_" + "accuracy_pos_bow.txt", merge_accuracy[:keep_best])

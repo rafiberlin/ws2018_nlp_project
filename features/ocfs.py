@@ -17,8 +17,7 @@ from collections import defaultdict
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.metrics import f1_score, classification_report
-from itertools import combinations, product, combinations_with_replacement, permutations
-import time
+from itertools import product
 
 
 def drop_cols(matrix, drop_idx):
@@ -167,6 +166,10 @@ class OCFS(BaseEstimator, TransformerMixin):
 
         ocfs_pos = OCFS._calculate_ocfs_score(pos_train, train_labels)
         number_of_feature = ocfs_pos.shape[0]
+
+        # non_zero = np.count_nonzero(ocfs_pos)
+        # print("Number of zero values after OCFS:" + str(number_of_feature - non_zero))
+
         if number_of_feature < self.number_to_delete:
             self.number_to_delete = number_of_feature
         percentile = int(round((self.number_to_delete / number_of_feature) * 100))

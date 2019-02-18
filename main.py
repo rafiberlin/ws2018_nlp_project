@@ -1,5 +1,5 @@
-from process_data.helper import *
 from model.pos import *
+import time
 
 
 # import nltk
@@ -15,27 +15,27 @@ def save_results(data_set_path, filename, results):
     sys.stdout = orig_stdout
 
 
-def create_prefix(pos_groups,
-                  weighing_scale,
-                  feature_to_delete,
-                  union_weights,
+def create_prefix(p_groups,
+                  w_scale,
+                  f_to_delete,
+                  u_weights,
                   training_percent,
                   test_percent):
     """
     Creates a prefix based on the model parameters
-    :param pos_groups:
-    :param weighing_scale:
-    :param feature_to_delete:
-    :param union_weights:
+    :param p_groups:
+    :param w_scale:
+    :param f_to_delete:
+    :param u_weights:
     :param training_percent:
     :param test_percent:
     :return:
     """
-    prefix_group = "_".join(["-".join(value) for value in pos_groups.values()])
-    union_weight_prefix = str(union_weights["bow"]) + "_" + str(union_weights["pos"])
+    prefix_group = "_".join(["-".join(value) for value in p_groups.values()])
+    union_weight_prefix = str(u_weights["bow"]) + "_" + str(u_weights["pos"])
     training = str(training_percent) + "_" + str(test_percent)
     prefix = prefix_group + "_" + str(
-        weighing_scale) + "_" + str(feature_to_delete) + "_" + union_weight_prefix + "_" + training
+        w_scale) + "_" + str(f_to_delete) + "_" + union_weight_prefix + "_" + training
     return prefix
 
 
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     all_labels = get_labels(labels, start_range=start_range, end_range=end_range)
     pos_groups = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
     weighing_scale = 5
-    feature_to_delete = 35000
+    feature_to_delete = 23000
     union_weights = {'bow': 0.3, 'pos': 0.7, }
     training_percent = 0.7
     test_percent = 0.2
@@ -78,7 +78,8 @@ if __name__ == "__main__":
     for element in weight_list:
         merge_accuracy.extend(element)
         merge_f1.extend(element)
-    # This is how entries look like ({'A': 5, 'R': 5, 'V': 5, 'N': 5, 'DEFAULT': 0}, (0.8800877520537714, 0.631544556072858, 0.5874320257269785))
+    # This is how entries look like
+    #  ({'A': 5, 'R': 5, 'V': 5, 'N': 5, 'DEFAULT': 0}, (0.8800877520537714, 0.631544556072858, 0.5874320257269785))
     # we take the second entry in the main tuple and sort by the third value
     merge_f1.sort(reverse=True, key=lambda tup: tup[1][2])
     merge_accuracy.sort(reverse=True, key=lambda tup: tup[1][1])

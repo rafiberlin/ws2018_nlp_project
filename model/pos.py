@@ -1,20 +1,14 @@
-import os
-import sys
 from features.ocfs import *
 
 sys.path.insert(0, os.getcwd())
 import math
-from process_data.helper import get_tagged_sentences, get_labels
 from process_data.spell_correction import pre_processing
-from pathlib import Path
 from sklearn.feature_extraction.text import CountVectorizer
 from baseline.baseline import do_not_tokenize
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.metrics import f1_score, classification_report
-import random
-from timeit import default_timer as timer
+from sklearn.metrics import f1_score
 import multiprocessing as mp
 from multiprocessing import Pool
 
@@ -42,8 +36,8 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
     processed_tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
 
     # debugging multithread
-    # all_pos_vocab = create_pos_weight_combination(pos_groups, weighing_scale)[:4]
-    all_pos_vocab = create_pos_weight_combination(pos_groups, weighing_scale)
+    all_pos_vocab = create_pos_weight_combination(pos_groups, weighing_scale)[:1]
+    #all_pos_vocab = create_pos_weight_combination(pos_groups, weighing_scale)
     data_len = len(all_labels)
     train_end = math.floor(percentage_train_data * data_len)  # 70% for train
     train_start = math.floor((1.0 - percentage_test_data) * data_len)  # 20% for testing

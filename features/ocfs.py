@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, os.getcwd())
 import math
 from process_data.helper import get_tagged_sentences, get_labels
-from process_data.spell_correction import pre_processing
+from process_data.helper import pre_processing
 from pathlib import Path
 from sklearn.feature_extraction.text import CountVectorizer
 from baseline.baseline import do_not_tokenize
@@ -28,12 +28,12 @@ def drop_cols(matrix, drop_idx):
     :return:
     """
     drop_idx = np.unique(drop_idx)
-    tempMat = matrix.tocoo()
-    keep = ~np.in1d(tempMat.col, drop_idx)
-    tempMat.data, tempMat.row, tempMat.col = tempMat.data[keep], tempMat.row[keep], tempMat.col[keep]
-    tempMat.col -= drop_idx.searchsorted(tempMat.col)  # decrease column indices
-    tempMat._shape = (tempMat.shape[0], tempMat.shape[1] - len(drop_idx))
-    return tempMat.tocsr()
+    temp_mat = matrix.tocoo()
+    keep = ~np.in1d(temp_mat.col, drop_idx)
+    temp_mat.data, temp_mat.row, temp_mat.col = temp_mat.data[keep], temp_mat.row[keep], temp_mat.col[keep]
+    temp_mat.col -= drop_idx.searchsorted(temp_mat.col)  # decrease column indices
+    temp_mat._shape = (temp_mat.shape[0], temp_mat.shape[1] - len(drop_idx))
+    return temp_mat.tocsr()
 
 
 class PosVectorizer(BaseEstimator, TransformerMixin):
@@ -230,15 +230,6 @@ def main():
         ('bowclassifier', bow_classifier),
     ])
 
-    # bow_pipeline = bow_pipeline.fit(train_docs, train_labels)
-    # bow_train_acc_pipeline = bow_pipeline.score(train_docs, train_labels)
-    # bow_test_acc_pipeline = bow_pipeline.score(test_docs, test_labels)
-    # bow_predicted = bow_pipeline.predict(test_docs)
-    # bow_f1 = f1_score(test_labels, bow_predicted, average="macro", labels=['neutral', 'positive', 'negative'])
-    # print("BOW Pipeline Train", bow_train_acc_pipeline)
-    # print("BOW Pipeline Test", bow_test_acc_pipeline)
-    # print("BOW Pipeline Test F1", bow_f1)
-
     # 5 for N, 3 for V, 2 for A, 1 for R
     # pos_vocab = {'N': 2, 'V': 3, 'A': 4, 'R': 5}
 
@@ -255,28 +246,13 @@ def main():
     pd_pos_train = ocfs.transform(pos_train)
     maxent_classifier.fit(pd_pos_train, train_labels)
 
-    # Manual Steps, should delive r the same results as a pipeline
+    # Manual Steps, should deliver the same results as a pipeline
     # pos_test = pos_feature.transform(test_docs)
     # pd_pos_test = ocfs.transform(pos_test)
     # pos_train_acc = maxent_classifier.score(pd_pos_train, train_labels)
     # pos_test_acc = maxent_classifier.score(pd_pos_test, test_labels)
     # print("Manual Steps", pos_train_acc)
     # print("Manual Test", pos_test_acc)
-
-    pos_pipeline = Pipeline([
-        ('posweighing', PosVectorizer(pos_vocab)),
-        ('ocfs', OCFS(number_of_features_to_delete)),
-        ('classifier', maxent_classifier),
-    ])
-
-    # pos_pipeline.fit(train_docs, train_labels)
-    # pos_train_acc_pipeline = pos_pipeline.score(train_docs, train_labels)
-    # pos_test_acc_pipeline = pos_pipeline.score(test_docs, test_labels)
-    # pos_predicted = pos_pipeline.predict(test_docs)
-    # pos_f1 = f1_score(test_labels, pos_predicted, average="macro", labels=['neutral', 'positive', 'negative'])
-    # print("POS Pipeline Train", pos_train_acc_pipeline)
-    # print("POS Pipeline Test", pos_test_acc_pipeline)
-    # print("POS Pipeline Test F1", pos_f1)
 
     unified_pipeline = Pipeline([
         # Use FeatureUnion to combine the features from bow and pos

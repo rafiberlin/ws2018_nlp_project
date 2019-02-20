@@ -111,15 +111,15 @@ if __name__ == "__main__":
     split_job = True
 
     prefix_args = [
-        ##First tests which were run
 
+        # First tests which were run
         # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.7, 'pos': 0.3, }, training_percent,
         #  test_percent],
         # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
         #  test_percent],
         # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
         #  test_percent],
-        ##Test set focusing on having a bigger weitht on POS in the Union Feature
+        # Test set focusing on having a bigger weight on POS in the Union Feature
         # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 23000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
         #  test_percent],
         # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.3, 'pos': 0.7, }, training_percent,

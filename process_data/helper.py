@@ -1,5 +1,6 @@
 import pandas as pd
 import csv
+from nltk.corpus import stopwords as nltk_stopwords
 import nltk.corpus.reader.conll as conll
 
 
@@ -27,7 +28,10 @@ def get_tagged_sentences(folder, filename, file_extension=".csv", start_range=No
     :param folder:     Folder to the tagged sentences
     :param filename: the file to parse
     :param file_extension: ending of the file toi be parsed
-    :param split_pos: if false, returns a list of documents, where each documents contains a tuple (word,pos), if true 2 separated lists (one list of words, one list of corresponding pos)
+    :param start_range: optional, get sentences from a given index
+    :param end_range: optional, get sentences until a given index
+    :param split_pos: if false, returns a list of documents, where each documents contains a tuple (word,pos),
+                      if true 2 separated lists (one list of words, one list of corresponding pos)
     :return: one or 2 lists, see param split_pos
     """
     corpus = conll.ConllCorpusReader(folder, file_extension, ('words', 'pos'))
@@ -51,16 +55,18 @@ def get_labels(shuffled_file, start_range=None, end_range=None):
     """
     used to get encoded labels (negative =0, positive 1, neutral 2) from the /dataset/shuffled.csv file
     :param shuffled_file:
-    :param max_rows:
+    :param start_range:
+    :param end_range:
     :return: labels and labels for testing data as pandas.dataframe objects
     """
 
     df = pd.read_csv(shuffled_file, sep=',', header=None, names=['ID', 'Label', 'Orig'], quoting=csv.QUOTE_ALL,
                      encoding='utf8')
     df = df.drop(['ID', 'Orig'], axis=1)
-    labels = df.replace({'Label': {'negative': 0, 'positive': 1, 'neutral': 2}})
+    df.replace({'Label': {'negative': 0, 'positive': 1, 'neutral': 2}})
 
     return extract_range(df, start_range, end_range)
+
 
 def pre_processing(tagged_sentence, pos_grouping=None,
                    default_pos="DEFAULT",
@@ -96,7 +102,8 @@ def pre_processing(tagged_sentence, pos_grouping=None,
                     new_sentence.append((word, pos_group_key,))
                     group_found = True
                     break
-            # Fallback to avoid empty documents. Exemple tweet that does not contain any of our groups => just emoji + hashtag
+            # Fallback to avoid empty documents.
+            # Example tweet that does not contain any of our groups => just emoji + hashtag
             if not group_found:
                 new_sentence.append((word, default_pos,))
         processed_sentences.append(new_sentence)

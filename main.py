@@ -5,10 +5,10 @@ from model.pos import return_best_pos_weight
 from process_data.helper import get_tagged_sentences, get_labels
 
 
-def save_results(data_set_path, filename, results):
+def save_results(results_path, filename, results):
     # Save results
     orig_stdout = sys.stdout
-    output = os.path.join(data_set_path, filename)
+    output = os.path.join(results_path, filename)
     with open(output, 'w') as file:
         sys.stdout = file
         for item in results:
@@ -83,8 +83,8 @@ def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_
     if number_results < keep_best:
         keep_best = number_results
 
-    save_results(data_set_path, file_prefix + "_" + "f1_pos_bow.txt", merge_f1[:keep_best])
-    save_results(data_set_path, file_prefix + "_" + "accuracy_pos_bow.txt", merge_accuracy[:keep_best])
+    save_results(results_path, file_prefix + "_" + "f1_pos_bow.txt", merge_f1[:keep_best])
+    save_results(results_path, file_prefix + "_" + "accuracy_pos_bow.txt", merge_accuracy[:keep_best])
 
 
 # Main Entry Point
@@ -92,6 +92,7 @@ if __name__ == "__main__":
     # nltk.download('stopwords')
     parent_dir = os.getcwd()
     data_set_path = os.path.join(parent_dir, "dataset")
+    results_path = os.path.join(parent_dir, "results")
     tagged_sentences = os.path.join(data_set_path, 'text_cleaned_pos.csv')
     labels = os.path.join(data_set_path, 'shuffled.csv')
 

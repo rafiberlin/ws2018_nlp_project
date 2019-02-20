@@ -24,13 +24,17 @@ def reduce_lengthening(text):
     return pattern.sub(r"\1\1", text)
 
 
-def remove_backslash_carefully(word, last_corrections={}):
+def remove_backslash_carefully(word, last_corrections=None):
     """
-    Only remove the starting backslash if all characters coming afterwards are word characters (should not destroy emojis)
+    Only remove the starting backslash if all characters coming afterwards
+    are word characters (should not destroy emojis)
     :param word:
     :param last_corrections:
     :return:
     """
+
+    if last_corrections is None:
+        last_corrections = {}
 
     corrected_word = word
 
@@ -65,7 +69,7 @@ def apply_word_corrections(word, last_corrections=None):
 
 
 def correct_spelling(word, last_corrections=None, to_lower=False,
-                     stopwords=["@GENERICUSER", "http://genericurl.com", "EMAIL@GENERIC.COM"]):
+                     stop_word_list=None):
     """
     Returns the most probable word, if the spelling probability is above 91%
     Example:
@@ -76,10 +80,14 @@ def correct_spelling(word, last_corrections=None, to_lower=False,
     :param word:
     :param last_corrections: dictionnary to store spelling corections. Can speed up the processing for huge texts
     :param to_lower:
+    :param stop_word_list:
     :return:
     """
 
-    if word in stopwords:
+    if stop_word_list is None:
+        stop_word_list = ["@GENERICUSER", "http://genericurl.com", "EMAIL@GENERIC.COM"]
+
+    if word in stop_word_list:
         return word
 
     if to_lower:
@@ -106,7 +114,7 @@ def correct_spelling(word, last_corrections=None, to_lower=False,
         guessed_word = reduced_word[:punctuation_found.start()]
         punctuation = punctuation_found.group(0)
     if prefix_found:
-        # evoid to repeat the word, if the word does not contain any alphanumeric characters
+        # avoid to repeat the word, if the word does not contain any alphanumeric characters
         if not punctuation_found or prefix_found.start() != punctuation_found.start():
             guessed_word = guessed_word[prefix_found.end():]
             prefix = prefix_found.group(0)
@@ -131,8 +139,6 @@ def correct_spelling(word, last_corrections=None, to_lower=False,
     return final_guess
 
 
-
-
 def merge_files_as_binary(path, output, file_pattern="*.txt"):
     """
     given a certain file pattern, merge the conten of all files in the directory "path" to the
@@ -144,26 +150,27 @@ def merge_files_as_binary(path, output, file_pattern="*.txt"):
     """
     all_files = glob.glob(os.path.join(path, file_pattern))
     with open(output, 'wb') as outfile:
-        for fname in all_files:
-            with open(fname, "rb") as infile:
+        for f_name in all_files:
+            with open(f_name, "rb") as infile:
                 for line in infile:
                     outfile.write(line)
 
 
-def filter_unwanted_characters(input, outpath, shuffle=False):
+def filter_unwanted_characters(input_file, output_path, shuffle=False):
     """
     Remove broken lines (which can't be output to proper csv because they contain a tab)
-    :param input: complete path to an input file
-    :param output: complete path to an output file
+    :param input_file: complete path to an input file
+    :param output_path: complete path to an output file
+    :param shuffle: reorder the loaded data if True
     :return:
     """
-    df = pd.read_csv(input, index_col=None, sep='\t', header=None, names=['id', 'sentiment', 'text', 'to_delete'])
+    df = pd.read_csv(input_file, index_col=None, sep='\t', header=None, names=['id', 'sentiment', 'text', 'to_delete'])
     df = df.drop_duplicates(subset="id", keep="first")
     # workaround somehow, some lines are not being read produced as proper csv
     #  we remove the entries with \t hindering the proper output. we are losing approximatively 500 documents
 
-    patternDel = "\t"
-    filt = df['text'].str.contains(patternDel)
+    pattern_deletion = "\t"
+    filt = df['text'].str.contains(pattern_deletion)
     df = df[~filt]
     df = df.reset_index(drop=True)
     # Remove quotes and tab
@@ -178,21 +185,21 @@ def filter_unwanted_characters(input, outpath, shuffle=False):
         df = df.reset_index(drop=True)
     file_encoding = "utf-8-sig"
 
-    dataset_path = dirname(dirname(dirname(outpath)))
+    dataset_path = dirname(dirname(dirname(output_path)))
     df.to_csv(os.path.join(dataset_path, "shuffled.csv"), header=None, encoding=file_encoding,
               # quoting=csv.QUOTE_ALL,
               quoting=csv.QUOTE_ALL,
               columns=['sentiment', 'text'],
               index=True)
-    escapechar_textonly = " "
-    df.to_csv(outpath + "text_only.csv", header=None, encoding=file_encoding,
+    escape_char_textonly = " "
+    df.to_csv(output_path + "text_only.csv", header=None, encoding=file_encoding,
               # quoting=csv.QUOTE_ALL,
               quoting=csv.QUOTE_NONE,
-              escapechar=escapechar_textonly,
+              escapechar=escape_char_textonly,
               columns=['text'], index=False)
 
 
-def clean_data(input, output):
+def clean_data(input_file, output_file):
     """
     The input file will be cleaned as and out to output file as follow=:
     - replace username by token @GENERICUSER
@@ -200,16 +207,16 @@ def clean_data(input, output):
     - replace urls by http://genericurl.com
     - spelling correction
 
-    :param input:
-    :param output:
+    :param input_file:
+    :param output_file:
     :return:
     """
     spelling_corrections = {}
     # speller = SpellCorrector(corpus="english")
 
-    file_enoding = "utf-8-sig"
-    with open(output, mode="w", encoding=file_enoding, newline='') as outfile:
-        with open(input, mode="r", encoding=file_enoding, newline='') as infile:
+    file_encoding = "utf-8-sig"
+    with open(output_file, mode="w", encoding=file_encoding, newline='') as outfile:
+        with open(input_file, mode="r", encoding=file_encoding, newline='') as infile:
             for line in infile:
                 # replace number
                 # source https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch06s11.html
@@ -246,16 +253,24 @@ def clean_data(input, output):
 
 
 def correct_spelling2(word, last_corrections=None, to_lower=False,
-                      stopwords=["@GENERICUSER", "http://genericurl.com", "EMAIL@GENERIC.COM", "GENERICNUMBER"],
-                      speller=SpellCorrector(corpus="english")):
+                      stopwords=None,
+                      speller=None):
     """
     Based on ekphrasis
     Function harms more than it fixes things...
     :param word:
-    :param last_corrections: dictionnary to store spelling corections. Can speed up the processing for huge texts
+    :param last_corrections: dictionary to store spelling corrections. Can speed up the processing for huge texts
     :param to_lower:
+    :param stopwords:
+    :param speller:
     :return:
     """
+
+    if stopwords is None:
+        stopwords = ["@GENERICUSER", "http://genericurl.com", "EMAIL@GENERIC.COM", "GENERICNUMBER"],
+
+    if speller is None:
+        speller = SpellCorrector(corpus="english")
 
     if word in stopwords:
         return word
@@ -279,27 +294,27 @@ def correct_spelling2(word, last_corrections=None, to_lower=False,
         guessed_word = reduced_word[:punctuation_found.start()]
         punctuation = punctuation_found.group(0)
     if prefix_found:
-        # evoid to repeat the word, if the word does not contain any alphanumeric characters
+        # avoid to repeat the word, if the word does not contain any alphanumeric characters
         if not punctuation_found or prefix_found.start() != punctuation_found.start():
             guessed_word = guessed_word[prefix_found.end():]
             prefix = prefix_found.group(0)
     guessed_word = speller.correct(guessed_word)
-
     final_guess = prefix + guessed_word + punctuation
     if last_corrections is not None:
         last_corrections[word] = final_guess
     return final_guess
 
 
-
-
-
 def create_files_for_analysis(path, shuffle=False):
+    """
+
+    :param path:
+    :param shuffle:
+    :return:
+    """
     print("Start")
     merge_files_as_binary(path, path + "all_raw.csv")
-    filter_unwanted_characters(path + "all_raw.csv", path)
-    # print("Cleaning")
-    dataset_path = dirname(dirname(dirname(path)))
+    filter_unwanted_characters(path + "all_raw.csv", path, shuffle)
     clean_data(path + "text_only.csv",
                path + "text_cleaned.csv")
     print("Finish")
@@ -326,58 +341,11 @@ def build_pie_chart(data_frame_labels, chart_title="Label distribution in the Se
     plt.savefig(filename)
 
 
-def pre_processing(tagged_sentence, pos_grouping=None,
-                   default_pos="DEFAULT",
-                   stopwords=None, to_lower=True):
-    """
-    Apply some pre-processing on pre tagged sentences. Stopwords, POS Grouping, lowering case
-    :param tagged_sentence:
-    :param pos_grouping:
-    :param default_pos:
-    :param stopwords:
-    :param to_lower:
-    :return: tagged sentences with removed stopped words and different pos grouping
-    """
-    if pos_grouping is None:
-        pos_grouping = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
-
-    if stopwords is None:
-        stopwords = set(nltk_stopwords.words('english'))
-
-    processed_sentences = []
-    for sentence in tagged_sentence:
-        new_sentence = []
-        for word_pos in sentence:
-            word = word_pos[0]
-            pos = word_pos[1]
-            group_found = False
-            if to_lower:
-                word = word.lower()
-            if word in stopwords:
-                continue
-            for pos_group_key, pos_group_values in pos_grouping.items():
-                if pos in pos_group_values:
-                    new_sentence.append((word, pos_group_key,))
-                    group_found = True
-                    break
-            # Fallback to avoid empty documents. Exemple tweet that does not contain any of our groups => just emoji + hashtag
-            if not group_found:
-                new_sentence.append((word, default_pos,))
-        processed_sentences.append(new_sentence)
-    return processed_sentences
-
-
 def main():
     parent_dir = Path(__file__).parents[1]
-    TRAIN_PATH = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/train/")
+    train_path = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/train/")
     shuffle_data = False
-    # clean_data still buggy. TODO backslash handling not optimal
-    create_files_for_analysis(TRAIN_PATH, shuffle_data)
-
-    #TEST_PATH = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/test/")
-    #shuffle_data = False
-    # clean_data still buggy. TODO backslash handling not optimal
-    #create_files_for_analysis(TEST_PATH, shuffle_data)
+    create_files_for_analysis(train_path, shuffle_data)
 
 
 if __name__ == "__main__":

@@ -150,6 +150,16 @@ if __name__ == "__main__":
         # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 35000, {'bow': 0, 'pos': 1, }, training_percent, test_percent],
         # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 0, {'bow': 0, 'pos': 1, }, training_percent, test_percent],
 
+        # Test: grouping A and R plus emoticons
+        #  [{"V": ["V"], "N": ["N"], "R+A": ["R", "A"], "E": ["E"]}, 5, 30000, {'bow': 0, 'pos': 1, }, training_percent,
+        #  test_percent],
+        # [{"V": ["V"], "N": ["N"], "R+A": ["R", "A"], "E": ["E"]}, 5, 25000, {'bow': 0, 'pos': 1, }, training_percent,
+        #  test_percent],
+        # [{"V": ["V"], "N": ["N"], "R+A": ["R", "A"], "E": ["E"]}, 5, 35000, {'bow': 0, 'pos': 1, }, training_percent,
+        #  test_percent],
+        # [{"V": ["V"], "N": ["N"], "R+A": ["R", "A"], "E": ["E"]}, 5, 0, {'bow': 0, 'pos': 1, }, training_percent,
+        #  test_percent],
+
         # Test with 50% BOW 50% POS on union
         [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.5, 'pos': 0.5, }, training_percent,
          test_percent],

@@ -8,13 +8,18 @@ from sklearn.metrics import f1_score
 
 
 def get_pos_groups_from_vocab(pos_vocab):
+    """
+    Assumption: Key for merged groups A and V is A+V
+    :param pos_vocab:
+    :return:
+    """
     return {key: key.split("+") for key in pos_vocab.keys()}
 
 
-def save_results(results_path, filename, results):
+def save_results(result_path, filename, results):
     """
-
-    :param results_path:
+    Save the results
+    :param result_path:
     :param filename:
     :param results:
     :return:
@@ -22,7 +27,7 @@ def save_results(results_path, filename, results):
 
     # Save results
     orig_stdout = sys.stdout
-    output = os.path.join(results_path, filename)
+    output = os.path.join(result_path, filename)
     with open(output, 'w') as file:
         sys.stdout = file
         for item in results:
@@ -34,6 +39,14 @@ def create_prefix_for_model_persistence(p_vocab,
                                         f_to_delete,
                                         u_weights,
                                         train_percent):
+    """
+    Create aprefix based on the parameters
+    :param p_vocab:
+    :param f_to_delete:
+    :param u_weights:
+    :param train_percent:
+    :return:
+    """
     pref = ""
     for pos in sorted(p_vocab.keys()):
         pref += pos + str(p_vocab[pos]) + "_"
@@ -117,6 +130,7 @@ if __name__ == "__main__":
     # nltk.download('stopwords')
     parent_dir = os.getcwd()
     data_set_path = os.path.join(parent_dir, os.path.join("dataset", "processed"))
+    model_path = os.path.join(parent_dir, os.path.join("dataset", "model"))
     results_path = os.path.join(parent_dir, "results")
     tagged_sentences = os.path.join(data_set_path, 'text_cleaned_pos.csv')
     labels = os.path.join(data_set_path, 'shuffled.csv')
@@ -230,7 +244,7 @@ if __name__ == "__main__":
 
             model_arg = [train_docs, train_labels]
             model_arg.extend(arg)
-            serialized_model = os.path.join(data_set_path, prefix + model_extension)
+            serialized_model = os.path.join(model_path, prefix + model_extension)
             model = None
             if not os.path.isfile(serialized_model):
                 model = create_fitted_model(*model_arg)

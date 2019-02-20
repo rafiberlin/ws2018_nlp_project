@@ -1,7 +1,7 @@
 import os
 import sys
 import time
-from model.pos import return_best_pos_weight
+from model.train_model import return_best_pos_weight
 from process_data.helper import get_tagged_sentences, get_labels
 
 

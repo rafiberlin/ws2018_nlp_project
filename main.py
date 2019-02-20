@@ -99,7 +99,7 @@ def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_
 if __name__ == "__main__":
     # nltk.download('stopwords')
     parent_dir = os.getcwd()
-    data_set_path = os.path.join(parent_dir, "dataset")
+    data_set_path = os.path.join(parent_dir, "dataset", "processed")
     results_path = os.path.join(parent_dir, "results")
     tagged_sentences = os.path.join(data_set_path, 'text_cleaned_pos.csv')
     labels = os.path.join(data_set_path, 'shuffled.csv')

@@ -2,7 +2,7 @@ from features.ocfs import *
 
 sys.path.insert(0, os.getcwd())
 import math
-from process_data.spell_correction import pre_processing
+from process_data.helper import pre_processing
 from sklearn.feature_extraction.text import CountVectorizer
 from baseline.baseline import do_not_tokenize
 import numpy as np

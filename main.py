@@ -1,8 +1,9 @@
 import os
 import sys
 import time
-from model.pos import return_best_pos_weight
+from model.pos import return_best_pos_weight, create_fitted_model, p_dump, p_load
 from process_data.helper import get_tagged_sentences, get_labels
+import math
 
 
 def save_results(results_path, filename, results):
@@ -22,6 +23,17 @@ def save_results(results_path, filename, results):
         for item in results:
             print(item)
     sys.stdout = orig_stdout
+
+
+def create_prefix_for_model_persistence(p_vocab,
+                                        f_to_delete,
+                                        u_weights,
+                                        train_percent):
+    pref = ""
+    for pos, weight in p_vocab:
+        pref += pos + str(weight) + "_"
+    pref += str(f_to_delete) + "_" + str(u_weights["bow"]) + "_" + str(u_weights["pos"]) + "_" + str(train_percent)
+    return pref
 
 
 def create_prefix(p_groups,
@@ -99,7 +111,7 @@ def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_
 if __name__ == "__main__":
     # nltk.download('stopwords')
     parent_dir = os.getcwd()
-    data_set_path = os.path.join(parent_dir, "dataset")
+    data_set_path = os.path.join(parent_dir, "dataset/processed")
     results_path = os.path.join(parent_dir, "results")
     tagged_sentences = os.path.join(data_set_path, 'text_cleaned_pos.csv')
     labels = os.path.join(data_set_path, 'shuffled.csv')
@@ -118,71 +130,100 @@ if __name__ == "__main__":
     test_percent = 0.2
     split_job = True
 
-    prefix_args = [
+    # True for train False for predict
+    train_or_predict = False
 
-        # First tests which were run
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.7, 'pos': 0.3, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
-        #  test_percent],
-        # Test set focusing on having a bigger weight on POS in the Union Feature
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 23000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 28000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 32000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 29500, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30500, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-        #  test_percent],
+    if train_or_predict:
 
-        # # Test like in the paper (POS only, BOW weight = 0)
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0, 'pos': 1, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0, 'pos': 1, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0, 'pos': 1, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0, 'pos': 1, }, training_percent,
-        #  test_percent],
+        prefix_args = [
 
-        # Test: grouping A and R (POS only, BOW weight = 0)
-        # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 30000, {'bow': 0, 'pos': 1, }, training_percent,
-        # test_percent],
-        # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 25000, {'bow': 0, 'pos': 1, }, training_percent,
-        # test_percent],
-        # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 35000, {'bow': 0, 'pos': 1, }, training_percent,
-        # test_percent],
-        # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 0, {'bow': 0, 'pos': 1, }, training_percent,
-        # test_percent],
+            # First tests which were run
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.7, 'pos': 0.3, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
+            #  test_percent],
+            # Test set focusing on having a bigger weight on POS in the Union Feature
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 23000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 28000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 32000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 29500, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30500, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
 
-        # Test with 50% BOW 50% POS on union
-        [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.5, 'pos': 0.5, }, training_percent,
-         test_percent],
-        [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
-         test_percent],
-        [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
-         test_percent],
-        [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
-         test_percent],
+            # # Test like in the paper (POS only, BOW weight = 0)
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0, 'pos': 1, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0, 'pos': 1, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0, 'pos': 1, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0, 'pos': 1, }, training_percent,
+            #  test_percent],
 
-    ]
-    start = time.time()
-    print("Started... ")
-    for arg in prefix_args:
-        data_arg = [tagged_sentences, all_labels]
-        data_arg.extend(arg)
-        data_arg.append(split_job)
-        run_logic(*data_arg)
+            # Test: grouping A and R (POS only, BOW weight = 0)
+            # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 30000, {'bow': 0, 'pos': 1, }, training_percent,
+            # test_percent],
+            # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 25000, {'bow': 0, 'pos': 1, }, training_percent,
+            # test_percent],
+            # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 35000, {'bow': 0, 'pos': 1, }, training_percent,
+            # test_percent],
+            # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 0, {'bow': 0, 'pos': 1, }, training_percent,
+            # test_percent],
 
-    end = time.time()
-    print("Elapsed time overall: ", end - start)
+            # Test with 50% BOW 50% POS on union
+            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.5, 'pos': 0.5, }, training_percent,
+             test_percent],
+            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
+             test_percent],
+            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
+             test_percent],
+            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
+             test_percent],
+
+        ]
+
+        start = time.time()
+        print("Started... ")
+        for arg in prefix_args:
+            data_arg = [tagged_sentences, all_labels]
+            data_arg.extend(arg)
+            data_arg.append(split_job)
+            run_logic(*data_arg)
+
+        end = time.time()
+        print("Elapsed time overall: ", end - start)
+    else:
+
+        data_len = len(all_labels)
+        train_end = math.floor(training_percent * data_len)  # 70% for train
+        train_start = math.floor((1.0 - test_percent) * data_len)  # 20% for testing
+        train_docs, test_docs = tagged_sentences[:train_end], tagged_sentences[train_start:]
+        train_labels, test_labels = all_labels[:train_end], all_labels[train_start:]
+
+        predict_args = [
+            [{'V': 4, 'A': 3, 'N': 1, 'R': 1}, 30000, {'bow': 0.5, 'pos': 0.5, }],
+        ]
+
+        for arg in predict_args:
+            model_arg = [train_docs, train_labels]
+            model_arg.extend(arg)
+
+            model = create_fitted_model(*model_arg)
+
+            prefix_arg = []
+            prefix_arg.extend(arg)
+            prefix_arg.append(training_percent)
+            prefix = create_prefix_for_model_persistence(*prefix_arg)
+            p_dump(model, os.path.join(data_set_path, prefix + ".obj"))

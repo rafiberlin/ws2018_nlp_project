@@ -1,4 +1,4 @@
-from features.ocfs import *
+import features.ocfs as ocfs
 import math
 from process_data.helper import pre_processing
 from sklearn.feature_extraction.text import CountVectorizer
@@ -35,8 +35,8 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
     processed_tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
 
     # debugging multithread
-    # all_pos_vocab = create_pos_weight_combination(pos_groups, weighing_scale)[:1]
-    all_pos_vocab = create_pos_weight_combination(pos_groups, weighing_scale)
+    # all_pos_vocab = ocfs.create_pos_weight_combination(pos_groups, weighing_scale)[:1]
+    all_pos_vocab = ocfs.create_pos_weight_combination(pos_groups, weighing_scale)
     data_len = len(all_labels)
     train_end = math.floor(percentage_train_data * data_len)  # 70% for train
     train_start = math.floor((1.0 - percentage_test_data) * data_len)  # 20% for testing
@@ -136,7 +136,7 @@ def run_pos_model(train_docs, test_docs, train_labels, test_labels, pos_vocab, n
         binary=True  # replaces bow_train = (bow_train >= 1).astype(int)
     )
 
-    pos_vectorizer = PosVectorizer(pos_vocab)
+    pos_vectorizer = ocfs.PosVectorizer(pos_vocab)
 
     pos_bow_pipeline = Pipeline([
         # Use FeatureUnion to combine the features from bow and pos
@@ -149,7 +149,7 @@ def run_pos_model(train_docs, test_docs, train_labels, test_labels, pos_vocab, n
                 # Pipeline for standard bag-of-words model for body
                 ('pos', Pipeline([
                     ('posweighing', pos_vectorizer),
-                    ('ocfs', OCFS(number_of_features_to_delete)),
+                    ('ocfs', ocfs.OCFS(number_of_features_to_delete)),
                 ])),
             ],
             # weight components in FeatureUnion

@@ -26,6 +26,7 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
     :param union_transformer_weights:
     :param percentage_train_data:
     :param percentage_test_data:
+    :param use_multi_processing:
     :return:
     """
 

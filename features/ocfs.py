@@ -1,7 +1,5 @@
 import os
 import sys
-
-sys.path.insert(0, os.getcwd())
 import math
 from process_data.helper import get_tagged_sentences, get_labels
 from process_data.helper import pre_processing

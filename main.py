@@ -6,6 +6,14 @@ from process_data.helper import get_tagged_sentences, get_labels
 
 
 def save_results(results_path, filename, results):
+    """
+
+    :param results_path:
+    :param filename:
+    :param results:
+    :return:
+    """
+
     # Save results
     orig_stdout = sys.stdout
     output = os.path.join(results_path, filename)

@@ -9,7 +9,6 @@ from pathlib import Path
 import html
 from ekphrasis.classes.spellcorrect import SpellCorrector
 import matplotlib.pyplot as plt
-from os.path import dirname
 
 
 def reduce_lengthening(text):
@@ -147,6 +146,7 @@ def merge_files_as_binary(path, output, file_pattern="*.txt"):
     :param file_pattern: type of files to be merged
     :return:
     """
+    
     all_files = glob.glob(os.path.join(path, file_pattern))
     with open(output, 'wb') as outfile:
         for f_name in all_files:
@@ -184,14 +184,15 @@ def filter_unwanted_characters(input_file, output_path, shuffle=False):
         df = df.reset_index(drop=True)
     file_encoding = "utf-8-sig"
 
-    dataset_path = dirname(dirname(dirname(output_path)))
-    df.to_csv(os.path.join(dataset_path, "shuffled.csv"), header=None, encoding=file_encoding,
+
+    print('filter unwanted', output_path)
+    df.to_csv(os.path.join(output_path, "shuffled.csv"), header=None, encoding=file_encoding,
               # quoting=csv.QUOTE_ALL,
               quoting=csv.QUOTE_ALL,
               columns=['sentiment', 'text'],
               index=True)
     escape_char_textonly = " "
-    df.to_csv(output_path + "text_only.csv", header=None, encoding=file_encoding,
+    df.to_csv(os.path.join(output_path, "text_only.csv"), header=None, encoding=file_encoding,
               # quoting=csv.QUOTE_ALL,
               quoting=csv.QUOTE_NONE,
               escapechar=escape_char_textonly,
@@ -312,10 +313,12 @@ def create_files_for_analysis(path, shuffle=False):
     :return:
     """
     print("Start")
-    merge_files_as_binary(path, path + "all_raw.csv")
-    filter_unwanted_characters(path + "all_raw.csv", path, shuffle)
-    clean_data(path + "text_only.csv",
-               path + "text_cleaned.csv")
+    all_raw = os.path.join(path, "all_raw.csv")
+    processed_path = os.path.join(Path(__file__).parents[1].__str__(), 'dataset', 'processed')
+    merge_files_as_binary(path, all_raw)
+    filter_unwanted_characters(all_raw, processed_path, shuffle)
+    clean_data(os.path.join(processed_path, "text_only.csv"),
+               os.path.join(processed_path, "text_cleaned.csv"))
     print("Finish")
 
 
@@ -342,7 +345,7 @@ def build_pie_chart(data_frame_labels, chart_title="Label distribution in the Se
 
 def main():
     parent_dir = Path(__file__).parents[1]
-    train_path = os.path.join(parent_dir.__str__(), "dataset/raw_data_by_year/train/")
+    train_path = os.path.join(parent_dir.__str__(), 'dataset', 'raw')
     shuffle_data = False
     create_files_for_analysis(train_path, shuffle_data)
 

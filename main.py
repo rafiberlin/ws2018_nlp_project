@@ -150,7 +150,7 @@ if __name__ == "__main__":
     split_job = True
 
     # True for train False for predict
-    train_or_predict = False
+    train_or_predict = True
     model_extension = ".libobj"
 
     if train_or_predict:

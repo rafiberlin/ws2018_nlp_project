@@ -146,7 +146,7 @@ def merge_files_as_binary(path, output, file_pattern="*.txt"):
     :param file_pattern: type of files to be merged
     :return:
     """
-    
+
     all_files = glob.glob(os.path.join(path, file_pattern))
     with open(output, 'wb') as outfile:
         for f_name in all_files:
@@ -183,7 +183,6 @@ def filter_unwanted_characters(input_file, output_path, shuffle=False):
         df = df.sample(frac=1)
         df = df.reset_index(drop=True)
     file_encoding = "utf-8-sig"
-
 
     print('filter unwanted', output_path)
     df.to_csv(os.path.join(output_path, "shuffled.csv"), header=None, encoding=file_encoding,

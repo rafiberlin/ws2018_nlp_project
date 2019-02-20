@@ -9,7 +9,6 @@ from pathlib import Path
 import html
 from ekphrasis.classes.spellcorrect import SpellCorrector
 import matplotlib.pyplot as plt
-from nltk.corpus import stopwords as nltk_stopwords
 from os.path import dirname
 
 

@@ -53,7 +53,7 @@ def get_tagged_sentences(folder, filename, file_extension=".csv", start_range=No
 
 def get_labels(shuffled_file, start_range=None, end_range=None):
     """
-    used to get encoded labels (negative =0, positive 1, neutral 2) from the /dataset/shuffled.csv file
+    used to get encoded labels (negative =0, positive 1, neutral 2) from the /dataset/processed/shuffled.csv file
     :param shuffled_file:
     :param start_range:
     :param end_range:

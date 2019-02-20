@@ -137,8 +137,6 @@ if __name__ == "__main__":
 
     # True for train False for predict
     train_or_predict = False
-
-    save_or_load = True
     model_extension = ".libobj"
 
     if train_or_predict:

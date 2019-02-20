@@ -13,8 +13,6 @@ def get_pos_groups_from_vocab(pos_vocab):
     :param pos_vocab:
     :return:
     """
-    return {key: key.split("+") for key in pos_vocab.keys()}
-
 
 def save_results(result_path, filename, results):
     """

@@ -28,9 +28,9 @@ def main():
 
     # Do we still need punctuation removal? at least it can reduce feature space seeing that although
     # the tokenization is good there is still to many useless punctuation.
-    main_folder = "dataset"
+
     parent_dir = Path(__file__).parents[1]
-    path = os.path.join(parent_dir, main_folder)
+    path = os.path.join(parent_dir, 'dataset', 'processed')
     tagged_sentences = os.path.join(path, 'text_cleaned_pos.csv')
     label_file = os.path.join(path, 'shuffled.csv')
     docs, tags = get_tagged_sentences(path, tagged_sentences)

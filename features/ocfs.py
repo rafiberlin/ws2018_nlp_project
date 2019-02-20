@@ -182,7 +182,7 @@ class OCFS(BaseEstimator, TransformerMixin):
 def main():
     parent_dir = Path(__file__).parents[1]
     # parent_dir = os.getcwd() # my sys.path is different from PyCharm
-    data_set_path = os.path.join(parent_dir, "dataset")
+    data_set_path = os.path.join(parent_dir, "dataset", "processed")
     tagged_sentences = os.path.join(data_set_path, 'text_cleaned_pos.csv')
     labels = os.path.join(data_set_path, 'shuffled.csv')
 

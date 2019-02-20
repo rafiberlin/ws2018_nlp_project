@@ -1,7 +1,7 @@
 import os
 import sys
 import time
-from model.pos import return_best_pos_weight, create_fitted_model, save_model, load_model
+from model.train_model import return_best_pos_weight, create_fitted_model, save_model, load_model
 from process_data.helper import get_tagged_sentences, get_labels, get_pos_datasets
 
 from sklearn.metrics import f1_score
@@ -13,6 +13,8 @@ def get_pos_groups_from_vocab(pos_vocab):
     :param pos_vocab:
     :return:
     """
+    return {key: key.split("+") for key in pos_vocab.keys()}
+
 
 def save_results(result_path, filename, results):
     """
@@ -128,7 +130,7 @@ if __name__ == "__main__":
     # nltk.download('stopwords')
     parent_dir = os.getcwd()
     data_set_path = os.path.join(parent_dir, os.path.join("dataset", "processed"))
-    model_path = os.path.join(parent_dir, os.path.join("dataset", "model"))
+    model_path = os.path.join(parent_dir, "model")
     results_path = os.path.join(parent_dir, "results")
     tagged_sentences = os.path.join(data_set_path, 'text_cleaned_pos.csv')
     labels = os.path.join(data_set_path, 'shuffled.csv')

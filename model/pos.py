@@ -1,9 +1,7 @@
 from features.ocfs import *
-import math
-from process_data.helper import pre_processing
+from process_data.helper import get_pos_datasets
 from sklearn.feature_extraction.text import CountVectorizer
 from baseline.baseline import do_not_tokenize
-import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.metrics import f1_score
@@ -34,18 +32,13 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
         union_transformer_weights = {'bow': 0.7, 'pos': 0.3, }
     weights = union_transformer_weights
 
-    processed_tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
-
     # debugging multithread
     # all_pos_vocab = create_pos_weight_combination(pos_groups, weighing_scale)[:1]
     all_pos_vocab = create_pos_weight_combination(pos_groups, weighing_scale)
-    data_len = len(all_labels)
-    train_end = math.floor(percentage_train_data * data_len)  # 70% for train
-    train_start = math.floor((1.0 - percentage_test_data) * data_len)  # 20% for testing
-    train_docs, test_docs = processed_tagged_sentences[:train_end], processed_tagged_sentences[train_start:]
-    train_labels, test_labels = all_labels[:train_end], all_labels[train_start:]
-    train_labels = np.ravel(train_labels)
-    test_labels = np.ravel(test_labels)
+
+    train_docs, test_docs, train_labels, test_labels = get_pos_datasets(tagged_sentences, all_labels,
+                                                                        pos_groups, percentage_train_data,
+                                                                        percentage_test_data)
 
     # Process the model training with all combination in parallel, letting one core for CPU
     if use_multi_processing:

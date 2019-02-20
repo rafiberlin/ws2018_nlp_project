@@ -1,9 +1,14 @@
 import os
 import sys
 import time
-from model.pos import return_best_pos_weight, create_fitted_model, p_dump, p_load
-from process_data.helper import get_tagged_sentences, get_labels
-import math
+from model.pos import return_best_pos_weight, create_fitted_model, save_model, load_model
+from process_data.helper import get_tagged_sentences, get_labels, get_pos_datasets
+
+from sklearn.metrics import f1_score
+
+
+def get_pos_groups_from_vocab(pos_vocab):
+    return {key: key.split("+") for key in pos_vocab.keys()}
 
 
 def save_results(results_path, filename, results):
@@ -30,8 +35,8 @@ def create_prefix_for_model_persistence(p_vocab,
                                         u_weights,
                                         train_percent):
     pref = ""
-    for pos, weight in p_vocab:
-        pref += pos + str(weight) + "_"
+    for pos in sorted(p_vocab.keys()):
+        pref += pos + str(p_vocab[pos]) + "_"
     pref += str(f_to_delete) + "_" + str(u_weights["bow"]) + "_" + str(u_weights["pos"]) + "_" + str(train_percent)
     return pref
 
@@ -52,7 +57,7 @@ def create_prefix(p_groups,
     :param test_percent:
     :return:
     """
-    prefix_group = "_".join(["-".join(value) for value in p_groups.values()])
+    prefix_group = "_".join(["-".join(value) for value in sorted(p_groups.values())])
     union_weight_prefix = str(u_weights["bow"]) + "_" + str(u_weights["pos"])
     training = str(training_percent) + "_" + str(test_percent)
     prefix = prefix_group + "_" + str(
@@ -111,7 +116,7 @@ def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_
 if __name__ == "__main__":
     # nltk.download('stopwords')
     parent_dir = os.getcwd()
-    data_set_path = os.path.join(parent_dir, "dataset/processed")
+    data_set_path = os.path.join(parent_dir, os.path.join("dataset", "processed"))
     results_path = os.path.join(parent_dir, "results")
     tagged_sentences = os.path.join(data_set_path, 'text_cleaned_pos.csv')
     labels = os.path.join(data_set_path, 'shuffled.csv')
@@ -132,6 +137,9 @@ if __name__ == "__main__":
 
     # True for train False for predict
     train_or_predict = False
+
+    save_or_load = True
+    model_extension = ".libobj"
 
     if train_or_predict:
 
@@ -206,24 +214,37 @@ if __name__ == "__main__":
         print("Elapsed time overall: ", end - start)
     else:
 
-        data_len = len(all_labels)
-        train_end = math.floor(training_percent * data_len)  # 70% for train
-        train_start = math.floor((1.0 - test_percent) * data_len)  # 20% for testing
-        train_docs, test_docs = tagged_sentences[:train_end], tagged_sentences[train_start:]
-        train_labels, test_labels = all_labels[:train_end], all_labels[train_start:]
-
         predict_args = [
             [{'V': 4, 'A': 3, 'N': 1, 'R': 1}, 30000, {'bow': 0.5, 'pos': 0.5, }],
         ]
 
         for arg in predict_args:
-            model_arg = [train_docs, train_labels]
-            model_arg.extend(arg)
+            pos_vocabulary = arg[0]
+            pos_group = get_pos_groups_from_vocab(pos_vocabulary)
 
-            model = create_fitted_model(*model_arg)
-
+            train_docs, test_docs, train_labels, test_labels = get_pos_datasets(tagged_sentences, all_labels,
+                                                                                pos_group, training_percent,
+                                                                                test_percent)
             prefix_arg = []
             prefix_arg.extend(arg)
             prefix_arg.append(training_percent)
             prefix = create_prefix_for_model_persistence(*prefix_arg)
-            p_dump(model, os.path.join(data_set_path, prefix + ".obj"))
+
+            model_arg = [train_docs, train_labels]
+            model_arg.extend(arg)
+            serialized_model = os.path.join(data_set_path, prefix + model_extension)
+            model = None
+            if not os.path.isfile(serialized_model):
+                model = create_fitted_model(*model_arg)
+                save_model(model, serialized_model)
+            if model is None:
+                model = load_model(serialized_model)
+
+            predicted = model.predict(test_docs)
+            training_accuracy = model.score(train_docs, train_labels)
+            testing_accuracy = model.score(test_docs, test_labels)
+            f1 = f1_score(test_labels, predicted, average="macro",
+                          labels=['neutral', 'positive', 'negative'])
+            print("Model: " + prefix, "\nTraining accuracy", training_accuracy, "\nTesting accuracy", testing_accuracy,
+                  "\nTesting F1",
+                  f1, )

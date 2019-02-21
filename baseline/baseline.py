@@ -1,15 +1,16 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics import f1_score
-from process_data.helper import get_labels, get_tagged_sentences, extract_range
+from process_data.helper import get_labels, get_tagged_sentences
 import numpy as np
 import os
 import math
 from pathlib import Path
 
+
 def do_not_tokenize(doc):
     """
-    Dummy function to trick scikit Vectorizer => avoid tokenizing, processing
+    Dummy function to trick scikit vectorizer => avoid tokenizing, processing
     :param doc:
     :return:
     """
@@ -19,24 +20,26 @@ def do_not_tokenize(doc):
 
 def main():
     """
-    Run the baseline and output resuls in the console (Accuracy + Macro F1 score for BOW and TFIDF)
+    Run the baseline and output results in the console (Accuracy + Macro F1 score for BOW and TFIDF)
+    Used to show baseline numbers for the presentation.
+    Because we corrected encoding problem on some files afterwards, the numbers may now differ
     :return:
     """
 
     # Do we still need punctuation removal? at least it can reduce feature space seeing that although
     # the tokenization is good there is still to many useless punctuation.
-    MAIN_FOLDER = "dataset"
+
     parent_dir = Path(__file__).parents[1]
-    path = os.path.join(parent_dir, MAIN_FOLDER)
-    TAGGED_SENTENCES = os.path.join(path, 'text_cleaned_pos.csv')
-    LABELS = os.path.join(path, 'shuffled.csv')
-    docs, tags = get_tagged_sentences(path, TAGGED_SENTENCES)
-    labels = get_labels(LABELS)
-    dataLen = len(labels)
-    trainEnd = math.floor(0.7 * dataLen)  # 70% for train
-    testStart = math.floor(0.8 * dataLen)  # 20% for test
-    train_docs, test_docs = docs[:trainEnd], docs[testStart:]
-    train_labels, test_labels = labels[:trainEnd], labels[testStart:]
+    path = os.path.join(parent_dir, 'dataset', 'processed')
+    tagged_sentences = os.path.join(path, 'text_cleaned_pos.csv')
+    label_file = os.path.join(path, 'shuffled.csv')
+    docs, tags = get_tagged_sentences(path, tagged_sentences)
+    labels = get_labels(label_file)
+    data_len = len(labels)
+    train_end = math.floor(0.7 * data_len)  # 70% for train
+    test_start = math.floor(0.8 * data_len)  # 20% for test
+    train_docs, test_docs = docs[:train_end], docs[test_start:]
+    train_labels, test_labels = labels[:train_end], labels[test_start:]
 
     # work around to prevent scikit performing tokenizing on already tokenized documents...
     bag_of_words = CountVectorizer(
@@ -45,7 +48,7 @@ def main():
         preprocessor=do_not_tokenize,
         token_pattern=None,
         # stop_words="english"
-        binary=True # replaces bow_train = (bow_train >= 1).astype(int)
+        binary=True  # replaces bow_train = (bow_train >= 1).astype(int)
     )
 
     tfidf = TfidfVectorizer(

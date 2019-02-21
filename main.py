@@ -1,12 +1,22 @@
-from model.pos import *
+import os
+import sys
 import time
-import nltk
+from model.train_model import return_best_pos_weight
+from process_data.helper import get_tagged_sentences, get_labels
 
 
-def save_results(data_set_path, filename, results):
+def save_results(results_path, filename, results):
+    """
+
+    :param results_path:
+    :param filename:
+    :param results:
+    :return:
+    """
+
     # Save results
     orig_stdout = sys.stdout
-    output = os.path.join(data_set_path, filename)
+    output = os.path.join(results_path, filename)
     with open(output, 'w') as file:
         sys.stdout = file
         for item in results:
@@ -81,15 +91,16 @@ def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_
     if number_results < keep_best:
         keep_best = number_results
 
-    save_results(data_set_path, file_prefix + "_" + "f1_pos_bow.txt", merge_f1[:keep_best])
-    save_results(data_set_path, file_prefix + "_" + "accuracy_pos_bow.txt", merge_accuracy[:keep_best])
+    save_results(results_path, file_prefix + "_" + "f1_pos_bow.txt", merge_f1[:keep_best])
+    save_results(results_path, file_prefix + "_" + "accuracy_pos_bow.txt", merge_accuracy[:keep_best])
 
 
 # Main Entry Point
 if __name__ == "__main__":
     # nltk.download('stopwords')
     parent_dir = os.getcwd()
-    data_set_path = os.path.join(parent_dir, "dataset")
+    data_set_path = os.path.join(parent_dir, "dataset", "processed")
+    results_path = os.path.join(parent_dir, "results")
     tagged_sentences = os.path.join(data_set_path, 'text_cleaned_pos.csv')
     labels = os.path.join(data_set_path, 'shuffled.csv')
 
@@ -108,15 +119,15 @@ if __name__ == "__main__":
     split_job = True
 
     prefix_args = [
-        ##First tests which were run
 
+        # First tests which were run
         # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.7, 'pos': 0.3, }, training_percent,
         #  test_percent],
         # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
         #  test_percent],
         # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
         #  test_percent],
-        ##Test set focusing on having a bigger weitht on POS in the Union Feature
+        # Test set focusing on having a bigger weight on POS in the Union Feature
         # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 23000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
         #  test_percent],
         # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
@@ -145,10 +156,14 @@ if __name__ == "__main__":
         #  test_percent],
 
         # Test: grouping A and R (POS only, BOW weight = 0)
-        # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 30000, {'bow': 0, 'pos': 1, }, training_percent, test_percent],
-        # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 25000, {'bow': 0, 'pos': 1, }, training_percent, test_percent],
-        # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 35000, {'bow': 0, 'pos': 1, }, training_percent, test_percent],
-        # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 0, {'bow': 0, 'pos': 1, }, training_percent, test_percent],
+        # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 30000, {'bow': 0, 'pos': 1, }, training_percent,
+        # test_percent],
+        # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 25000, {'bow': 0, 'pos': 1, }, training_percent,
+        # test_percent],
+        # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 35000, {'bow': 0, 'pos': 1, }, training_percent,
+        # test_percent],
+        # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 0, {'bow': 0, 'pos': 1, }, training_percent,
+        # test_percent],
 
         # Test: grouping A and R plus emoticons
         #  [{"V": ["V"], "N": ["N"], "R+A": ["R", "A"], "E": ["E"]}, 5, 30000, {'bow': 0, 'pos': 1, }, training_percent,

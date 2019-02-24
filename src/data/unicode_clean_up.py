@@ -3,6 +3,13 @@ from pathlib import Path
 
 
 def unicode_clean_up(input_file, output_file):
+    """
+    Some files included escaped unicode encoding characters.
+    The function corrects the encoding for a defect file
+
+    :param input_file: .txt file with wrong encoding
+    :param output_file: .txt file with corrected encoding
+    """
     with open(input_file, 'r') as f:
         with open(output_file, 'w', encoding="utf-8") as write_f:
             for line in f:

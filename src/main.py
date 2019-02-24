@@ -179,6 +179,8 @@ if __name__ == "__main__":
                                             end_range=end_range, split_pos=False)
 
     all_labels = get_labels(labels, start_range=start_range, end_range=end_range)
+    print(all_labels[:10])
+    print(tagged_sentences[:10])
     pos_groups = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
     weighing_scale = 5
     feature_to_delete = 23000

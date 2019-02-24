@@ -9,10 +9,10 @@ import numpy as np
 def extract_range(iterable, start_range=None, end_range=None):
     """
     return a copy of the rows given the start and end range
-    :param iterable:
-    :param start_range:
-    :param end_range:
-    :return:
+    :param iterable: an iterable to extract range from
+    :param start_range: start extraction at this row
+    :param end_range: end extraction at this row
+    :return: rows from iterable within the given range
     """
     num_rows = len(iterable)
     if not start_range:
@@ -27,12 +27,18 @@ def extract_range(iterable, start_range=None, end_range=None):
 
 def get_tagged_sentences(folder, filename, file_extension=".csv", start_range=None, end_range=None, split_pos=True):
     """
+    From a csv file create:
+    option 1) for each sentence create one list with tuples of (word, pos tag). Return a list of such lists
+    option 2) Create two lists. First list: for each sentence create a list of words. Return a list of such lists
+                                Second list: for each sentence create a list of pos tags for each word.
+                                Return a list of such lists
+
     :param folder:     Folder to the tagged sentences
     :param filename: the file to parse
-    :param file_extension: ending of the file toi be parsed
+    :param file_extension: ending of the file to be parsed
     :param start_range: optional, get sentences from a given index
     :param end_range: optional, get sentences until a given index
-    :param split_pos: if false, returns a list of documents, where each documents contains a tuple (word,pos),
+    :param split_pos: if false, returns a list of documents, where each of the documents contains a tuple (word,pos),
                       if true 2 separated lists (one list of words, one list of corresponding pos)
     :return: one or 2 lists, see param split_pos
     """
@@ -55,11 +61,15 @@ def get_tagged_sentences(folder, filename, file_extension=".csv", start_range=No
 
 def get_labels(shuffled_file, start_range=None, end_range=None):
     """
-    used to get encoded labels (negative =0, positive 1, neutral 2) from the /dataset/processed/shuffled.csv file
-    :param shuffled_file:
-    :param start_range:
-    :param end_range:
-    :return: labels and labels for testing data as pandas.dataframe objects
+    From a csv file with tweets and their sentiment labels (positive, neutral or negative)
+    creates a pandas.dataframe object with labels
+
+    Sentiment labels are encoded as negative =0, positive=1, neutral=2)
+    :param shuffled_file: a csv file with 3 columns: 1)index of the tweet starting zero, 2) sentiment label, 3) tweet
+    :param start_range: if True: returns labels for tweets starting at this index in the input doc
+    :param end_range: if True: returns labels for tweets up to this index in the input doc
+
+    :return: labels as pandas.dataframe objects
     """
 
     df = pd.read_csv(shuffled_file, sep=',', header=None, names=['ID', 'Label', 'Orig'], quoting=csv.QUOTE_ALL,
@@ -74,13 +84,16 @@ def pre_processing(tagged_sentence, pos_grouping=None,
                    default_pos="DEFAULT",
                    stopwords=None, to_lower=True):
     """
-    Apply some pre-processing on pre tagged sentences. Stopwords, POS Grouping, lowering case
-    :param tagged_sentence:
-    :param pos_grouping:
-    :param default_pos:
-    :param stopwords:
-    :param to_lower:
-    :return: tagged sentences with removed stopped words and different pos grouping
+    On pre-tagged sentences apply the following pre-processing steps: 1) Remove stopwords,
+                    2) if True: group pos categories in a list to be assigned the same weight during training,
+                    3) change sentences to lower case
+    :param tagged_sentence: list of lists of tuples (word,pos tag) as returned by get_tagged_sentences
+    :param pos_grouping: if True: a dictionary with keys = feature names ("N", "N+R"), values = a list of pos tags
+                            to be assigned the same weight during training
+    :param default_pos: default pos features
+    :param stopwords: set of stopwords to remove
+    :param to_lower: boolean value to indicate whether to lower the case of all sentences or not
+    :return: list of tagged sentences with removed stopped words, different pos grouping and lower-case sentences
     """
     if pos_grouping is None:
         pos_grouping = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
@@ -114,13 +127,19 @@ def pre_processing(tagged_sentence, pos_grouping=None,
 
 def get_pos_datasets(tagged_sentences, all_labels, pos_groups, percentage_train_data=0.7, percentage_test_data=0.2):
     """
-    Return all data (docs, labels) as needed by scikit classifiers
-    :param tagged_sentences:
-    :param all_labels:
-    :param pos_groups:
-    :param percentage_train_data:
-    :param percentage_test_data:
-    :return:
+    Applies pre-processing as defiened in pre-processing function to the list of tagged sentences,
+    splits the dataset into separate training and testing lists,
+    splits the labels into training and testing numpy arrays
+
+    Returns all data (docs, labels) as needed by scikit classifiers
+
+    :param tagged_sentences: a list of sentences as lists of tuples (word, pos tag), as created by get_tagged_sentences
+    :param all_labels: a pandas data frame object with sentiment labels as created by get_lables
+    :param pos_groups: a dictionary with key=name of pos feature,
+            value=list of pos tags that will get the same feature weight. E.g. {"A+R": ["A", R"], "N": ["N"]}
+    :param percentage_train_data: a floating point number between 0 and 1, percent of data for training
+    :param percentage_test_data: a floating point number between 0 and 1, percent of data for testing
+    :return: sentences for training, sentences for testing, labels for training, labels for testing
     """
 
     processed_tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
@@ -133,3 +152,6 @@ def get_pos_datasets(tagged_sentences, all_labels, pos_groups, percentage_train_
     test_labels = np.ravel(test_labels)
 
     return train_docs, test_docs, train_labels, test_labels
+
+if __name__ == '__main__':
+    pass

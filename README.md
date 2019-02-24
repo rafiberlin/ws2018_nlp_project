@@ -19,15 +19,18 @@ To install the requirements please navigate to the directory of the project in t
 **File Structure**
 
 ├── \_papers  <- scientific literature used for research     
-├── baseline  <- implementation of the baseline model: MaxEnt classifier with BoW      
 ├── dataset  <- the final, canonical data for modeling  
-│   ├── raw_data_by_year <- unprocessed data   
-│   ├── results  <-  results of feature engineering   
-├── features  <- implementation of feature selection technique  
-├── model  <- implementation of feature engineering for MaxEnt classifier with POS  
-├── process_data  <- implementation of data processing functions  
-├── main.py  <-  all functions necessary for training the POS model are called from here  
-├── requirements.py  <-  all modules necessary to run scripts  
+│   ├── processed <- processed data   
+│   ├── raw  <-  unprocessed data   
+├── model  <- location for trained models  
+├── results <-  results of feature engineering  
+├── src  <-  contains the project source code  
+│   ├── baseline  <- implementation of the baseline model: MaxEnt classifier with BoW      
+│   ├── features  <- implementation of feature selection technique  
+│   ├── model  <- implementation of feature engineering for MaxEnt classifier with POS  
+│   ├── data  <- implementation of data processing functions  
+│   ├── main.py  <-  all functions necessary for training the POS model are called from here  
+├── requirements.txt  <-  all modules necessary to run scripts  
 
 
 <!---

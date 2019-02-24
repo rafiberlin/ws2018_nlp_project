@@ -189,6 +189,7 @@ if __name__ == "__main__":
 
     # True for train False for predict
     train_or_predict = False
+    number_wrong_predictions_to_print = 20
     model_extension = ".libobj"
 
     if train_or_predict:
@@ -404,5 +405,5 @@ if __name__ == "__main__":
                   testing_accuracy,
                   "\nTesting F1",
                   f1, )
-            print_wrong_predictions(test_docs, predicted, test_labels, 20)
+            print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
         print("Ending prediction")

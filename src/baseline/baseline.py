@@ -7,7 +7,6 @@ import os
 import math
 from pathlib import Path
 
-
 def do_not_tokenize(doc):
     """
     Dummy function to trick scikit vectorizer => avoid tokenizing, processing
@@ -29,7 +28,7 @@ def main():
     # Do we still need punctuation removal? at least it can reduce feature space seeing that although
     # the tokenization is good there is still to many useless punctuation.
 
-    parent_dir = Path(__file__).parents[1]
+    parent_dir = Path(__file__).parents[2]
     path = os.path.join(parent_dir, 'dataset', 'processed')
     tagged_sentences = os.path.join(path, 'text_cleaned_pos.csv')
     label_file = os.path.join(path, 'shuffled.csv')

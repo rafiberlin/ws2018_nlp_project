@@ -2,6 +2,8 @@ import pandas as pd
 import csv
 from nltk.corpus import stopwords as nltk_stopwords
 import nltk.corpus.reader.conll as conll
+import math
+import numpy as np
 
 
 def extract_range(iterable, start_range=None, end_range=None):
@@ -108,3 +110,26 @@ def pre_processing(tagged_sentence, pos_grouping=None,
                 new_sentence.append((word, default_pos,))
         processed_sentences.append(new_sentence)
     return processed_sentences
+
+
+def get_pos_datasets(tagged_sentences, all_labels, pos_groups, percentage_train_data=0.7, percentage_test_data=0.2):
+    """
+    Return all data (docs, labels) as needed by scikit classifiers
+    :param tagged_sentences:
+    :param all_labels:
+    :param pos_groups:
+    :param percentage_train_data:
+    :param percentage_test_data:
+    :return:
+    """
+
+    processed_tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
+    data_len = len(all_labels)
+    train_end = math.floor(percentage_train_data * data_len)  # 70% for train
+    train_start = math.floor((1.0 - percentage_test_data) * data_len)  # 20% for testing
+    train_docs, test_docs = processed_tagged_sentences[:train_end], processed_tagged_sentences[train_start:]
+    train_labels, test_labels = all_labels[:train_end], all_labels[train_start:]
+    train_labels = np.ravel(train_labels)
+    test_labels = np.ravel(test_labels)
+
+    return train_docs, test_docs, train_labels, test_labels

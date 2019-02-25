@@ -1,14 +1,14 @@
 import features.ocfs as ocfs
-import math
-from process_data.helper import pre_processing
+from process_data.helper import get_pos_datasets
 from sklearn.feature_extraction.text import CountVectorizer
 from baseline.baseline import do_not_tokenize
-import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.metrics import f1_score
 import multiprocessing as mp
 from multiprocessing import Pool
+from pickle import dump as p_dump
+from pickle import load as p_load
 
 
 def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_scale, features_to_remove,
@@ -32,18 +32,13 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
         union_transformer_weights = {'bow': 0.7, 'pos': 0.3, }
     weights = union_transformer_weights
 
-    processed_tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
-
     # debugging multithread
     # all_pos_vocab = ocfs.create_pos_weight_combination(pos_groups, weighing_scale)[:1]
     all_pos_vocab = ocfs.create_pos_weight_combination(pos_groups, weighing_scale)
-    data_len = len(all_labels)
-    train_end = math.floor(percentage_train_data * data_len)  # 70% for train
-    train_start = math.floor((1.0 - percentage_test_data) * data_len)  # 20% for testing
-    train_docs, test_docs = processed_tagged_sentences[:train_end], processed_tagged_sentences[train_start:]
-    train_labels, test_labels = all_labels[:train_end], all_labels[train_start:]
-    train_labels = np.ravel(train_labels)
-    test_labels = np.ravel(test_labels)
+
+    train_docs, test_docs, train_labels, test_labels = get_pos_datasets(tagged_sentences, all_labels,
+                                                                        pos_groups, percentage_train_data,
+                                                                        percentage_test_data)
 
     # Process the model training with all combination in parallel, letting one core for CPU
     if use_multi_processing:
@@ -121,6 +116,53 @@ def run_pos_model(train_docs, test_docs, train_labels, test_labels, pos_vocab, n
     :return:
     """
 
+    pos_bow_pipeline = create_fitted_model(train_docs, train_labels, pos_vocab, number_of_features_to_delete,
+                                           union_transformer_weights)
+
+    pos_train_acc_unified_pipeline = pos_bow_pipeline.score(train_docs, train_labels)
+    pos_test_acc_unified_pipeline = pos_bow_pipeline.score(test_docs, test_labels)
+
+    unified_predicted = pos_bow_pipeline.predict(test_docs)
+    unified_f1 = f1_score(test_labels, unified_predicted, average="macro", labels=['neutral', 'positive', 'negative'])
+
+    if accuracy_to_beat < pos_test_acc_unified_pipeline or f1_score_to_beat < unified_f1:
+        return (pos_train_acc_unified_pipeline, pos_test_acc_unified_pipeline, unified_f1,)
+
+
+def save_model(classifier, file_name):
+    """
+    Wrapper for pickle.dump (creates the file object needed from the string)
+    :param classifier:
+    :param file_name:
+    :return:
+    """
+    with open(file_name, 'wb') as file:
+        p_dump(classifier, file)
+
+
+def load_model(file_name):
+    """
+    Wrapper for pickle.load (creates the file object needed from the string)
+    :param file_name:
+    :return:
+    """
+    with open(file_name, 'rb') as file:
+        classifier = p_load(file)
+    return classifier
+
+
+def create_fitted_model(train_docs, train_labels, pos_vocab, number_of_features_to_delete=30000,
+                        union_transformer_weights=None,
+                        ):
+    """
+    from pickle import dump, load
+    print("Test")
+    dump(pos_bow_pipeline, open('filename.joblib','wb'))
+    clf2 = load(open('filename.joblib','rb'))
+    res = clf2.predict(test_docs)
+
+    print(res)
+    """
     if union_transformer_weights is None:
         union_transformer_weights = {'bow': 0.7, 'pos': 0.3, }
 
@@ -160,14 +202,8 @@ def run_pos_model(train_docs, test_docs, train_labels, test_labels, pos_vocab, n
     ])
 
     pos_bow_pipeline.fit(train_docs, train_labels)
-    pos_train_acc_unified_pipeline = pos_bow_pipeline.score(train_docs, train_labels)
-    pos_test_acc_unified_pipeline = pos_bow_pipeline.score(test_docs, test_labels)
 
-    unified_predicted = pos_bow_pipeline.predict(test_docs)
-    unified_f1 = f1_score(test_labels, unified_predicted, average="macro", labels=['neutral', 'positive', 'negative'])
-
-    if accuracy_to_beat < pos_test_acc_unified_pipeline or f1_score_to_beat < unified_f1:
-        return (pos_train_acc_unified_pipeline, pos_test_acc_unified_pipeline, unified_f1,)
+    return pos_bow_pipeline
 
 
 def argument_wrapper_for_run_model_for_all_combination(args):

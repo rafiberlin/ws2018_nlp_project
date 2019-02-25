@@ -1,14 +1,25 @@
 import os
 import sys
 import time
-from model.train_model import return_best_pos_weight
-from process_data.helper import get_tagged_sentences, get_labels
+from model.train_model import return_best_pos_weight, create_fitted_model, save_model, load_model
+from process_data.helper import get_tagged_sentences, get_labels, get_pos_datasets
+
+from sklearn.metrics import f1_score
 
 
-def save_results(results_path, filename, results):
+def get_pos_groups_from_vocab(pos_vocab):
     """
+    Assumption: Key for merged groups A and V is A+V
+    :param pos_vocab:
+    :return:
+    """
+    return {key: key.split("+") for key in pos_vocab.keys()}
 
-    :param results_path:
+
+def save_results(result_path, filename, results):
+    """
+    Save the results
+    :param result_path:
     :param filename:
     :param results:
     :return:
@@ -16,12 +27,31 @@ def save_results(results_path, filename, results):
 
     # Save results
     orig_stdout = sys.stdout
-    output = os.path.join(results_path, filename)
+    output = os.path.join(result_path, filename)
     with open(output, 'w') as file:
         sys.stdout = file
         for item in results:
             print(item)
     sys.stdout = orig_stdout
+
+
+def create_prefix_for_model_persistence(p_vocab,
+                                        f_to_delete,
+                                        u_weights,
+                                        train_percent):
+    """
+    Create aprefix based on the parameters
+    :param p_vocab:
+    :param f_to_delete:
+    :param u_weights:
+    :param train_percent:
+    :return:
+    """
+    pref = ""
+    for pos in sorted(p_vocab.keys()):
+        pref += pos + str(p_vocab[pos]) + "_"
+    pref += str(f_to_delete) + "_" + str(u_weights["bow"]) + "_" + str(u_weights["pos"]) + "_" + str(train_percent)
+    return pref
 
 
 def create_prefix(p_groups,
@@ -40,7 +70,7 @@ def create_prefix(p_groups,
     :param test_percent:
     :return:
     """
-    prefix_group = "_".join(["-".join(value) for value in p_groups.values()])
+    prefix_group = "_".join(["-".join(value) for value in sorted(p_groups.values())])
     union_weight_prefix = str(u_weights["bow"]) + "_" + str(u_weights["pos"])
     training = str(training_percent) + "_" + str(test_percent)
     prefix = prefix_group + "_" + str(
@@ -99,7 +129,8 @@ def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_
 if __name__ == "__main__":
     # nltk.download('stopwords')
     parent_dir = os.getcwd()
-    data_set_path = os.path.join(parent_dir, "dataset", "processed")
+    data_set_path = os.path.join(parent_dir, os.path.join("dataset", "processed"))
+    model_path = os.path.join(parent_dir, "model")
     results_path = os.path.join(parent_dir, "results")
     tagged_sentences = os.path.join(data_set_path, 'text_cleaned_pos.csv')
     labels = os.path.join(data_set_path, 'shuffled.csv')
@@ -118,81 +149,241 @@ if __name__ == "__main__":
     test_percent = 0.2
     split_job = True
 
-    prefix_args = [
+    
+    # True for train False for predict
+    train_or_predict = True
+    model_extension = ".libobj"
 
-        # First tests which were run
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.7, 'pos': 0.3, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
-        #  test_percent],
-        # Test set focusing on having a bigger weight on POS in the Union Feature
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 23000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 28000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 32000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 29500, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30500, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-        #  test_percent],
+    if train_or_predict:
 
-        # # Test like in the paper (POS only, BOW weight = 0)
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0, 'pos': 1, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0, 'pos': 1, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0, 'pos': 1, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0, 'pos': 1, }, training_percent,
-        #  test_percent],
+        prefix_args = [
 
-        # Test: grouping A and R (POS only, BOW weight = 0)
-        # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 30000, {'bow': 0, 'pos': 1, }, training_percent,
-        # test_percent],
-        # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 25000, {'bow': 0, 'pos': 1, }, training_percent,
-        # test_percent],
-        # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 35000, {'bow': 0, 'pos': 1, }, training_percent,
-        # test_percent],
-        # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 0, {'bow': 0, 'pos': 1, }, training_percent,
-        # test_percent],
+            # First tests which were run
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.7, 'pos': 0.3, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
+            #  test_percent],
+            # Test set focusing on having a bigger weight on POS in the Union Feature
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 23000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 28000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 32000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 29500, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30500, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
 
-        # Test: grouping A and R plus emoticons
-        #  [{"V": ["V"], "N": ["N"], "R+A": ["R", "A"], "E": ["E"]}, 5, 30000, {'bow': 0, 'pos': 1, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "N": ["N"], "R+A": ["R", "A"], "E": ["E"]}, 5, 25000, {'bow': 0, 'pos': 1, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "N": ["N"], "R+A": ["R", "A"], "E": ["E"]}, 5, 35000, {'bow': 0, 'pos': 1, }, training_percent,
-        #  test_percent],
-        # [{"V": ["V"], "N": ["N"], "R+A": ["R", "A"], "E": ["E"]}, 5, 0, {'bow': 0, 'pos': 1, }, training_percent,
-        #  test_percent],
+            # # Test like in the paper (POS only, BOW weight = 0)
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0, 'pos': 1, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0, 'pos': 1, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0, 'pos': 1, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0, 'pos': 1, }, training_percent,
+            #  test_percent],
 
-        # Test with 50% BOW 50% POS on union
-        [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.5, 'pos': 0.5, }, training_percent,
-         test_percent],
-        [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
-         test_percent],
-        [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
-         test_percent],
-        [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
-         test_percent],
+            # Test: grouping A and R (POS only, BOW weight = 0)
+            # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 30000, {'bow': 0, 'pos': 1, }, training_percent,
+            # test_percent],
+            # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 25000, {'bow': 0, 'pos': 1, }, training_percent,
+            # test_percent],
+            # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 35000, {'bow': 0, 'pos': 1, }, training_percent,
+            # test_percent],
+            # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 0, {'bow': 0, 'pos': 1, }, training_percent,
+            # test_percent],
 
-    ]
-    start = time.time()
-    print("Started... ")
-    for arg in prefix_args:
-        data_arg = [tagged_sentences, all_labels]
-        data_arg.extend(arg)
-        data_arg.append(split_job)
-        run_logic(*data_arg)
+            # Test with 50% BOW 50% POS on union
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.5, 'pos': 0.5, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
+            #  test_percent],
 
-    end = time.time()
-    print("Elapsed time overall: ", end - start)
+            # Patrick?
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.6, 'pos': 0.4, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0.6, 'pos': 0.4, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.6, 'pos': 0.4, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.6, 'pos': 0.4, }, training_percent,
+            #  test_percent],
+
+            # Alyona?
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.8, 'pos': 0.2, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0.8, 'pos': 0.2, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.8, 'pos': 0.2, }, training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.8, 'pos': 0.2, }, training_percent,
+            #  test_percent],
+
+            # Rafi
+            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 0, {'bow': 0.5, 'pos': 0.5, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 25000, {'bow': 0.5, 'pos': 0.5, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 30000, {'bow': 0.5, 'pos': 0.5, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 35000, {'bow': 0.5, 'pos': 0.5, },
+            #  training_percent,
+            #  test_percent],
+
+            # Patrick?
+            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 0, {'bow': 0.6, 'pos': 0.4, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 25000, {'bow': 0.6, 'pos': 0.4, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 30000, {'bow': 0.6, 'pos': 0.4, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 35000, {'bow': 0.6, 'pos': 0.4, },
+            #  training_percent,
+            #  test_percent],
+            # Alyona?
+            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 0, {'bow': 0.7, 'pos': 0.3, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 25000, {'bow': 0.7, 'pos': 0.3, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 30000, {'bow': 0.7, 'pos': 0.3, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 35000, {'bow': 0.7, 'pos': 0.3, },
+            #  training_percent,
+            #  test_percent],
+
+            # Rafi
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 0, {'bow': 0.5, 'pos': 0.5, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'bow': 0.5, 'pos': 0.5, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 35000, {'bow': 0.5, 'pos': 0.5, },
+            #  training_percent,
+            #  test_percent],
+
+            # Patrick
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 0, {'bow': 0.4, 'pos': 0.6, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'bow': 0.4, 'pos': 0.6, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 35000, {'bow': 0.4, 'pos': 0.6, },
+            #  training_percent,
+            #  test_percent],
+
+            # Alyona
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 0, {'bow': 0.6, 'pos': 0.4, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'bow': 0.6, 'pos': 0.4, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 35000, {'bow': 0.6, 'pos': 0.4, },
+            #  training_percent,
+            #  test_percent],
+
+            # Patrick
+            # [{"V": ["V"], "A": ["A"], "N+#": ["N", "#"], "R": ["R"], "E": ["E"]}, 4, 0, {'bow': 0.5, 'pos': 0.5, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N+#": ["N", "#"], "R": ["R"], "E": ["E"]}, 4, 30000, {'bow': 0.5, 'pos': 0.5, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N+#": ["N", "#"], "R": ["R"], "E": ["E"]}, 4, 35000, {'bow': 0.5, 'pos': 0.5, },
+            #  training_percent,
+            #  test_percent],
+
+            # Rafi
+            [{"V": ["V"], "A": ["A"], "N+#": ["N", "#"], "R": ["R"], "E": ["E"]}, 4, 0, {'bow': 0.7, 'pos': 0.3, },
+             training_percent,
+             test_percent],
+            [{"V": ["V"], "A": ["A"], "N+#": ["N", "#"], "R": ["R"], "E": ["E"]}, 4, 30000, {'bow': 0.7, 'pos': 0.3, },
+             training_percent,
+             test_percent],
+            [{"V": ["V"], "A": ["A"], "N+#": ["N", "#"], "R": ["R"], "E": ["E"]}, 4, 35000, {'bow': 0.7, 'pos': 0.3, },
+             training_percent,
+             test_percent],
+
+            # Alyona
+            # [{"V": ["V"], "A": ["A"], "N+#": ["N", "#"], "R": ["R"], "E": ["E"]}, 4, 0, {'bow': 0.6, 'pos': 0.4, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N+#": ["N", "#"], "R": ["R"], "E": ["E"]}, 4, 30000, {'bow': 0.6, 'pos': 0.4, },
+            #  training_percent,
+            #  test_percent],
+            # [{"V": ["V"], "A": ["A"], "N+#": ["N", "#"], "R": ["R"], "E": ["E"]}, 4, 35000, {'bow': 0.6, 'pos': 0.4, },
+            #  training_percent,
+            #  test_percent],
+        ]
+
+        start = time.time()
+        print("Started... ")
+        for arg in prefix_args:
+            data_arg = [tagged_sentences, all_labels]
+            data_arg.extend(arg)
+            data_arg.append(split_job)
+            run_logic(*data_arg)
+
+        end = time.time()
+        print("Elapsed time overall: ", end - start)
+    else:
+
+        predict_args = [
+            [{'V': 4, 'A': 3, 'N': 1, 'R': 1}, 30000, {'bow': 0.5, 'pos': 0.5, }],
+        ]
+
+        for arg in predict_args:
+            pos_vocabulary = arg[0]
+            pos_group = get_pos_groups_from_vocab(pos_vocabulary)
+
+            train_docs, test_docs, train_labels, test_labels = get_pos_datasets(tagged_sentences, all_labels,
+                                                                                pos_group, training_percent,
+                                                                                test_percent)
+            prefix_arg = []
+            prefix_arg.extend(arg)
+            prefix_arg.append(training_percent)
+            prefix = create_prefix_for_model_persistence(*prefix_arg)
+
+            model_arg = [train_docs, train_labels]
+            model_arg.extend(arg)
+            serialized_model = os.path.join(model_path, prefix + model_extension)
+            model = None
+            if not os.path.isfile(serialized_model):
+                model = create_fitted_model(*model_arg)
+                save_model(model, serialized_model)
+            if model is None:
+                model = load_model(serialized_model)
+
+            predicted = model.predict(test_docs)
+            training_accuracy = model.score(train_docs, train_labels)
+            testing_accuracy = model.score(test_docs, test_labels)
+            f1 = f1_score(test_labels, predicted, average="macro",
+                          labels=['neutral', 'positive', 'negative'])
+            print("Model: " + prefix, "\nTraining accuracy", training_accuracy, "\nTesting accuracy", testing_accuracy,
+                  "\nTesting F1",
+                  f1, )

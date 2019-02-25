@@ -261,7 +261,7 @@ def main(argv):
     # union_weights = {'bow': 0.3, 'pos': 0.7, }
     training_percent = 0.7
     test_percent = 0.2
-    split_job = False
+    split_job = True
 
     number_wrong_predictions_to_print = 20
     model_extension = ".libobj"

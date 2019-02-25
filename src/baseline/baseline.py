@@ -24,9 +24,6 @@ def main():
     :return: nothing, only print statements
     """
 
-    # Do we still need punctuation removal? at least it can reduce feature space seeing that although
-    # the tokenization is good there is still to many useless punctuation.
-
     parent_dir = Path(__file__).parents[2]
     path = os.path.join(parent_dir, 'dataset', 'processed')
     tagged_sentences = os.path.join(path, 'text_cleaned_pos.csv')

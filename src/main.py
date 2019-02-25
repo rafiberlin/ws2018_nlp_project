@@ -161,7 +161,8 @@ def return_wrong_prediction(prediction, gold_labels, number):
 # Main Entry Point
 if __name__ == "__main__":
     # Comment in for the first execution
-    # nltk.download('stopwords')
+    #import nltk
+    #nltk.download('stopwords')
 
     # os.getcwd() returns the path until /src
     parent_dir = Path(os.getcwd()).parent
@@ -401,11 +402,15 @@ if __name__ == "__main__":
             predicted = model.predict(test_docs)
             training_accuracy = model.score(train_docs, train_labels)
             testing_accuracy = model.score(test_docs, test_labels)
-            f1 = f1_score(test_labels, predicted, average="macro",
+            f1 = f1_score(test_labels, predicted, average=None,
                           labels=['neutral', 'positive', 'negative'])
+            f1_macro = f1_score(test_labels, predicted, average="macro",
+                                labels=['neutral', 'positive', 'negative'])
             print("\nModel: " + prefix, "\nTraining accuracy", training_accuracy, "\nTesting accuracy",
                   testing_accuracy,
-                  "\nTesting F1",
-                  f1, )
+                  "\nTesting F1 (neutral, positive, negative)",
+                  f1,
+                  "\nTesting F1 (macro)",
+                  f1_macro, )
             print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
         print("Ending prediction")

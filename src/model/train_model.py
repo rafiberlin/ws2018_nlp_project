@@ -26,7 +26,9 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
     :param percentage_train_data: float between 0 and 1, percentage of training data
     :param percentage_test_data: float between 0 and 1, percentage of test data
     :param use_multi_processing: boolean: True = use multiprocessing for training
-    :return:
+    :return: list of best scoring assignments of weights to featrues
+                e.g. of one entry in the list ({'V': 2, 'A': 4, 'N+#': 1, 'R': 1, 'E': 4, 'DEFAULT': 0},
+                    (0.8574962658700522, 0.627297231070816, 0.5884891927065569))
     """
 
     if union_transformer_weights is None:
@@ -69,11 +71,11 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
 
 def split_list(the_list, chunk_size):
     """
-    From https://stackoverflow.com/questions/312443/how-do-you-split-a-list-into-evenly-sized-chunks
+    Splits a list into evenly sized chunks
 
-    :param the_list:
-    :param chunk_size:
-    :return:
+    :param the_list: list to split
+    :param chunk_size: number of elements in one chunk
+    :return: a list of lists, which are of the same size
     """
     result_list = []
     while the_list:
@@ -85,6 +87,19 @@ def split_list(the_list, chunk_size):
 
 def run_model_for_all_combination(train_docs, test_docs, train_labels, test_labels, features_to_remove, weights,
                                   all_pos_vocab):
+    """
+
+    :param train_docs: lists of sentences as lists of tuples (word, pos) used for training
+    :param test_docs: lists of sentences as lists of tuples (word, pos) used for testing
+    :param train_labels: pandas data frame object with sentiment labels for training docs
+    :param test_labels: pandas data frame object with sentiment labels for testing docs
+    :param features_to_remove: numebr of features to delete with ocfs feature selection
+    :param weights: dict, key=name of model (e.g.pos,bow), value=float between 0 and 1,
+                                                    weight of this model in training
+    :param all_pos_vocab: list of dictionaries. Each dict: with feature names as keys and pos categories that
+                                                have this feature as values
+    :return: a set of three scores: accuracy for training, for testing , and unified f1 for testing
+    """
     best_model_parameters = []
     i = 1
     for pos_vocab in all_pos_vocab:
@@ -105,16 +120,18 @@ def run_pos_model(train_docs, test_docs, train_labels, test_labels, pos_vocab, n
                   accuracy_to_beat=0.0, f1_score_to_beat=0.0):
     """
 
-    :param train_docs:
-    :param test_docs:
-    :param train_labels:
-    :param test_labels:
-    :param pos_vocab:
-    :param number_of_features_to_delete:
-    :param union_transformer_weights:
+    :param train_docs: lists of sentences as lists of tuples (word, pos) used for training
+    :param test_docs: lists of sentences as lists of tuples (word, pos) used for testing
+    :param train_labels: pandas data frame object with sentiment labels for training docs
+    :param test_labels: pandas data frame object with sentiment labels for testing docs
+    :param pos_vocab: dict with feature names as keys and some values. Values will be overwritten with a list created
+                                                                        from key
+    :param number_of_features_to_delete: numebr of features to delete with ocfs feature selection
+    :param union_transformer_weights: dict with keys= model names (bow,pos) and values = floats between 0 and 1,
+                                        weights for each model in model union
     :param accuracy_to_beat: Reminder for BOW, 0.6252552478967573
     :param f1_score_to_beat: Reminder for BOW, 0.5865028050367952):
-    :return:
+    :return: a set three scores: accuracy for training, for testing , and unified f1 for testing
     """
 
     pos_bow_pipeline = create_fitted_model(train_docs, train_labels, pos_vocab, number_of_features_to_delete,
@@ -133,9 +150,9 @@ def run_pos_model(train_docs, test_docs, train_labels, test_labels, pos_vocab, n
 def save_model(classifier, file_name):
     """
     Wrapper for pickle.dump (creates the file object needed from the string)
-    :param classifier:
-    :param file_name:
-    :return:
+    :param classifier: pos bow pipeline model
+    :param file_name: under which to sace the model
+    :return: nothing, just saves the object
     """
     with open(file_name, 'wb') as file:
         p_dump(classifier, file)
@@ -143,9 +160,9 @@ def save_model(classifier, file_name):
 
 def load_model(file_name):
     """
-    Wrapper for pickle.load (creates the file object needed from the string)
-    :param file_name:
-    :return:
+    Wrapper for pickle.load. File object was created from the string
+    :param file_name: name of file where the model is saved
+    :return: the model
     """
     with open(file_name, 'rb') as file:
         classifier = p_load(file)
@@ -156,14 +173,26 @@ def create_fitted_model(train_docs, train_labels, pos_vocab, number_of_features_
                         union_transformer_weights=None,
                         ):
     """
-    from pickle import dump, load
-    print("Test")
-    dump(pos_bow_pipeline, open('filename.joblib','wb'))
-    clf2 = load(open('filename.joblib','rb'))
-    res = clf2.predict(test_docs)
+    Creates model from given parameters
 
-    print(res)
+    :param train_docs: list of sentences as lists of tuples (word,pos) used for training
+    :param train_labels: pandas dataframe object with labels for train docs
+    :param pos_vocab: dict, one weighting combination. Key=pos category, value=weight
+           e.g. {'V': 1, 'A': 1, 'N': 1, 'E': 1}
+    :param number_of_features_to_delete: int, num of featrues to delete
+    :param union_transformer_weights: dict, key=name of model (e.g.pos,bow), value=float between 0 and 1,
+                                                    weight of this model in training
+    :return: fitted model
+
     """
+
+    # from pickle import dump, load
+    # print("Test")
+    # dump(pos_bow_pipeline, open('filename.joblib','wb'))
+    # clf2 = load(open('filename.joblib','rb'))
+    # res = clf2.predict(test_docs)
+    #
+    # print(res)
     if union_transformer_weights is None:
         union_transformer_weights = {'bow': 0.7, 'pos': 0.3, }
 

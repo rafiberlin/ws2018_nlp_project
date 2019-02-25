@@ -1,7 +1,7 @@
-import src.features.ocfs as ocfs
-from src.data.helper import get_pos_datasets
+import features.ocfs as ocfs
+from data.helper import get_pos_datasets
 from sklearn.feature_extraction.text import CountVectorizer
-from src.baseline.baseline import do_not_tokenize
+from baseline.baseline import do_not_tokenize
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.metrics import f1_score
@@ -151,7 +151,7 @@ def save_model(classifier, file_name):
     """
     Wrapper for pickle.dump (creates the file object needed from the string)
     :param classifier: pos bow pipeline model
-    :param file_name: under which to sace the model
+    :param file_name: under which to save the model
     :return: nothing, just saves the object
     """
     with open(file_name, 'wb') as file:

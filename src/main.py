@@ -1,8 +1,8 @@
 import os
 import sys
 import time
-from src.model.train_model import return_best_pos_weight, create_fitted_model, save_model, load_model
-from src.data.helper import get_tagged_sentences, get_labels, get_pos_datasets
+from model.train_model import return_best_pos_weight, create_fitted_model, save_model, load_model
+from data.helper import get_tagged_sentences, get_labels, get_pos_datasets
 from pathlib import Path
 import ast
 from sklearn.metrics import f1_score
@@ -435,7 +435,7 @@ if __name__ == "__main__":
         print("\nStarting prediction")
         predict_args = [
             [{'R': 2, 'V': 4, 'A': 3, 'N': 1}, 29500, {'bow': 0.3, 'pos': 0.7, }],  # best accuracy
-            #[{'V': 4, 'A': 1, 'N': 1, 'R': 2}, 25000, {'bow': 0.8, 'pos': 0.2, }],  # best f1 score
+            # [{'V': 4, 'A': 1, 'N': 1, 'R': 2}, 25000, {'bow': 0.8, 'pos': 0.2, }],  # best f1 score
         ]
 
         for arg in predict_args:
@@ -473,5 +473,5 @@ if __name__ == "__main__":
                   f1,
                   "\nTesting F1 (macro)",
                   f1_macro, )
-            #print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
+            # print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
         print("\nEnding prediction")

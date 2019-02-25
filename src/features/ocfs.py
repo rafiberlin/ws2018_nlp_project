@@ -1,10 +1,10 @@
 import os
 import math
-from src.data.helper import get_tagged_sentences, get_labels
-from src.data.helper import pre_processing
+from data.helper import get_tagged_sentences, get_labels
+from data.helper import pre_processing
 from pathlib import Path
 from sklearn.feature_extraction.text import CountVectorizer
-from src.baseline.baseline import do_not_tokenize
+from baseline.baseline import do_not_tokenize
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LogisticRegression

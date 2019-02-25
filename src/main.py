@@ -82,7 +82,7 @@ def create_prefix(p_groups,
 
 
 def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_to_delete,
-              union_weights, training_percent, test_percent, split_job):
+              union_weights, training_percent, test_percent, split_job, result_folder):
     """
     Run the main logic of the project given the user-defined non-default parameters
 
@@ -95,6 +95,7 @@ def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_
     :param training_percent: float between 0 and 1, percentage of data for training
     :param test_percent: float between 0 and 1, percentage of data for testing
     :param split_job: boolean, True = use mulpiple cpu cores
+    :param result_folder: the folder where the results will be stored (normal text files)
     :return: nothing, after the training and prediction has finished, writes the results into files
     """
 
@@ -125,8 +126,8 @@ def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_
     if number_results < keep_best:
         keep_best = number_results
 
-    save_results(results_path, file_prefix + "_" + "f1_pos_bow.txt", merge_f1[:keep_best])
-    save_results(results_path, file_prefix + "_" + "accuracy_pos_bow.txt", merge_accuracy[:keep_best])
+    save_results(result_folder, file_prefix + "_" + "f1_pos_bow.txt", merge_f1[:keep_best])
+    save_results(result_folder, file_prefix + "_" + "accuracy_pos_bow.txt", merge_accuracy[:keep_best])
 
 
 def print_wrong_predictions(docs, prediction, gold_labels, number):
@@ -219,8 +220,14 @@ def return_wrong_prediction(prediction, gold_labels, number):
     return idx_list
 
 
-# Main Entry Point
-if __name__ == "__main__":
+def main(argv):
+    """
+    Main entry point. If the argument "train" is entered on the command line, it will start the training.
+    The default behavior is to start the prediction of the saved models
+    :param argv: list of command line arguments
+    :return:
+    """
+
     # Comment in for the first execution
     # import nltk
     # nltk.download('stopwords')
@@ -231,6 +238,13 @@ if __name__ == "__main__":
     data_set_path = os.path.join(parent_dir, os.path.join("dataset", "processed"))
     model_path = os.path.join(parent_dir, "model")
     results_path = os.path.join(parent_dir, "results")
+
+    # True for train False for predict
+    train_or_predict = True
+
+    if len(argv) == 0 or argv[0] != "train":
+        train_or_predict = False
+
     tagged_sentences = os.path.join(data_set_path, 'text_cleaned_pos.csv')
     labels = os.path.join(data_set_path, 'shuffled.csv')
 
@@ -241,16 +255,14 @@ if __name__ == "__main__":
                                             end_range=end_range, split_pos=False)
 
     all_labels = get_labels(labels, start_range=start_range, end_range=end_range)
-    pos_groups = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
-    weighing_scale = 5
-    feature_to_delete = 23000
-    union_weights = {'bow': 0.3, 'pos': 0.7, }
+    # pos_groups = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
+    # weighing_scale = 5
+    # feature_to_delete = 23000
+    # union_weights = {'bow': 0.3, 'pos': 0.7, }
     training_percent = 0.7
     test_percent = 0.2
-    split_job = True
+    split_job = False
 
-    # True for train False for predict
-    train_or_predict = False
     number_wrong_predictions_to_print = 20
     model_extension = ".libobj"
     print_best_combination(results_path)
@@ -426,6 +438,7 @@ if __name__ == "__main__":
             data_arg = [tagged_sentences, all_labels]
             data_arg.extend(arg)
             data_arg.append(split_job)
+            data_arg.append(results_path)
             run_logic(*data_arg)
 
         end = time.time()
@@ -479,3 +492,8 @@ if __name__ == "__main__":
                   f1_macro, )
             # print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
         print("\nEnding prediction")
+
+
+# Main Entry Point
+if __name__ == "__main__":
+    main(sys.argv[1:])

@@ -13,8 +13,14 @@ Olena Vyshnevska
 **Requirements**   
 Python 3.x    
 To install the requirements please navigate to the directory of the project in the terminal. Run:  
-`pip install -r requirements.txt`  
+`pip install -r requirements.txt`
 
+**How to use**
+To start the project, open a terminal /command window, navigate to the src/ folder and enter : `python main.py`
+This will start the project in the prediction mode, where the saved models will output their score in the console.
+
+Starting the project with `python main.py train` will start the project in training mode; it will save the best POS 
+weighing combinations for a list of POS grouping saved in the main.py script. (see prefix_args variable to edit this list)
 
 **File Structure**
 

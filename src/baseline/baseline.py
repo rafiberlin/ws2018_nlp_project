@@ -10,8 +10,8 @@ from pathlib import Path
 def do_not_tokenize(doc):
     """
     Dummy function to trick scikit vectorizer => avoid tokenizing, processing
-    :param doc:
-    :return:
+    :param doc: callable
+    :return: callable
     """
 
     return doc
@@ -21,8 +21,7 @@ def main():
     """
     Run the baseline and output results in the console (Accuracy + Macro F1 score for BOW and TFIDF)
     Used to show baseline numbers for the presentation.
-    Because we corrected encoding problem on some files afterwards, the numbers may now differ
-    :return:
+    :return: nothing, only print statements
     """
 
     # Do we still need punctuation removal? at least it can reduce feature space seeing that although

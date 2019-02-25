@@ -222,7 +222,7 @@ if __name__ == "__main__":
     # nltk.download('stopwords')
 
     # os.getcwd() returns the path until /src
-    parent_dir = Path(os.getcwd()).parent
+    parent_dir = Path(os.getcwd()).parent.__str__()
 
     data_set_path = os.path.join(parent_dir, os.path.join("dataset", "processed"))
     model_path = os.path.join(parent_dir, "model")
@@ -431,7 +431,8 @@ if __name__ == "__main__":
 
         print("\nStarting prediction")
         predict_args = [
-            [{'V': 4, 'A': 3, 'N': 1, 'R': 1}, 30000, {'bow': 0.5, 'pos': 0.5, }],
+            [{'R': 2, 'V': 4, 'A': 3, 'N': 1}, 29500, {'bow': 0.3, 'pos': 0.7, }],  # best accuracy
+            #[{'V': 4, 'A': 1, 'N': 1, 'R': 2}, 25000, {'bow': 0.8, 'pos': 0.2, }],  # best f1 score
         ]
 
         for arg in predict_args:
@@ -469,5 +470,5 @@ if __name__ == "__main__":
                   f1,
                   "\nTesting F1 (macro)",
                   f1_macro, )
-            print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
+            #print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
         print("\nEnding prediction")

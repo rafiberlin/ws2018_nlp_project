@@ -16,15 +16,16 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
                            use_multi_processing=False):
     """
 
-    :param tagged_sentences:
-    :param all_labels:
-    :param pos_groups:
-    :param weighing_scale:
-    :param features_to_remove:
-    :param union_transformer_weights:
-    :param percentage_train_data:
-    :param percentage_test_data:
-    :param use_multi_processing:
+    :param tagged_sentences: list of sentences as lists of tuples as created by get_tagged_sentences
+    :param all_labels: a pandas data frame object with labels for tagged sentences
+    :param pos_groups: dict with keys=feature names, values=list of pos tags that have this feature
+    :param weighing_scale: int, from 1 to this number is the scale for assigning weigths to features
+    :param features_to_remove: int, number for featrue cutoff with ocfs technique
+    :param union_transformer_weights: dict, key=name of model (e.g.pos,bow), value=float between 0 and 1,
+                                                    weight of this model in training
+    :param percentage_train_data: float between 0 and 1, percentage of training data
+    :param percentage_test_data: float between 0 and 1, percentage of test data
+    :param use_multi_processing: boolean: True = use multiprocessing for training
     :return:
     """
 

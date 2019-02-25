@@ -10,20 +10,22 @@ from sklearn.metrics import f1_score
 
 def get_pos_groups_from_vocab(pos_vocab):
     """
-    Assumption: Key for merged groups A and V is A+V
-    :param pos_vocab:
-    :return:
+    Creates dictionary with key= feature name, value=pos tags fron featur name split into a list of tags
+    Assumption: Key for merged groups A and V is A+V.
+    :param pos_vocab: dict with feature names as keys and some values. Values will be overwritten with a list created
+                                                                        from key
+    :return: dictionary with key=feature name with pos tags separated by +, value=list of pos tags with this feature
     """
     return {key: key.split("+") for key in pos_vocab.keys()}
 
 
 def save_results(result_path, filename, results):
     """
-    Save the results
-    :param result_path:
-    :param filename:
-    :param results:
-    :return:
+    Write the results of testing into a .txt file
+    :param result_path: path where the file with results will be stores
+    :param filename: name of file where to store the results
+    :param results: list of results
+    :return: nothing, just write into a file during the function execution
     """
 
     # Save results
@@ -41,12 +43,12 @@ def create_prefix_for_model_persistence(p_vocab,
                                         u_weights,
                                         train_percent):
     """
-    Create aprefix based on the parameters
-    :param p_vocab:
-    :param f_to_delete:
-    :param u_weights:
-    :param train_percent:
-    :return:
+    Create a prefix for the default execution of main.py based on the parameters. The prefix is used to name the file.
+    :param p_vocab: dict,
+    :param f_to_delete: int, feature cutoff number
+    :param u_weights: float between 0 and 1 for union of two models: how much weight bow and pos have
+    :param train_percent: float between 0 and 1, percentage of dataset used for training
+    :return: string, a prefix to be used as a file name
     """
     pref = ""
     for pos in sorted(p_vocab.keys()):
@@ -62,14 +64,14 @@ def create_prefix(p_groups,
                   training_percent,
                   test_percent):
     """
-    Creates a prefix based on the model parameters
-    :param p_groups:
-    :param w_scale:
-    :param f_to_delete:
-    :param u_weights:
-    :param training_percent:
-    :param test_percent:
-    :return:
+    Creates a prefix based on the user-defined non-default model parameters, for file-naming
+    :param p_groups: dict with keys=feature names, values=list of pos tags with that feature weight
+    :param w_scale: int, weights scale between 1 and teh given number
+    :param f_to_delete: int, number of featrues to delete
+    :param u_weights: dict with keys= model names (bow,pos) and values = floats between 0 and 1, weights of the model
+    :param training_percent: float between 0 and 1, percent of data used for training
+    :param test_percent: float between 0 and 1, percent of data used for testing
+    :return: returns a string to be used as a file name, indicating parameters used for a model
     """
     prefix_group = "_".join(["-".join(value) for value in sorted(p_groups.values())])
     union_weight_prefix = str(u_weights["bow"]) + "_" + str(u_weights["pos"])
@@ -82,17 +84,18 @@ def create_prefix(p_groups,
 def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_to_delete,
               union_weights, training_percent, test_percent, split_job):
     """
-    Run the main logic of the project given the parameters
-    :param tagged_sentences:
-    :param all_labels:
-    :param pos_groups:
-    :param weighing_scale:
-    :param feature_to_delete:
-    :param union_weights:
-    :param training_percent:
-    :param test_percent:
-    :param split_job:
-    :return:
+    Run the main logic of the project given the user-defined non-default parameters
+
+    :param tagged_sentences: list of sentences as lists of tuples (word, pos) as returned by get_tagged_sentences
+    :param all_labels: pandas data frame object with sentiment labels for pos-tagged sentences
+    :param pos_groups: dict with keys=names of pos features, values=list of pos categories to have that featrue
+    :param weighing_scale: int, from 1 to this number is the weighting scale to assign to features
+    :param feature_to_delete: int, number of features to delete
+    :param union_weights: dict with keys=models, values=their weights during training
+    :param training_percent: float between 0 and 1, percentage of data for training
+    :param test_percent: float between 0 and 1, percentage of data for testing
+    :param split_job: boolean, True = use mulpiple cpu cores
+    :return: nothing, after the training and prediction has finished, writes the results into files
     """
 
     file_prefix = create_prefix(pos_groups, weighing_scale, feature_to_delete, union_weights, training_percent,
@@ -128,13 +131,13 @@ def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_
 
 def print_wrong_predictions(docs, prediction, gold_labels, number):
     """
-    Function to print wrong predictions.
+    Function to print wrong predictions of the classifier. Used to analyse results.
 
     :param docs: The list of tagged sentences
     :param prediction: the class predicted by our model
     :param gold_labels: the true classes
     :param number: The number of wrong predictions to print
-    :return:
+    :return: nothing, just print results
     """
     idx_list = return_wrong_prediction(prediction, gold_labels, number)
 
@@ -151,7 +154,7 @@ def print_best_combination(result, number_to_print=3):
     Automatically parses all result files saved in the results folder and print the best 3 results (accuracy, F1 score)
     :param result: results folder
     :param number_to_print: the number of best results to print
-    :return:
+    :return: nothing, just prints results
     """
 
     best = []
@@ -196,11 +199,12 @@ def print_best_combination(result, number_to_print=3):
 
 def return_wrong_prediction(prediction, gold_labels, number):
     """
-    Returns the indexes of the wrong predictions
-    :param prediction:
-    :param gold_labels:
-    :param number:
-    :return:
+    Returns the indices of the tweets, which sentiment was predicted wrongly by the classifier
+
+    :param prediction: the class predicted by our model
+    :param gold_labels: the true classes
+    :param number: The number of wrong predictions to print
+    :return: list of indices
     """
 
     found = 0
@@ -249,7 +253,6 @@ if __name__ == "__main__":
     train_or_predict = False
     number_wrong_predictions_to_print = 20
     model_extension = ".libobj"
-
     print_best_combination(results_path)
 
     if train_or_predict:

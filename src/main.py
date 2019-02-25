@@ -434,8 +434,12 @@ if __name__ == "__main__":
 
         print("\nStarting prediction")
         predict_args = [
-            [{'R': 2, 'V': 4, 'A': 3, 'N': 1}, 29500, {'bow': 0.3, 'pos': 0.7, }],  # best accuracy
-            # [{'V': 4, 'A': 1, 'N': 1, 'R': 2}, 25000, {'bow': 0.8, 'pos': 0.2, }],  # best f1 score
+            # best accuracy
+            [{'R': 2, 'V': 4, 'A': 3, 'N': 1}, 29500, {'bow': 0.3, 'pos': 0.7, }],
+            # best f1 score. File with 25000 deletion was selected because
+            # the Training score was higher, compared to 0 deletions...
+            [{'R': 1, 'V': 4, 'A': 1, 'N': 1}, 25000, {'bow': 0.8, 'pos': 0.2, }],
+
         ]
 
         for arg in predict_args:

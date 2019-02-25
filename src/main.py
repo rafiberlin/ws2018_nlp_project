@@ -4,7 +4,7 @@ import time
 from src.model.train_model import return_best_pos_weight, create_fitted_model, save_model, load_model
 from src.data.helper import get_tagged_sentences, get_labels, get_pos_datasets
 from pathlib import Path
-
+import ast
 from sklearn.metrics import f1_score
 
 
@@ -127,6 +127,15 @@ def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_
 
 
 def print_wrong_predictions(docs, prediction, gold_labels, number):
+    """
+    Function to print wrong predictions.
+
+    :param docs: The list of tagged sentences
+    :param prediction: the class predicted by our model
+    :param gold_labels: the true classes
+    :param number: The number of wrong predictions to print
+    :return:
+    """
     idx_list = return_wrong_prediction(prediction, gold_labels, number)
 
     for idx in idx_list:
@@ -135,6 +144,54 @@ def print_wrong_predictions(docs, prediction, gold_labels, number):
         print("\nDoc: ")
         print(docs[idx])
         print("\n#################################")
+
+
+def print_best_combination(result, number_to_print=3):
+    """
+    Automatically parses all result files saved in the results folder and print the best 3 results (accuracy, F1 score)
+    :param result: results folder
+    :param number_to_print: the number of best results to print
+    :return:
+    """
+
+    best = []
+    for x in os.walk(result):
+        main_folder = x[0]
+        sub_folder = x[1]
+        files = x[2]
+        for file in files:
+            try:
+                fp = open(os.path.join(main_folder, file))
+                first_line = [ast.literal_eval(line) for line in fp.readlines()][0][1]
+                best.append((file, first_line,))
+            finally:
+                fp.close()
+
+    merge_accuracy = []
+    merge_f1 = []
+    merge_accuracy.extend(best)
+    merge_f1.extend(best)
+    merge_f1.sort(reverse=True, key=lambda tup: tup[1][2])
+    merge_accuracy.sort(reverse=True, key=lambda tup: tup[1][1])
+    print("\nBest 3 accuracies")
+    count = 0
+    for acc in merge_accuracy:
+        file_name = acc[0]
+        if "accuracy" in file_name:
+            count += 1
+            print(acc)
+        if count >= number_to_print:
+            break
+    print("\nBest 3 F1 scores")
+
+    count = 0
+    for f1 in merge_f1:
+        file_name = f1[0]
+        if "f1" in file_name:
+            count += 1
+            print(f1)
+        if count >= number_to_print:
+            break
 
 
 def return_wrong_prediction(prediction, gold_labels, number):
@@ -161,8 +218,8 @@ def return_wrong_prediction(prediction, gold_labels, number):
 # Main Entry Point
 if __name__ == "__main__":
     # Comment in for the first execution
-    #import nltk
-    #nltk.download('stopwords')
+    # import nltk
+    # nltk.download('stopwords')
 
     # os.getcwd() returns the path until /src
     parent_dir = Path(os.getcwd()).parent
@@ -180,8 +237,6 @@ if __name__ == "__main__":
                                             end_range=end_range, split_pos=False)
 
     all_labels = get_labels(labels, start_range=start_range, end_range=end_range)
-    print(all_labels[:10])
-    print(tagged_sentences[:10])
     pos_groups = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
     weighing_scale = 5
     feature_to_delete = 23000
@@ -194,6 +249,8 @@ if __name__ == "__main__":
     train_or_predict = False
     number_wrong_predictions_to_print = 20
     model_extension = ".libobj"
+
+    print_best_combination(results_path)
 
     if train_or_predict:
 
@@ -361,7 +418,7 @@ if __name__ == "__main__":
         ]
 
         start = time.time()
-        print("Started... ")
+        print("\nStarted... ")
         for arg in prefix_args:
             data_arg = [tagged_sentences, all_labels]
             data_arg.extend(arg)
@@ -369,10 +426,10 @@ if __name__ == "__main__":
             run_logic(*data_arg)
 
         end = time.time()
-        print("Elapsed time overall: ", end - start)
+        print("\nElapsed time overall: ", end - start)
     else:
 
-        print("Starting prediction")
+        print("\nStarting prediction")
         predict_args = [
             [{'V': 4, 'A': 3, 'N': 1, 'R': 1}, 30000, {'bow': 0.5, 'pos': 0.5, }],
         ]
@@ -413,4 +470,4 @@ if __name__ == "__main__":
                   "\nTesting F1 (macro)",
                   f1_macro, )
             print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
-        print("Ending prediction")
+        print("\nEnding prediction")

@@ -183,7 +183,7 @@ def create_files_for_analysis(path, shuffle=False):
     """
     print("Start")
     all_raw = os.path.join(path, "all_raw.csv")
-    processed_path = os.path.join(Path(__file__).parents[1].__str__(), 'dataset', 'processed')
+    processed_path = os.path.join(Path(__file__).parents[2].__str__(), 'dataset', 'processed')
     merge_files_as_binary(path, all_raw)
     filter_unwanted_characters(all_raw, processed_path, shuffle)
     clean_data(os.path.join(processed_path, "text_only.csv"),
@@ -216,9 +216,10 @@ def main():
     '''
     Creates clean data for classification
     '''
-    parent_dir = Path(__file__).parents[1]
+    parent_dir = Path(__file__).parents[2]
+    print(parent_dir)
     train_path = os.path.join(parent_dir.__str__(), 'dataset', 'raw')
-    shuffle_data = False
+    shuffle_data = True
     create_files_for_analysis(train_path, shuffle_data)
 
 

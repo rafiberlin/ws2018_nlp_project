@@ -49,7 +49,7 @@ class PosVectorizer(BaseEstimator, TransformerMixin):
         Generates sparse data matrix, where values of each (term,pos) in each sentence is set according
                             to the weighting scheme, with which PosVectorizer was initialized
         :param docs: list of sentences, which are lists of (word,pos) used for training
-        :param fit_flag: of True, fit, if False transform
+        :param fit_flag: if True, fit, if False transform
         :return: sparse data matrix, indices, index pointers
         """
         indptr = [0]
@@ -161,7 +161,7 @@ class OCFS(BaseEstimator, TransformerMixin):
         :param pos_train: normalized matrix in Compressed Sparse Row format, as returned from transform function of
                                                         PosVectorizer class
         :param train_labels: pandas padaframe of corresponding labels
-        :return: list of featrues to delete
+        :return: list of features to delete
         """
 
         ocfs_pos = OCFS._calculate_ocfs_score(pos_train, train_labels)
@@ -193,8 +193,7 @@ def create_pos_weight_combination(pos_groups, weighing_scale):
     e.g.: pos groups.keys = [V,A,N,E], weighting scale=4
     [{'V': 1, 'A': 1, 'N': 1, 'E': 1}, {'V': 1, 'A': 1, 'N': 1, 'E': 2}, ....]
 
-
-    :param pos_groups: dictionary of keys=pos categories, values=their weigths
+    :param pos_groups: dictionary of keys=pos categories, values=their weights
      e.g. {"V": ["V"], "A": ["A", "R"], "N": ["N"], "E": ["E"]}
     :param weighing_scale: integer scale, from 1 to the value in weighing scale
     :return: list of dictionaries, key=pos category, value=its weight
@@ -316,7 +315,6 @@ def main():
     print("Unified Pipeline Test", pos_test_acc_unified_pipeline)
     print("Unified Pipeline Test F1", unified_f1)
     classification_report(unified_predicted, test_labels)
-
 
 
 if __name__ == "__main__":

@@ -20,7 +20,7 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
     :param all_labels: a pandas data frame object with labels for tagged sentences
     :param pos_groups: dict with keys=feature names, values=list of pos tags that have this feature
     :param weighing_scale: int, from 1 to this number is the scale for assigning weigths to features
-    :param features_to_remove: int, number for featrue cutoff with ocfs technique
+    :param features_to_remove: int, number for feature cutoff with ocfs technique
     :param union_transformer_weights: dict, key=name of model (e.g.pos,bow), value=float between 0 and 1,
                                                     weight of this model in training
     :param percentage_train_data: float between 0 and 1, percentage of training data
@@ -50,9 +50,6 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
         cpu_cores = 1
     original_size = len(all_pos_vocab)
     middle = original_size // cpu_cores
-    # fix when only one combination is available
-    if middle == 0:
-        middle = original_size
 
     list_of_jobs = split_list(all_pos_vocab, middle)
     num_jobs = len(list_of_jobs)
@@ -77,6 +74,11 @@ def split_list(the_list, chunk_size):
     :param chunk_size: number of elements in one chunk
     :return: a list of lists, which are of the same size
     """
+
+    # fix when only one combination is available
+    if chunk_size == 0:
+        chunk_size = len(the_list)
+
     result_list = []
     while the_list:
         result_list.append(the_list[:chunk_size])
@@ -93,7 +95,7 @@ def run_model_for_all_combination(train_docs, test_docs, train_labels, test_labe
     :param test_docs: lists of sentences as lists of tuples (word, pos) used for testing
     :param train_labels: pandas data frame object with sentiment labels for training docs
     :param test_labels: pandas data frame object with sentiment labels for testing docs
-    :param features_to_remove: numebr of features to delete with ocfs feature selection
+    :param features_to_remove: number of features to delete with ocfs feature selection
     :param weights: dict, key=name of model (e.g.pos,bow), value=float between 0 and 1,
                                                     weight of this model in training
     :param all_pos_vocab: list of dictionaries. Each dict: with feature names as keys and pos categories that
@@ -237,6 +239,12 @@ def create_fitted_model(train_docs, train_labels, pos_vocab, number_of_features_
 
 
 def argument_wrapper_for_run_model_for_all_combination(args):
+    """
+    Wrapper to be able to call run_model_for_all_combination() from the pool object with the map function
+    :param args: all argument necessary to use run_model_for_all_combination packed in a list
+    :return:
+    """
+
     return run_model_for_all_combination(*args)
 
 

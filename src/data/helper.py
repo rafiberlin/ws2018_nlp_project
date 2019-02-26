@@ -153,5 +153,6 @@ def get_pos_datasets(tagged_sentences, all_labels, pos_groups, percentage_train_
 
     return train_docs, test_docs, train_labels, test_labels
 
+
 if __name__ == '__main__':
     pass

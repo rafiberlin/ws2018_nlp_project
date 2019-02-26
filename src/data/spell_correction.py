@@ -1,4 +1,3 @@
-
 import pandas as pd
 import glob
 import os
@@ -114,13 +113,11 @@ def filter_unwanted_characters(input_file, output_path, shuffle=False):
 
     print('filter unwanted', output_path)
     df.to_csv(os.path.join(output_path, "shuffled.csv"), header=None, encoding=file_encoding,
-              # quoting=csv.QUOTE_ALL,
               quoting=csv.QUOTE_ALL,
               columns=['sentiment', 'text'],
               index=True)
     escape_char_textonly = " "
     df.to_csv(os.path.join(output_path, "text_only.csv"), header=None, encoding=file_encoding,
-              # quoting=csv.QUOTE_ALL,
               quoting=csv.QUOTE_NONE,
               escapechar=escape_char_textonly,
               columns=['text'], index=False)
@@ -172,7 +169,6 @@ def clean_data(input_file, output_file):
                 outfile.write(cleaned_line + "\n")
 
 
-
 def create_files_for_analysis(path, shuffle=False):
     """
     Merges individual raw docs into one dataset file, filters unwanted characters from dataset,
@@ -213,14 +209,15 @@ def build_pie_chart(data_frame_labels, chart_title="Label distribution in the Se
 
 
 def main():
-    '''
+    """
     Creates clean data for classification
-    '''
+    :return: Nothing
+    """
+
     parent_dir = Path(__file__).parents[1]
     train_path = os.path.join(parent_dir.__str__(), 'dataset', 'raw')
     shuffle_data = False
     create_files_for_analysis(train_path, shuffle_data)
-
 
 
 if __name__ == "__main__":

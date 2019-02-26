@@ -1,3 +1,10 @@
+"""
+None of these function are used anymore.
+The spelling correction based on the ekphrasis==0.5.1 and Pattern==3.6 were not satisfactory
+"as" would always be corrected as "a", it would remove s at the end of words, etc...
+"""
+
+
 def correct_spelling(word, last_corrections=None, to_lower=False,
                      stop_word_list=None):
     """
@@ -67,6 +74,7 @@ def correct_spelling(word, last_corrections=None, to_lower=False,
     if last_corrections is not None:
         last_corrections[word] = final_guess
     return final_guess
+
 
 def correct_spelling2(word, last_corrections=None, to_lower=False,
                       stopwords=None,

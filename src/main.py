@@ -10,7 +10,7 @@ from sklearn.metrics import f1_score
 
 def get_pos_groups_from_vocab(pos_vocab):
     """
-    Creates dictionary with key= feature name, value=pos tags fron featur name split into a list of tags
+    Creates dictionary with key= feature name, value=pos tags from feature name split into a list of tags
     Assumption: Key for merged groups A and V is A+V.
     :param pos_vocab: dict with feature names as keys and some values. Values will be overwritten with a list created
                                                                         from key
@@ -94,7 +94,7 @@ def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_
     :param union_weights: dict with keys=models, values=their weights during training
     :param training_percent: float between 0 and 1, percentage of data for training
     :param test_percent: float between 0 and 1, percentage of data for testing
-    :param split_job: boolean, True = use mulpiple cpu cores
+    :param split_job: boolean, True = use multiple cpu cores
     :param result_folder: the folder where the results will be stored (normal text files)
     :return: nothing, after the training and prediction has finished, writes the results into files
     """
@@ -176,16 +176,18 @@ def print_best_combination(result, number_to_print=3):
 
     best = []
     for x in os.walk(result):
+        print(x)
         main_folder = x[0]
         sub_folder = x[1]
         files = x[2]
         for file in files:
-            try:
-                fp = open(os.path.join(main_folder, file))
-                first_line = [ast.literal_eval(line) for line in fp.readlines()][0][1]
-                best.append((file, first_line,))
-            finally:
-                fp.close()
+            if ".txt" in file:
+                try:
+                    fp = open(os.path.join(main_folder, file))
+                    first_line = [ast.literal_eval(line) for line in fp.readlines()][0][1]
+                    best.append((file, first_line,))
+                finally:
+                    fp.close()
 
     merge_accuracy = []
     merge_f1 = []

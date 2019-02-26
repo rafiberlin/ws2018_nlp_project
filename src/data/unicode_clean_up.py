@@ -18,6 +18,11 @@ def unicode_clean_up(input_file, output_file):
 
 
 def main():
+    """
+    Runs the unicode clean up function on the designated files
+    :return:
+    """
+
     folder_path = os.path.join(Path(__file__).parents[1], 'dataset', 'raw')
 
     unicode_clean_up(os.path.join(folder_path, 'twitter-2013train-A.txt'),

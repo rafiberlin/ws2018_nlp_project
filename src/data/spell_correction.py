@@ -1,3 +1,4 @@
+
 import pandas as pd
 import glob
 import os
@@ -10,10 +11,10 @@ import matplotlib.pyplot as plt
 
 def reduce_lengthening(text):
     """
-    Remove any letter that are repeated more than 2 times.
-    Source: https://rustyonrampage.github.io/text-mining/2017/11/28/spelling-correction-with-python-and-nltk.html
-    :param text:
-    :return: words
+    Removes any letter that is repeated more than 2 times.
+    E.g. "paaaaaarty" => "paarty"
+    :param text: text to correct
+    :return: corrected text
     """
     pattern = re.compile(r"(.)\1{2,}")
     return pattern.sub(r"\1\1", text)
@@ -23,9 +24,9 @@ def remove_backslash_carefully(word, last_corrections=None):
     """
     Only remove the starting backslash if all characters coming afterwards
     are word characters (should not destroy emojis)
-    :param word:
-    :param last_corrections:
-    :return:
+    :param word: word with a backslash
+    :param last_corrections: dictionary with already corrected words
+    :return: corrected word
     """
 
     if last_corrections is None:
@@ -53,10 +54,10 @@ def remove_backslash_carefully(word, last_corrections=None):
 
 def apply_word_corrections(word, last_corrections=None):
     """
-    correct a given word
-    :param word:
+    Reduce lenghtening and remove unnecessary backslashes from input word
+    :param word: word to correct
     :param last_corrections: dictionary to store words where backslash was removed
-    :return:
+    :return: corrected word
     """
     word = reduce_lengthening(word)
     word = remove_backslash_carefully(word, last_corrections)
@@ -65,12 +66,13 @@ def apply_word_corrections(word, last_corrections=None):
 
 def merge_files_as_binary(path, output, file_pattern="*.txt"):
     """
-    given a certain file pattern, merge the conten of all files in the directory "path" to the
-    desired ouput file "output"
+    Given a certain file pattern, merge the content of all files in the directory "path" to the
+    desired output file "output".
+    USed to merge individual raw datasets into one all_raw dataset
     :param path: a directory
     :param output: complete path to an output file
     :param file_pattern: type of files to be merged
-    :return:
+    :return: nothing, just writes into output file
     """
 
     all_files = glob.glob(os.path.join(path, file_pattern))
@@ -87,7 +89,7 @@ def filter_unwanted_characters(input_file, output_path, shuffle=False):
     :param input_file: complete path to an input file
     :param output_path: complete path to an output file
     :param shuffle: reorder the loaded data if True
-    :return:
+    :return: nothing, just writes into files
     """
     df = pd.read_csv(input_file, index_col=None, sep='\t', header=None, names=['id', 'sentiment', 'text', 'to_delete'])
     df = df.drop_duplicates(subset="id", keep="first")
@@ -126,15 +128,15 @@ def filter_unwanted_characters(input_file, output_path, shuffle=False):
 
 def clean_data(input_file, output_file):
     """
-    The input file will be cleaned as and out to output file as follow=:
+    The input file will be cleaned and teh resutl will be written to a file as follows:
     - replace username by token @GENERICUSER
     - replace email by token EMAIL@GENERIC.COM
     - replace urls by http://genericurl.com
     - spelling correction
 
-    :param input_file:
-    :param output_file:
-    :return:
+    :param input_file: name of input file for cleaning
+    :param output_file: name of output file to write results into
+    :return: nothing, just writes into a file
     """
     spelling_corrections = {}
     # speller = SpellCorrector(corpus="english")
@@ -144,45 +146,40 @@ def clean_data(input_file, output_file):
         with open(input_file, mode="r", encoding=file_encoding, newline='') as infile:
             for line in infile:
                 # replace number
-                # source https://www.oreilly.com/library/view/regular-expressions-cookbook/9781449327453/ch06s11.html
                 line = re.sub(r"[0-9]{1,3}(,[0-9]{3})\.[0-9]+", "GENERICNUMBER", line)
 
                 # replace email addresses by generic email token
-                # source: https://emailregex.com/
                 line = re.sub(r"[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+", "EMAIL@GENERIC.COM", line)
+
                 # replace user name by a generic user name token
-                # source https://stackoverflow.com/questions/2304632/regex-for-twitter-username
                 line = re.sub(r"@[A-Za-z0-9_]{1,15}", "@GENERICUSER", line)
+
                 # replace URL by a generic URL token
-                # https://stackoverflow.com/questions/11331982/how-to-remove-any-url-within-a-string-in-python
                 line = re.sub(
                     r'http\S+',
-                    # r'(https?:\/\/)(\s)*(www\.)?(\s)*((\w|\s)+\.)*([\w\-\s]+\/)*([\w\-]+)((\?)?[\w\s]*=\s*[\w\%&]*)*',
                     "http://genericurl.com", line)
+
                 # replace any formatted / unformatted numbers and replaces it
                 line = re.sub(
                     r'\b\d[\d,.]*\b',
                     "GENERICNUMBER", line)
+
                 # Remove : and - surrounded by characters
                 line = re.sub('\s[:-]\s', " ", line)
 
-                # cleaned_line = ' '.join([correct_spelling(word, spelling_corrections, True) for word in line.split()])
-                # cleaned_line = ' '.join([correct_spelling2(word, spelling_corrections, True,
-                #                                           ["@GENERICUSER", "http://genericurl.com",
-                #                                            "EMAIL@GENERIC.COM"], speller) for word in line.split()])
                 cleaned_line = ' '.join(
                     [apply_word_corrections(word, spelling_corrections).lower() for word in line.split()])
                 outfile.write(cleaned_line + "\n")
-                # cleaned_line = ' '.join([word for word in line.split()])
-                # outfile.write(line + "\n")
+
 
 
 def create_files_for_analysis(path, shuffle=False):
     """
-
-    :param path:
-    :param shuffle:
-    :return:
+    Merges individual raw docs into one dataset file, filters unwanted characters from dataset,
+    shuffles it, cleans it with clean_data and writes it into file text_cleaned.csv
+    :param path: path to a document with raw tweets
+    :param shuffle: if True shuffle the tweets
+    :return: nothing, just writes into files
     """
     print("Start")
     all_raw = os.path.join(path, "all_raw.csv")
@@ -197,11 +194,11 @@ def create_files_for_analysis(path, shuffle=False):
 def build_pie_chart(data_frame_labels, chart_title="Label distribution in the SemEval 2017 data set",
                     filename="dataset/label_chart.png"):
     """
-    Creates a pie chart of data distribution
-    :param data_frame_labels: as returned by process_data.helper.get_labels()
-    :param chart_title: The name of the chart
-    :param filename: The name of the chart
-    :return:
+    Creates a pie chart of data distribution. Used for presentation.
+    :param data_frame_labels: sentiment labels for sentences as returned by process_data.helper.get_labels()
+    :param chart_title: Title as it appears on the chart itself
+    :param filename: The name of file with the chart
+    :return: nothing, just saves the chart as .png
     """
     val_counts = data_frame_labels.Label.value_counts()
     label_count = [val_counts["positive"], val_counts["negative"], val_counts["neutral"]]
@@ -216,10 +213,14 @@ def build_pie_chart(data_frame_labels, chart_title="Label distribution in the Se
 
 
 def main():
+    '''
+    Creates clean data for classification
+    '''
     parent_dir = Path(__file__).parents[1]
     train_path = os.path.join(parent_dir.__str__(), 'dataset', 'raw')
     shuffle_data = False
     create_files_for_analysis(train_path, shuffle_data)
+
 
 
 if __name__ == "__main__":

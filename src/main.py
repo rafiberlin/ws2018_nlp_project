@@ -140,14 +140,30 @@ def print_wrong_predictions(docs, prediction, gold_labels, number):
     :param number: The number of wrong predictions to print
     :return: nothing, just print results
     """
-    idx_list = return_wrong_prediction(prediction, gold_labels, number)
+    idx_positive = return_wrong_prediction(prediction, gold_labels, number, "positive")
+    idx_negative = return_wrong_prediction(prediction, gold_labels, number, "negative")
+    idx_neutral = return_wrong_prediction(prediction, gold_labels, number, "neutral")
 
-    for idx in idx_list:
-        print("\nPredicted: " + prediction[idx])
-        print("\nGold label: " + gold_labels[idx])
-        print("\nDoc: ")
-        print(docs[idx])
-        print("\n#################################")
+    def _print_predictions(idx_list, gold_target):
+        """
+        Internal function, do not use outside
+        :param idx_list: list of wrong predictions
+        :param gold_target: target label under scrutinity
+        :return:
+        """
+
+        print("\n#################################Wrong " + gold_target + "#################################")
+        for idx in idx_list:
+            print("\nPredicted: " + prediction[idx])
+            print("\nGold label: " + gold_labels[idx])
+            print("\nDoc: ")
+            print(docs[idx])
+            print("\n#################################")
+        print("\n#################################End Wrong " + gold_target + "##########################")
+
+    _print_predictions(idx_positive, "positive")
+    _print_predictions(idx_negative, "negative")
+    _print_predictions(idx_neutral, "neutral")
 
 
 def print_best_combination(result, number_to_print=3):
@@ -198,13 +214,14 @@ def print_best_combination(result, number_to_print=3):
             break
 
 
-def return_wrong_prediction(prediction, gold_labels, number):
+def return_wrong_prediction(prediction, gold_labels, number, target_gold=None):
     """
     Returns the indices of the tweets, which sentiment was predicted wrongly by the classifier
 
     :param prediction: the class predicted by our model
     :param gold_labels: the true classes
     :param number: The number of wrong predictions to print
+    :param target_gold: Optional, allow us to print a number of wrong prediction for a given gold label
     :return: list of indices
     """
 
@@ -213,8 +230,10 @@ def return_wrong_prediction(prediction, gold_labels, number):
     size = len(prediction)
     for idx in range(size):
         if prediction[idx] != gold_labels[idx]:
-            found += 1
-            idx_list.append(idx)
+            if (target_gold is not None and target_gold == gold_labels[idx]) \
+                    or target_gold is None:
+                found += 1
+                idx_list.append(idx)
         if found == number:
             break
     return idx_list
@@ -490,7 +509,7 @@ def main(argv):
                   f1,
                   "\nTesting F1 (macro)",
                   f1_macro, )
-            # print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
+            print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
         print("\nEnding prediction")
 
 

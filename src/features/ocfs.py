@@ -19,10 +19,10 @@ from itertools import product
 
 def drop_cols(matrix, drop_idx):
     """
-    Drop column given index to be dropped.Based on https://stackoverflow.com/questions/23966923/delete-columns-of-matrix-of-csr-format-in-python
-    :param matrix:
-    :param drop_idx:
-    :return:
+    Drop column given index to be dropped and a matrix
+    :param matrix: input matrix, numpy array
+    :param drop_idx: index of a column to be dropped
+    :return: a matrix in Compressed Sparse Row format with dropped columns
     """
     drop_idx = np.unique(drop_idx)
     temp_mat = matrix.tocoo()
@@ -36,8 +36,9 @@ def drop_cols(matrix, drop_idx):
 class PosVectorizer(BaseEstimator, TransformerMixin):
     def __init__(self, weight):
         """
-
-        :param weight:
+        Initiate a class object with given weights
+        :param weight: a dictionary with keys=pos categories, values=weights
+        e.g. {'N': 2, 'V': 3, 'A': 5, "DEFAULT": 1, "E": 4}
         """
         self.weight = weight
         self.vocabulary = defaultdict(int)
@@ -45,10 +46,11 @@ class PosVectorizer(BaseEstimator, TransformerMixin):
 
     def _generate_sparse_data(self, docs, fit_flag=True):
         """
-
-        :param docs:
-        :param fit_flag:
-        :return:
+        Generates sparse data matrix, where values of each (term,pos) in each sentence is set according
+                            to the weighting scheme, with which PosVectorizer was initialized
+        :param docs: list of sentences, which are lists of (word,pos) used for training
+        :param fit_flag: of True, fit, if False transform
+        :return: sparse data matrix, indices, index pointers
         """
         indptr = [0]
         indices = []
@@ -73,9 +75,9 @@ class PosVectorizer(BaseEstimator, TransformerMixin):
     def fit(self, docs, train_labels=None):
         """
         Generate POS features for given docs and tags based on specific weighting scheme.
-        :param docs:
-        :param train_labels: Do not delete this parameter, it is needed by the scikit interface
-        :return:
+        :param docs: list of sentences, which are lists of (word,pos) used for training
+        :param train_labels: parameter required by scikit interface
+        :return: model parameters according to the given training data
         """
 
         self.vocabulary.clear()
@@ -87,9 +89,9 @@ class PosVectorizer(BaseEstimator, TransformerMixin):
 
     def transform(self, docs):
         """
-        docstring here
-        :param docs:
-        :return:
+        Reduces matrix to its most important features.
+        :param docs: list of sentences, which are lists of (word,pos) used for training
+        :return: normalized matrix in Compressed Sparse Row format
         """
         column = self.dim[1]
         data, indices, indptr = self._generate_sparse_data(docs, fit_flag=False)
@@ -101,9 +103,9 @@ class PosVectorizer(BaseEstimator, TransformerMixin):
 class OCFS(BaseEstimator, TransformerMixin):
     def __init__(self, number_to_delete=10000):
         """
-        Constructor
+        Constructor, initialized with the number of features to cut off
         :param number_to_delete: based on the number of features used during fit(),
-        converts the number_to_delete to  a percentile,
+        converts the number_to_delete to a percentile,
         which is used to define the number of features to be removed
         """
         self.number_to_delete = number_to_delete
@@ -123,7 +125,7 @@ class OCFS(BaseEstimator, TransformerMixin):
             Crude implementation of mean, but faster for sparse
             matrix compared to pandas.DataFrame.mean()
             :param class_label:
-            :return:
+            :return: mean value of all the observations in the dataframe (scalar value)
             """
             df = docs.loc[docs["Label"] == class_label]
             df = df.drop(['Label'], axis=1)
@@ -155,10 +157,11 @@ class OCFS(BaseEstimator, TransformerMixin):
 
     def fit(self, pos_train, train_labels):
         """
-
-        :param pos_train:
-        :param train_labels:
-        :return:
+        Creates a list of features to remove
+        :param pos_train: normalized matrix in Compressed Sparse Row format, as returned from transform function of
+                                                        PosVectorizer class
+        :param train_labels: pandas padaframe of corresponding labels
+        :return: list of featrues to delete
         """
 
         ocfs_pos = OCFS._calculate_ocfs_score(pos_train, train_labels)
@@ -175,10 +178,38 @@ class OCFS(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, pos_train):
+        """
+        Removes features that are under the cutoff mark
+        :param pos_train: normalized matrix in Compressed Sparse Row format, as returned from transform function of
+                                                        PosVectorizer class
+        :return: matrix with removed features
+        """
         return drop_cols(pos_train, self.feature_to_delete)
 
 
+def create_pos_weight_combination(pos_groups, weighing_scale):
+    """
+    Creates a list of all possible combinations of weights for the given pos groups and a weighting scale
+    e.g.: pos groups.keys = [V,A,N,E], weighting scale=4
+    [{'V': 1, 'A': 1, 'N': 1, 'E': 1}, {'V': 1, 'A': 1, 'N': 1, 'E': 2}, ....]
+
+
+    :param pos_groups: dictionary of keys=pos categories, values=their weigths
+     e.g. {"V": ["V"], "A": ["A", "R"], "N": ["N"], "E": ["E"]}
+    :param weighing_scale: integer scale, from 1 to the value in weighing scale
+    :return: list of dictionaries, key=pos category, value=its weight
+    """
+    group_keys = pos_groups.keys()
+    weights = list(range(1, weighing_scale + 1))
+    return [dict(zip(group_keys, list(combi))) for combi in product(set(weights), repeat=len(group_keys))]
+
+
 def main():
+    """
+    Creates two models: BoW and Pos with ocfs
+    Creates a pipeline with union of two models.
+    Trains and scores the models in the pipeline.
+    """
     parent_dir = Path(__file__).parents[1]
     # parent_dir = os.getcwd() # my sys.path is different from PyCharm
     data_set_path = os.path.join(parent_dir, "dataset", "processed")
@@ -286,19 +317,6 @@ def main():
     print("Unified Pipeline Test F1", unified_f1)
     classification_report(unified_predicted, test_labels)
 
-
-def create_pos_weight_combination(pos_groups, weighing_scale):
-    """
-    Return the list of all weighing combinations stored as dictionnary
-    ex: [{'V': 1, 'A': 1, 'N': 1, 'E': 1}, {'V': 1, 'A': 1, 'N': 1, 'E': 2}, ....]
-
-    :param pos_groups: {"V": ["V"], "A": ["A", "R"], "N": ["N"], "E": ["E"]}
-    :param weighing_scale: integer scale, from 1 to the value in weighing scale
-    :return:
-    """
-    group_keys = pos_groups.keys()
-    weights = list(range(1, weighing_scale + 1))
-    return [dict(zip(group_keys, list(combi))) for combi in product(set(weights), repeat=len(group_keys))]
 
 
 if __name__ == "__main__":

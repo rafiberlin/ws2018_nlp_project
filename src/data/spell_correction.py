@@ -213,7 +213,6 @@ def main():
     Creates clean data for classification
     :return: Nothing
     """
-
     parent_dir = Path(__file__).parents[2]
     print(parent_dir)
     train_path = os.path.join(parent_dir.__str__(), 'dataset', 'raw')

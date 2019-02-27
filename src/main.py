@@ -292,6 +292,7 @@ def main(argv):
     number_wrong_predictions_to_print = 20
     model_extension = ".libobj"
     print_best_combination(results_path)
+    report_precision = 8
 
     if train_or_predict:
 
@@ -514,7 +515,7 @@ def main(argv):
             predicted = model.predict(test_docs)
 
             print('================================\n\nClassification Report for BoW + PoS (Test Data)\n')
-            print(classification_report(test_labels, predicted, digits=4))
+            print(classification_report(test_labels, predicted, digits=report_precision))
 
             # training_accuracy = model.score(train_docs, train_labels)
             # testing_accuracy = model.score(test_docs, test_labels)

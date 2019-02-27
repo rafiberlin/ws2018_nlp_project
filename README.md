@@ -46,8 +46,7 @@ or `python main.py devset`
 - Python 3.x
 - https://github.com/clips/pattern (first: "sudo apt-get install gcc", then "conda install -c anaconda mysql-connector-python" finally: "pip install pattern") . Spelling correction
 - https://github.com/cbaziotis/ekphrasis (pip install ekphrasis) . Spelling correction 
-
-Versions of Software:
+- Sometimes, the tkinter module is not installed automatically. Use 'sudo apt-get install python3-tk'
 
 -->
 

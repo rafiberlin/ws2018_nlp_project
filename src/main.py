@@ -5,7 +5,7 @@ from model.train_model import return_best_pos_weight, create_fitted_model, save_
 from data.helper import get_tagged_sentences, get_labels, get_pos_datasets
 from pathlib import Path
 import ast
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, classification_report
 
 
 def get_pos_groups_from_vocab(pos_vocab):
@@ -512,19 +512,23 @@ def main(argv):
                 model = load_model(serialized_model)
 
             predicted = model.predict(test_docs)
-            training_accuracy = model.score(train_docs, train_labels)
-            testing_accuracy = model.score(test_docs, test_labels)
-            f1 = f1_score(test_labels, predicted, average=None,
-                          labels=['neutral', 'positive', 'negative'])
-            f1_macro = f1_score(test_labels, predicted, average="macro",
-                                labels=['neutral', 'positive', 'negative'])
-            print("\nModel: " + prefix, "\nTraining accuracy", training_accuracy, "\nTesting accuracy",
-                  testing_accuracy,
-                  "\nTesting F1 (neutral, positive, negative)",
-                  f1,
-                  "\nTesting F1 (macro)",
-                  f1_macro, )
-            print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
+
+            print('================================\n\nClassification Report for BoW + PoS (Test Data)\n')
+            print(classification_report(test_labels, predicted, digits=4))
+
+            # training_accuracy = model.score(train_docs, train_labels)
+            # testing_accuracy = model.score(test_docs, test_labels)
+            # f1 = f1_score(test_labels, predicted, average=None,
+            #               labels=['neutral', 'positive', 'negative'])
+            # f1_macro = f1_score(test_labels, predicted, average="macro",
+            #                     labels=['neutral', 'positive', 'negative'])
+            # print("\nModel: " + prefix, "\nTraining accuracy", training_accuracy, "\nTesting accuracy",
+            #       testing_accuracy,
+            #       "\nTesting F1 (neutral, positive, negative)",
+            #       f1,
+            #       "\nTesting F1 (macro)",
+            #       f1_macro, )
+            # print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
         print("\nEnding prediction")
 
 

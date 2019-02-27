@@ -13,7 +13,7 @@ from pickle import load as p_load
 
 def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_scale, features_to_remove,
                            union_transformer_weights=None, percentage_train_data=0.7, percentage_test_data=0.2,
-                           use_multi_processing=False):
+                           use_multi_processing=False, devset=True):
     """
 
     :param tagged_sentences: list of sentences as lists of tuples as created by get_tagged_sentences
@@ -26,6 +26,7 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
     :param percentage_train_data: float between 0 and 1, percentage of training data
     :param percentage_test_data: float between 0 and 1, percentage of test data
     :param use_multi_processing: boolean: True = use multiprocessing for training
+    :param devset: if True, runs the training with the devset
     :return: list of best scoring assignments of weights to featrues
                 e.g. of one entry in the list ({'V': 2, 'A': 4, 'N+#': 1, 'R': 1, 'E': 4, 'DEFAULT': 0},
                     (0.8574962658700522, 0.627297231070816, 0.5884891927065569))
@@ -39,9 +40,16 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
     # all_pos_vocab = ocfs.create_pos_weight_combination(pos_groups, weighing_scale)[:4]
     all_pos_vocab = ocfs.create_pos_weight_combination(pos_groups, weighing_scale)
 
-    train_docs, test_docs, train_labels, test_labels = get_pos_datasets(tagged_sentences, all_labels,
-                                                                        pos_groups, percentage_train_data,
-                                                                        percentage_test_data)
+    dev_docs, train_docs, test_docs, dev_labels, train_labels, test_labels = get_pos_datasets(tagged_sentences,
+                                                                                              all_labels,
+                                                                                              pos_groups,
+                                                                                              percentage_train_data,
+                                                                                              percentage_test_data)
+
+    if devset:
+        print("\nTraining on devset")
+        train_docs = dev_docs
+        train_labels = dev_labels
 
     # Process the model training with all combination in parallel, letting one core for CPU
     if use_multi_processing:
@@ -61,7 +69,6 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
         results = p.map(argument_wrapper_for_run_model_for_all_combination,
                         args)
         p.close()
-        p.join()
 
     return results
 
@@ -188,13 +195,6 @@ def create_fitted_model(train_docs, train_labels, pos_vocab, number_of_features_
 
     """
 
-    # from pickle import dump, load
-    # print("Test")
-    # dump(pos_bow_pipeline, open('filename.joblib','wb'))
-    # clf2 = load(open('filename.joblib','rb'))
-    # res = clf2.predict(test_docs)
-    #
-    # print(res)
     if union_transformer_weights is None:
         union_transformer_weights = {'bow': 0.7, 'pos': 0.3, }
 

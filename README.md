@@ -22,6 +22,9 @@ This will start the project in the prediction mode, where the saved models will 
 Starting the project with `python main.py train` will start the project in training mode; it will save the best POS 
 weighing combinations for a list of POS grouping saved in the main.py script. (see prefix_args variable to edit this list)
 
+It is also possible to use the development set to train on with both options: `python main.py train devset`  
+or `python main.py devset`
+
 **File Structure**
 
 ├── \_papers  <- scientific literature used for research     

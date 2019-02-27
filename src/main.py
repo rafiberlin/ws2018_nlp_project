@@ -81,8 +81,8 @@ def create_prefix(p_groups,
     return prefix
 
 
-def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_to_delete,
-              union_weights, training_percent, test_percent, split_job, result_folder):
+def run_training(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_to_delete,
+                 union_weights, training_percent, test_percent, split_job, result_folder, devset=False):
     """
     Run the main logic of the project given the user-defined non-default parameters
 
@@ -96,6 +96,7 @@ def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_
     :param test_percent: float between 0 and 1, percentage of data for testing
     :param split_job: boolean, True = use multiple cpu cores
     :param result_folder: the folder where the results will be stored (normal text files)
+    :param devset: if True, runs the training with the devset
     :return: nothing, after the training and prediction has finished, writes the results into files
     """
 
@@ -104,7 +105,7 @@ def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_
     process_start = time.time()
     print("Training started: " + file_prefix)
     weight_list = return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_to_delete,
-                                         union_weights, training_percent, test_percent, split_job)
+                                         union_weights, training_percent, test_percent, split_job, devset)
 
     process_end = time.time()
     print("Elapsed time: ", file_prefix, process_end - process_start)
@@ -176,7 +177,6 @@ def print_best_combination(result, number_to_print=3):
 
     best = []
     for x in os.walk(result):
-        print(x)
         main_folder = x[0]
         sub_folder = x[1]
         files = x[2]
@@ -195,7 +195,7 @@ def print_best_combination(result, number_to_print=3):
     merge_f1.extend(best)
     merge_f1.sort(reverse=True, key=lambda tup: tup[1][2])
     merge_accuracy.sort(reverse=True, key=lambda tup: tup[1][1])
-    print("\nBest 3 accuracies")
+    print("\nBest " + str(number_to_print) + " accuracies")
     count = 0
     for acc in merge_accuracy:
         file_name = acc[0]
@@ -204,7 +204,7 @@ def print_best_combination(result, number_to_print=3):
             print(acc)
         if count >= number_to_print:
             break
-    print("\nBest 3 F1 scores")
+    print("\nBest " + str(number_to_print) + " F1 scores")
 
     count = 0
     for f1 in merge_f1:
@@ -263,8 +263,13 @@ def main(argv):
     # True for train False for predict
     train_or_predict = True
 
-    if len(argv) == 0 or argv[0] != "train":
+    if "train" not in argv:
         train_or_predict = False
+
+    use_devset = False
+
+    if "devset" in argv:
+        use_devset = True
 
     tagged_sentences = os.path.join(data_set_path, 'text_cleaned_pos.csv')
     labels = os.path.join(data_set_path, 'shuffled.csv')
@@ -460,7 +465,8 @@ def main(argv):
             data_arg.extend(arg)
             data_arg.append(split_job)
             data_arg.append(results_path)
-            run_logic(*data_arg)
+            data_arg.append(use_devset)
+            run_training(*data_arg)
 
         end = time.time()
         print("\nElapsed time overall: ", end - start)
@@ -480,9 +486,16 @@ def main(argv):
             pos_vocabulary = arg[0]
             pos_group = get_pos_groups_from_vocab(pos_vocabulary)
 
-            train_docs, test_docs, train_labels, test_labels = get_pos_datasets(tagged_sentences, all_labels,
-                                                                                pos_group, training_percent,
-                                                                                test_percent)
+            dev_docs, train_docs, test_docs, dev_labels, train_labels, test_labels = get_pos_datasets(tagged_sentences,
+                                                                                                      all_labels,
+                                                                                                      pos_group,
+                                                                                                      training_percent,
+                                                                                                      test_percent)
+            if use_devset:
+                print("\nTraining on devset")
+                train_docs = dev_docs
+                train_labels = dev_labels
+
             prefix_arg = []
             prefix_arg.extend(arg)
             prefix_arg.append(training_percent)

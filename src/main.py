@@ -6,6 +6,7 @@ from data.helper import get_tagged_sentences, get_labels, get_pos_datasets
 from pathlib import Path
 import ast
 from sklearn.metrics import f1_score, classification_report
+import nltk
 
 
 def get_pos_groups_from_vocab(pos_vocab):
@@ -268,9 +269,8 @@ def main(argv):
     :return:
     """
 
-    # Comment in for the first execution
-    # import nltk
-    # nltk.download('stopwords')
+    # Comment out after the first execution
+    nltk.download('stopwords')
 
     # os.getcwd() returns the path until /src
     parent_dir = Path(os.getcwd()).parent.__str__()

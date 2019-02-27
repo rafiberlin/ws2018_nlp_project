@@ -176,7 +176,6 @@ def print_best_combination(result, number_to_print=3):
 
     best = []
     for x in os.walk(result):
-        print(x)
         main_folder = x[0]
         sub_folder = x[1]
         files = x[2]

@@ -53,7 +53,11 @@ def create_prefix_for_model_persistence(p_vocab,
     pref = ""
     for pos in sorted(p_vocab.keys()):
         pref += pos + str(p_vocab[pos]) + "_"
-    pref += str(f_to_delete) + "_" + str(u_weights["bow"]) + "_" + str(u_weights["pos"]) + "_" + str(train_percent)
+    pref += str(f_to_delete)
+    for union_key in sorted(u_weights.keys()):
+        pref += "_" + str(union_key) + "_" + str(u_weights[union_key])
+
+    pref += "_" + str(train_percent)
     return pref
 
 
@@ -74,10 +78,14 @@ def create_prefix(p_groups,
     :return: returns a string to be used as a file name, indicating parameters used for a model
     """
     prefix_group = "_".join(["-".join(value) for value in sorted(p_groups.values())])
-    union_weight_prefix = str(u_weights["bow"]) + "_" + str(u_weights["pos"])
-    training = str(training_percent) + "_" + str(test_percent)
-    prefix = prefix_group + "_" + str(
-        w_scale) + "_" + str(f_to_delete) + "_" + union_weight_prefix + "_" + training
+    union_weight_prefix = ""
+
+    for union_key in sorted(u_weights.keys()):
+        union_weight_prefix += "_" + str(union_key) + "_" + str(u_weights[union_key])
+
+    training = "train_" + str(training_percent) + "_test_" + str(test_percent)
+    prefix = prefix_group + "_scale_" + str(
+        w_scale) + "_del_" + str(f_to_delete) + union_weight_prefix + "_" + training
     return prefix
 
 
@@ -127,8 +135,12 @@ def run_training(tagged_sentences, all_labels, pos_groups, weighing_scale, featu
     if number_results < keep_best:
         keep_best = number_results
 
-    save_results(result_folder, file_prefix + "_" + "f1_pos_bow.txt", merge_f1[:keep_best])
-    save_results(result_folder, file_prefix + "_" + "accuracy_pos_bow.txt", merge_accuracy[:keep_best])
+    suffix = ""
+    for union_key in sorted(union_weights.keys()):
+        suffix += "_" + str(union_weights[union_key])
+
+    save_results(result_folder, file_prefix + "_" + "f1" + suffix + ".txt", merge_f1[:keep_best])
+    save_results(result_folder, file_prefix + "_" + "accuracy" + suffix + ".txt", merge_accuracy[:keep_best])
 
 
 def print_wrong_predictions(docs, prediction, gold_labels, number):
@@ -195,25 +207,32 @@ def print_best_combination(result, number_to_print=3):
     merge_f1.extend(best)
     merge_f1.sort(reverse=True, key=lambda tup: tup[1][2])
     merge_accuracy.sort(reverse=True, key=lambda tup: tup[1][1])
-    print("\nBest " + str(number_to_print) + " accuracies")
+
     count = 0
+    print_acc = []
     for acc in merge_accuracy:
         file_name = acc[0]
         if "accuracy" in file_name:
             count += 1
-            print(acc)
+            print_acc.append(acc)
         if count >= number_to_print:
             break
-    print("\nBest " + str(number_to_print) + " F1 scores")
+    print("\nBest " + str(len(print_acc)) + " accuracies")
+    for acc in print_acc:
+        print(acc)
 
     count = 0
+    print_f1 = []
     for f1 in merge_f1:
         file_name = f1[0]
         if "f1" in file_name:
             count += 1
-            print(f1)
+            print_f1.append(f1)
         if count >= number_to_print:
             break
+    print("\nBest " + str(len(print_f1)) + " F1 scores")
+    for f1 in print_f1:
+        print(f1)
 
 
 def return_wrong_prediction(prediction, gold_labels, number, target_gold=None):
@@ -256,12 +275,9 @@ def main(argv):
     # os.getcwd() returns the path until /src
     parent_dir = Path(os.getcwd()).parent.__str__()
 
-    data_set_path = os.path.join(parent_dir, os.path.join("dataset", "processed"))
-    model_path = os.path.join(parent_dir, "model")
-    results_path = os.path.join(parent_dir, "results")
+    # Start Handle command line arguments
 
-    # True for train False for predict
-    train_or_predict = True
+    train_or_predict = True  # True for train False for predict
 
     if "train" not in argv:
         train_or_predict = False
@@ -270,6 +286,23 @@ def main(argv):
 
     if "devset" in argv:
         use_devset = True
+
+    results_path_suffix = ""
+
+    if "reshuffled" in argv:
+        results_path_suffix = "reshuffled"
+
+    if "no_class_skew" in argv:
+        results_path_suffix = "no_class_skew"
+
+    # End Handle command line arguments
+
+    processed_folder = "processed_" + results_path_suffix
+    results_folder = "results_" + results_path_suffix
+
+    data_set_path = os.path.join(parent_dir, os.path.join("dataset", processed_folder))
+    model_path = os.path.join(parent_dir, "model")
+    results_path = os.path.join(parent_dir, results_folder)
 
     tagged_sentences = os.path.join(data_set_path, 'text_cleaned_pos.csv')
     labels = os.path.join(data_set_path, 'shuffled.csv')
@@ -453,7 +486,7 @@ def main(argv):
             # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'bow': 0.6, 'pos': 0.4, },
             #  training_percent,
             #  test_percent],
-            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 35000, {'bow': 0.6, 'pos': 0.4, },
+            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 35000, {'tfidf': 0.6, 'pos': 0.4, },
              training_percent,
              test_percent],
 
@@ -476,10 +509,10 @@ def main(argv):
         print("\nStarting prediction")
         predict_args = [
             # best accuracy
-            [{'R': 2, 'V': 4, 'A': 3, 'N': 1}, 29500, {'bow': 0.3, 'pos': 0.7, }],
+            # [{'R': 2, 'V': 4, 'A': 3, 'N': 1}, 29500, {'bow': 0.3, 'pos': 0.7, }],
             # best f1 score. File with 25000 deletion was selected because
             # the Training score was higher, compared to 0 deletions...
-            [{'R': 1, 'V': 4, 'A': 1, 'N': 1}, 25000, {'bow': 0.8, 'pos': 0.2, }],
+            [{'R': 1, 'V': 4, 'A': 1, 'N': 1}, 25000, {'tfidf': 0.8, 'pos': 0.2, }],
 
         ]
 
@@ -497,6 +530,7 @@ def main(argv):
                 train_docs = dev_docs
                 train_labels = dev_labels
 
+            # Start Handling naming conventions and arguments
             prefix_arg = []
             prefix_arg.extend(arg)
             prefix_arg.append(training_percent)
@@ -504,7 +538,18 @@ def main(argv):
 
             model_arg = [train_docs, train_labels]
             model_arg.extend(arg)
-            serialized_model = os.path.join(model_path, prefix + model_extension)
+            if results_path_suffix:
+                results_path_suffix = "_" + results_path_suffix
+
+            serialized_model = os.path.join(model_path, prefix + results_path_suffix + model_extension)
+
+            union_weights = arg[2]
+            union_weight_suffix = ""
+            for union_key in sorted(union_weights.keys()):
+                union_weight_suffix += " " + str(union_key)
+
+            # End Handling naming conventions and arguments
+
             model = None
             if not os.path.isfile(serialized_model):
                 model = create_fitted_model(*model_arg)
@@ -514,7 +559,10 @@ def main(argv):
 
             predicted = model.predict(test_docs)
 
-            print('================================\n\nClassification Report for BoW + PoS (Test Data)\n')
+            print(
+                '================================\n\nClassification Report for'
+                + union_weight_suffix.upper()
+                + ' (Test Data)\n')
             print(classification_report(test_labels, predicted, digits=report_precision))
 
             # training_accuracy = model.score(train_docs, train_labels)

@@ -1,4 +1,4 @@
-# Sentiment Analysis in Twitter Context: Incorporating Part-of-Speech Tags as Features into a MaxEnt Classifier
+# Sentiment Analysis in Twitter Context: <br/> Incorporating Part-of-Speech Tags as Features into a MaxEnt Classifier
 
 The project investigates whether including Part-of-Speech (POS) information can help improve Sentiment Analysis of Twitter data. We attempt to maximize the performance of a Maximum Entropy (MaxEnt) Classifier that categorises tweets into three categories with regards to their sentiment: positive, negative and neutral.
 
@@ -22,7 +22,7 @@ Our approach is based on:
 Chris Nicholls and Fei Song. *Improving Sentiment Analysis with Part-of-Speech Weighting*. Volume 3, pages 1592 – 1597, 08 2009. doi: 10.1109/ICMLC.
 
 We implement a Feature Selection Technique from:   
-Jun Yan, Ning Liu, Benyu Zhang, Shuicheng Yan, Zheng Chen, Qiansheng Cheng, Weiguo Fan, and Wei-Ying Ma. Ocfs: Optimal Orthogonal Centroid Feature Selection for Text Categorization. In *28th Annual International ACM SIGIR Conference on Research and Development in Information Retrieval*, pages 122–129. Association for Computing Machinery, Inc., January 2005.
+Jun Yan, Ning Liu, Benyu Zhang, Shuicheng Yan, Zheng Chen, Qiansheng Cheng, Weiguo Fan, and Wei-Ying Ma. OCFS: Optimal Orthogonal Centroid Feature Selection for Text Categorization. In *28th Annual International ACM SIGIR Conference on Research and Development in Information Retrieval*, pages 122–129. Association for Computing Machinery, Inc., January 2005.
 
 
 ## Getting Started
@@ -49,20 +49,19 @@ or `python main.py devset`
 
 ### File Structure
 
-├── \_papers          <- scientific literature used for research     
-├── dataset           <- the final, canonical data for modeling  
-│   ├── processed     <- processed data   
-│   ├── raw           <- unprocessed data   
-├── model             <- location for trained models  
-├── results           <- results of feature engineering  
-├── src               <- contains the project source code  
-│   ├── baseline      <- implementation of the baseline model: MaxEnt classifier with BoW      
-│   ├── features      <- implementation of feature selection technique  
-│   ├── model         <- implementation of feature engineering for MaxEnt classifier with POS  
-│   ├── data          <- implementation of data processing functions  
-│   ├── main.py       <-  all functions necessary for training the POS model are called from here  
-├── requirements.txt  <-  all modules necessary to run scripts  
-
+    ├── \_papers                    # scientific literature used for research
+    ├── dataset                     # the final, canonical data for modeling
+    │   ├── processed               # processed data
+    │   ├── raw                     # unprocessed data   
+    ├── model                       # trained models  
+    ├── results                     # results of feature engineering
+    ├── src                         # project source code  
+    │   ├── baseline                # implementation of the baseline model: MaxEnt Classifier with BoW snd TfIdf    
+    │   ├── features                # implementation of feature selection technique 
+    │   ├── model                   # implementation of feature engineering for MaxEnt classifier with POS  
+    │   ├── data                    # implementation of data processing functions  
+    │   ├── main.py                 # all functions necessary for training the POS model are called from here
+    └── requirements.txt            # all modules necessary to run scripts
 
 ### Data
 

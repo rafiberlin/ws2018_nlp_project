@@ -2,6 +2,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from sklearn.metrics import f1_score, classification_report
 from data.helper import get_labels, get_tagged_sentences
+from data.plot_classification_report import create_classification_report_plot
 import numpy as np
 import os
 import math
@@ -35,7 +36,9 @@ def print_report(model, test_docs, test_labels, classifier_name, report_precisio
         + classifier_name
         + ' (Test Data)\n')
     print("\tTesting Accuracy: ", testing_accuracy, "\n")
-    print(classification_report(test_labels, predicted, digits=report_precision))
+
+    report = classification_report(test_labels, predicted, digits=report_precision)
+    create_classification_report_plot(report, 'baseline', classifier_name)
 
 
 def main(dataset_folder_suffix=None):
@@ -110,6 +113,7 @@ def main(dataset_folder_suffix=None):
     print_report(bow_classifier, bow_test, test_labels, "BOW", report_precision)
     print("\nTraining score TFIDF", tfidf_train_acc)
     print_report(tf_idf_classifier, tfidf_test, test_labels, "TFIDF", report_precision)
+
 
 
 if __name__ == "__main__":

@@ -632,7 +632,7 @@ def main(argv):
                 + ' (Test Data)\n')
             report = classification_report(test_labels, predicted, digits=report_precision)
             print(report)
-            create_classification_report_plot(report, results_folder, prefix)
+            create_classification_report_plot(report, results_folder, 'BOW_POS {}'.format(prefix))
 
             # training_accuracy = model.score(train_docs, train_labels)
             # testing_accuracy = model.score(test_docs, test_labels)
@@ -647,8 +647,8 @@ def main(argv):
             #       "\nTesting F1 (macro)",
             #       f1_macro, )
 
-            print_report(model, test_docs, test_labels, union_weight_suffix.upper(),
-                         report_precision)
+            # print_report(model, test_docs, test_labels, union_weight_suffix.upper(),
+            #              report_precision)
 
             # print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
         print("\nEnding prediction")

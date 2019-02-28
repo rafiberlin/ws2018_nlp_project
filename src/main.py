@@ -5,7 +5,8 @@ from model.train_model import return_best_pos_weight, create_fitted_model, save_
 from data.helper import get_tagged_sentences, get_labels, get_pos_datasets
 from pathlib import Path
 import ast
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, classification_report
+import nltk
 
 
 def get_pos_groups_from_vocab(pos_vocab):
@@ -53,7 +54,11 @@ def create_prefix_for_model_persistence(p_vocab,
     pref = ""
     for pos in sorted(p_vocab.keys()):
         pref += pos + str(p_vocab[pos]) + "_"
-    pref += str(f_to_delete) + "_" + str(u_weights["bow"]) + "_" + str(u_weights["pos"]) + "_" + str(train_percent)
+    pref += str(f_to_delete)
+    for union_key in sorted(u_weights.keys()):
+        pref += "_" + str(union_key) + "_" + str(u_weights[union_key])
+
+    pref += "_" + str(train_percent)
     return pref
 
 
@@ -73,16 +78,29 @@ def create_prefix(p_groups,
     :param test_percent: float between 0 and 1, percent of data used for testing
     :return: returns a string to be used as a file name, indicating parameters used for a model
     """
-    prefix_group = "_".join(["-".join(value) for value in sorted(p_groups.values())])
-    union_weight_prefix = str(u_weights["bow"]) + "_" + str(u_weights["pos"])
-    training = str(training_percent) + "_" + str(test_percent)
-    prefix = prefix_group + "_" + str(
-        w_scale) + "_" + str(f_to_delete) + "_" + union_weight_prefix + "_" + training
+
+    # Handles when using "DEFAULT" with empty groups
+    value_group_list = []
+    for value in sorted(p_groups.values()):
+        if value:
+            value_group_list.append("-".join(value))
+        else:
+            value_group_list.append("DEFAULT")
+
+    prefix_group = "_".join(value_group_list)
+    union_weight_prefix = ""
+
+    for union_key in sorted(u_weights.keys()):
+        union_weight_prefix += "_" + str(union_key) + "_" + str(u_weights[union_key])
+
+    training = "train_" + str(training_percent) + "_test_" + str(test_percent)
+    prefix = prefix_group + "_scale_" + str(
+        w_scale) + "_del_" + str(f_to_delete) + union_weight_prefix + "_" + training
     return prefix
 
 
-def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_to_delete,
-              union_weights, training_percent, test_percent, split_job, result_folder):
+def run_training(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_to_delete,
+                 union_weights, training_percent, test_percent, split_job, result_folder, devset=False):
     """
     Run the main logic of the project given the user-defined non-default parameters
 
@@ -96,6 +114,7 @@ def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_
     :param test_percent: float between 0 and 1, percentage of data for testing
     :param split_job: boolean, True = use multiple cpu cores
     :param result_folder: the folder where the results will be stored (normal text files)
+    :param devset: if True, runs the training with the devset
     :return: nothing, after the training and prediction has finished, writes the results into files
     """
 
@@ -104,7 +123,7 @@ def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_
     process_start = time.time()
     print("Training started: " + file_prefix)
     weight_list = return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_to_delete,
-                                         union_weights, training_percent, test_percent, split_job)
+                                         union_weights, training_percent, test_percent, split_job, devset)
 
     process_end = time.time()
     print("Elapsed time: ", file_prefix, process_end - process_start)
@@ -126,8 +145,8 @@ def run_logic(tagged_sentences, all_labels, pos_groups, weighing_scale, feature_
     if number_results < keep_best:
         keep_best = number_results
 
-    save_results(result_folder, file_prefix + "_" + "f1_pos_bow.txt", merge_f1[:keep_best])
-    save_results(result_folder, file_prefix + "_" + "accuracy_pos_bow.txt", merge_accuracy[:keep_best])
+    save_results(result_folder, file_prefix + "_" + "f1" + ".txt", merge_f1[:keep_best])
+    save_results(result_folder, file_prefix + "_" + "accuracy" + ".txt", merge_accuracy[:keep_best])
 
 
 def print_wrong_predictions(docs, prediction, gold_labels, number):
@@ -176,7 +195,6 @@ def print_best_combination(result, number_to_print=3):
 
     best = []
     for x in os.walk(result):
-        print(x)
         main_folder = x[0]
         sub_folder = x[1]
         files = x[2]
@@ -195,25 +213,32 @@ def print_best_combination(result, number_to_print=3):
     merge_f1.extend(best)
     merge_f1.sort(reverse=True, key=lambda tup: tup[1][2])
     merge_accuracy.sort(reverse=True, key=lambda tup: tup[1][1])
-    print("\nBest 3 accuracies")
+
     count = 0
+    print_acc = []
     for acc in merge_accuracy:
         file_name = acc[0]
         if "accuracy" in file_name:
             count += 1
-            print(acc)
+            print_acc.append(acc)
         if count >= number_to_print:
             break
-    print("\nBest 3 F1 scores")
+    print("\nBest " + str(len(print_acc)) + " accuracies")
+    for acc in print_acc:
+        print(acc)
 
     count = 0
+    print_f1 = []
     for f1 in merge_f1:
         file_name = f1[0]
         if "f1" in file_name:
             count += 1
-            print(f1)
+            print_f1.append(f1)
         if count >= number_to_print:
             break
+    print("\nBest " + str(len(print_f1)) + " F1 scores")
+    for f1 in print_f1:
+        print(f1)
 
 
 def return_wrong_prediction(prediction, gold_labels, number, target_gold=None):
@@ -249,22 +274,43 @@ def main(argv):
     :return:
     """
 
-    # Comment in for the first execution
-    # import nltk
-    # nltk.download('stopwords')
+    # Comment out after the first execution
+    nltk.download('stopwords')
 
     # os.getcwd() returns the path until /src
     parent_dir = Path(os.getcwd()).parent.__str__()
 
-    data_set_path = os.path.join(parent_dir, os.path.join("dataset", "processed"))
-    model_path = os.path.join(parent_dir, "model")
-    results_path = os.path.join(parent_dir, "results")
+    # Start Handle command line arguments
 
-    # True for train False for predict
-    train_or_predict = True
+    train_or_predict = True  # True for train False for predict
 
-    if len(argv) == 0 or argv[0] != "train":
+    if "train" not in argv:
         train_or_predict = False
+
+    use_devset = False
+
+    if "devset" in argv:
+        use_devset = True
+
+    results_path_suffix = ""
+
+    if "reshuffled" in argv:
+        results_path_suffix = "reshuffled"
+
+    if "no_class_skew" in argv:
+        results_path_suffix = "no_class_skew"
+
+    # End Handle command line arguments
+
+    processed_folder = "processed"
+    results_folder = "results"
+    if results_path_suffix:
+        processed_folder += "_" + results_path_suffix
+        results_folder += "_" + results_path_suffix
+
+    data_set_path = os.path.join(parent_dir, os.path.join("dataset", processed_folder))
+    model_path = os.path.join(parent_dir, "model")
+    results_path = os.path.join(parent_dir, results_folder)
 
     tagged_sentences = os.path.join(data_set_path, 'text_cleaned_pos.csv')
     labels = os.path.join(data_set_path, 'shuffled.csv')
@@ -287,6 +333,7 @@ def main(argv):
     number_wrong_predictions_to_print = 20
     model_extension = ".libobj"
     print_best_combination(results_path)
+    report_precision = 8
 
     if train_or_predict:
 
@@ -447,10 +494,61 @@ def main(argv):
             # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'bow': 0.6, 'pos': 0.4, },
             #  training_percent,
             #  test_percent],
-            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 35000, {'bow': 0.6, 'pos': 0.4, },
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 35000, {'tfidf': 0.6, 'pos': 0.4, },
+            # training_percent,
+            # test_percent],
+
+            # Rafi running on no_class_skew
+
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
+            #  test_percent],
+            # 
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
+            # 
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
+            #  test_percent],
+            # 
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.6, 'pos': 0.4, }, training_percent,
+            #  test_percent],
+            # 
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.8, 'pos': 0.2, }, training_percent,
+            #  test_percent],
+            # 
+            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 30000, {'bow': 0.5, 'pos': 0.5, },
+            #  training_percent,
+            #  test_percent],
+            # 
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'bow': 0.6, 'pos': 0.4, },
+            #  training_percent,
+            #  test_percent],
+
+            # Rafi running on no_class_skew
+
+            [{"E": ["E"], "DEFAULT": []}, 1, 30000, {'tfidf': 0.5, 'pos': 0.5, }, training_percent, test_percent],
+
+            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.7, 'pos': 0.3, }, training_percent,
+             test_percent],
+
+            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.3, 'pos': 0.7, }, training_percent,
+             test_percent],
+
+            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.5, 'pos': 0.5, }, training_percent,
+             test_percent],
+
+            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.6, 'pos': 0.4, }, training_percent,
+             test_percent],
+
+            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.8, 'pos': 0.2, }, training_percent,
+             test_percent],
+
+            [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 30000, {'tfidf': 0.5, 'pos': 0.5, },
              training_percent,
              test_percent],
 
+            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'tfidf': 0.6, 'pos': 0.4, },
+             training_percent,
+             test_percent],
         ]
 
         start = time.time()
@@ -460,7 +558,8 @@ def main(argv):
             data_arg.extend(arg)
             data_arg.append(split_job)
             data_arg.append(results_path)
-            run_logic(*data_arg)
+            data_arg.append(use_devset)
+            run_training(*data_arg)
 
         end = time.time()
         print("\nElapsed time overall: ", end - start)
@@ -469,10 +568,10 @@ def main(argv):
         print("\nStarting prediction")
         predict_args = [
             # best accuracy
-            [{'R': 2, 'V': 4, 'A': 3, 'N': 1}, 29500, {'bow': 0.3, 'pos': 0.7, }],
+            # [{'R': 2, 'V': 4, 'A': 3, 'N': 1}, 29500, {'bow': 0.3, 'pos': 0.7, }],
             # best f1 score. File with 25000 deletion was selected because
             # the Training score was higher, compared to 0 deletions...
-            [{'R': 1, 'V': 4, 'A': 1, 'N': 1}, 25000, {'bow': 0.8, 'pos': 0.2, }],
+            [{'R': 1, 'V': 4, 'A': 1, 'N': 1}, 25000, {'tfidf': 0.8, 'pos': 0.2, }],
 
         ]
 
@@ -480,9 +579,17 @@ def main(argv):
             pos_vocabulary = arg[0]
             pos_group = get_pos_groups_from_vocab(pos_vocabulary)
 
-            train_docs, test_docs, train_labels, test_labels = get_pos_datasets(tagged_sentences, all_labels,
-                                                                                pos_group, training_percent,
-                                                                                test_percent)
+            dev_docs, train_docs, test_docs, dev_labels, train_labels, test_labels = get_pos_datasets(tagged_sentences,
+                                                                                                      all_labels,
+                                                                                                      pos_group,
+                                                                                                      training_percent,
+                                                                                                      test_percent)
+            if use_devset:
+                print("\nTraining on devset")
+                train_docs = dev_docs
+                train_labels = dev_labels
+
+            # Start Handling naming conventions and arguments
             prefix_arg = []
             prefix_arg.extend(arg)
             prefix_arg.append(training_percent)
@@ -490,7 +597,18 @@ def main(argv):
 
             model_arg = [train_docs, train_labels]
             model_arg.extend(arg)
-            serialized_model = os.path.join(model_path, prefix + model_extension)
+            if results_path_suffix:
+                results_path_suffix = "_" + results_path_suffix
+
+            serialized_model = os.path.join(model_path, prefix + results_path_suffix + model_extension)
+
+            union_weights = arg[2]
+            union_weight_suffix = ""
+            for union_key in sorted(union_weights.keys()):
+                union_weight_suffix += " " + str(union_key)
+
+            # End Handling naming conventions and arguments
+
             model = None
             if not os.path.isfile(serialized_model):
                 model = create_fitted_model(*model_arg)
@@ -499,19 +617,26 @@ def main(argv):
                 model = load_model(serialized_model)
 
             predicted = model.predict(test_docs)
-            training_accuracy = model.score(train_docs, train_labels)
-            testing_accuracy = model.score(test_docs, test_labels)
-            f1 = f1_score(test_labels, predicted, average=None,
-                          labels=['neutral', 'positive', 'negative'])
-            f1_macro = f1_score(test_labels, predicted, average="macro",
-                                labels=['neutral', 'positive', 'negative'])
-            print("\nModel: " + prefix, "\nTraining accuracy", training_accuracy, "\nTesting accuracy",
-                  testing_accuracy,
-                  "\nTesting F1 (neutral, positive, negative)",
-                  f1,
-                  "\nTesting F1 (macro)",
-                  f1_macro, )
-            print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
+
+            print(
+                '================================\n\nClassification Report for'
+                + union_weight_suffix.upper()
+                + ' (Test Data)\n')
+            print(classification_report(test_labels, predicted, digits=report_precision))
+
+            # training_accuracy = model.score(train_docs, train_labels)
+            # testing_accuracy = model.score(test_docs, test_labels)
+            # f1 = f1_score(test_labels, predicted, average=None,
+            #               labels=['neutral', 'positive', 'negative'])
+            # f1_macro = f1_score(test_labels, predicted, average="macro",
+            #                     labels=['neutral', 'positive', 'negative'])
+            # print("\nModel: " + prefix, "\nTraining accuracy", training_accuracy, "\nTesting accuracy",
+            #       testing_accuracy,
+            #       "\nTesting F1 (neutral, positive, negative)",
+            #       f1,
+            #       "\nTesting F1 (macro)",
+            #       f1_macro, )
+            # print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
         print("\nEnding prediction")
 
 

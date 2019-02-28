@@ -1,6 +1,6 @@
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
-from sklearn.metrics import f1_score
+from sklearn.metrics import f1_score, classification_report
 from data.helper import get_labels, get_tagged_sentences
 import numpy as np
 import os
@@ -86,18 +86,23 @@ def main():
     tfidf_test_acc = tf_idf_classifier.score(tfidf_test, test_labels)
     print("Testing score BOW", bow_test_acc)
     print("Testing score TFIDF", tfidf_test_acc)
-
+    report_precision = 8
     # F1 Score for BoW and TF-IDF
     bow_predicted = bow_classifier.predict(bow_test)
     tfidf_predicted = tf_idf_classifier.predict(tfidf_test)
-    bow_f1 = f1_score(test_labels, bow_predicted, average=None, labels=['neutral', 'positive', 'negative'])
-    tfidf_f1 = f1_score(test_labels, tfidf_predicted, average=None, labels=['neutral', 'positive', 'negative'])
-    bow_macro = f1_score(test_labels, bow_predicted, average='macro', labels=['neutral', 'positive', 'negative'])
-    tfidf_macro = f1_score(test_labels, tfidf_predicted, average='macro', labels=['neutral', 'positive', 'negative'])
-    print("F1 score BOW for neutral, positive, negative", bow_f1)
-    print("F1 score TFIDF for neutral, positive, negative", tfidf_f1)
-    print("F1 score BOW for macro-average", bow_macro)
-    print("F1 score TFIDF for macro-average", tfidf_macro)
+    print('================================\n\nClassification Report for BoW\n')
+    print(classification_report(test_labels, bow_predicted, digits=report_precision))
+    print('================================\n\nClassification Report for TfIdf\n')
+    print(classification_report(test_labels, tfidf_predicted, digits=report_precision))
+
+    # bow_f1 = f1_score(test_labels, bow_predicted, average=None, labels=['neutral', 'positive', 'negative'])
+    # tfidf_f1 = f1_score(test_labels, tfidf_predicted, average=None, labels=['neutral', 'positive', 'negative'])
+    # bow_macro = f1_score(test_labels, bow_predicted, average='macro', labels=['neutral', 'positive', 'negative'])
+    # tfidf_macro = f1_score(test_labels, tfidf_predicted, average='macro', labels=['neutral', 'positive', 'negative'])
+    # print("F1 score BOW for neutral, positive, negative", bow_f1)
+    # print("F1 score TFIDF for neutral, positive, negative", tfidf_f1)
+    # print("F1 score BOW for macro-average", bow_macro)
+    # print("F1 score TFIDF for macro-average", tfidf_macro)
 
 
 if __name__ == "__main__":

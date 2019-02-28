@@ -127,10 +127,11 @@ def pre_processing(tagged_sentence, pos_grouping=None,
 
 def get_pos_datasets(tagged_sentences, all_labels, pos_groups, percentage_train_data=0.7, percentage_test_data=0.2):
     """
-    Applies pre-processing as defiened in pre-processing function to the list of tagged sentences,
-    splits the dataset into separate training and testing lists,
-    splits the labels into training and testing numpy arrays
-
+    Applies pre-processing as defined in pre-processing function to the list of tagged sentences,
+    splits the dataset into separate dev, training and testing lists,
+    splits the labels into dev, training and testing numpy arrays
+    The percentage train data starts from the beginning of the list, the percentage test data from the end, such as the
+    percentage left in between is reserved for dev purposes.
     Returns all data (docs, labels) as needed by scikit classifiers
 
     :param tagged_sentences: a list of sentences as lists of tuples (word, pos tag), as created by get_tagged_sentences
@@ -139,19 +140,24 @@ def get_pos_datasets(tagged_sentences, all_labels, pos_groups, percentage_train_
             value=list of pos tags that will get the same feature weight. E.g. {"A+R": ["A", R"], "N": ["N"]}
     :param percentage_train_data: a floating point number between 0 and 1, percent of data for training
     :param percentage_test_data: a floating point number between 0 and 1, percent of data for testing
-    :return: sentences for training, sentences for testing, labels for training, labels for testing
+    :return: sentences for dev, sentences for training, sentences for testing, labels for dev, labels for training, labels for testing
     """
 
     processed_tagged_sentences = pre_processing(tagged_sentences, pos_grouping=pos_groups)
     data_len = len(all_labels)
     train_end = math.floor(percentage_train_data * data_len)  # 70% for train
-    train_start = math.floor((1.0 - percentage_test_data) * data_len)  # 20% for testing
-    train_docs, test_docs = processed_tagged_sentences[:train_end], processed_tagged_sentences[train_start:]
-    train_labels, test_labels = all_labels[:train_end], all_labels[train_start:]
+    test_start = math.floor((1.0 - percentage_test_data) * data_len)  # 20% for testing
+    dev_docs, train_docs, test_docs = processed_tagged_sentences[train_end:test_start] \
+        , processed_tagged_sentences[:train_end] \
+        , processed_tagged_sentences[test_start:]
+    dev_labels, train_labels, test_labels = all_labels[train_end:test_start] \
+        , all_labels[:train_end] \
+        , all_labels[test_start:]
+    dev_labels = np.ravel(dev_labels)
     train_labels = np.ravel(train_labels)
     test_labels = np.ravel(test_labels)
 
-    return train_docs, test_docs, train_labels, test_labels
+    return dev_docs, train_docs, test_docs, dev_labels, train_labels, test_labels
 
 
 if __name__ == '__main__':

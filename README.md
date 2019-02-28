@@ -86,10 +86,17 @@ To tag the data navigate to the directory where `the runTagger.sh` is located, t
 
 ## Results
 
-<! --- Include a pretty graphic of precision and recall for every label
-----> 
+**Baseline: BoW**
+![bow](https://user-images.githubusercontent.com/25862134/53578201-7913d280-3b77-11e9-9f38-65be8432d26d.png)
 
-**Authors**   
+**Baseline: TfIdf**
+![tfidf](https://user-images.githubusercontent.com/25862134/53578202-7913d280-3b77-11e9-918c-f237a9706dfa.png)
+
+
+**Best Result: BoW/TfIdf + PoS**
+
+
+## Authors
 Rafi Abdoule Latif  
 Patrick Kahardipraja   
 Olena Vyshnevska

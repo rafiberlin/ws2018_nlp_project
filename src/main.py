@@ -2,6 +2,7 @@ import os
 import sys
 import time
 from model.train_model import return_best_pos_weight, create_fitted_model, save_model, load_model
+from baseline.baseline import print_report, main as baseline
 from data.helper import get_tagged_sentences, get_labels, get_pos_datasets
 from pathlib import Path
 import ast
@@ -270,7 +271,7 @@ def main(argv):
     """
     Main entry point. If the argument "train" is entered on the command line, it will start the training.
     The default behavior is to start the prediction of the saved models
-    :param argv: list of command line arguments
+    :param argv: list of command line arguments. Possible arguments which might be combined together: train, devset, reshuffled, no_class_skew, baseline
     :return:
     """
 
@@ -299,6 +300,10 @@ def main(argv):
 
     if "no_class_skew" in argv:
         results_path_suffix = "no_class_skew"
+
+    if "baseline" in argv:
+        baseline(results_path_suffix)
+        return
 
     # End Handle command line arguments
 
@@ -567,12 +572,10 @@ def main(argv):
 
         print("\nStarting prediction")
         predict_args = [
-            # best accuracy
-            # [{'R': 2, 'V': 4, 'A': 3, 'N': 1}, 29500, {'bow': 0.3, 'pos': 0.7, }],
-            # best f1 score. File with 25000 deletion was selected because
-            # the Training score was higher, compared to 0 deletions...
-            [{'R': 1, 'V': 4, 'A': 1, 'N': 1}, 25000, {'tfidf': 0.8, 'pos': 0.2, }],
-
+            # best accuracy for /dataset/processed
+            [{'R': 2, 'V': 4, 'A': 3, 'N': 1}, 29500, {'bow': 0.3, 'pos': 0.7, }],
+            # best f1 score for /dataset/processed
+            [{'V': 5, 'A': 2, 'R': 1, 'N': 1}, 0, {'bow': 0.8, 'pos': 0.2, }],
         ]
 
         for arg in predict_args:
@@ -611,31 +614,15 @@ def main(argv):
 
             model = None
             if not os.path.isfile(serialized_model):
+                print("Creating model file: " + serialized_model)
                 model = create_fitted_model(*model_arg)
                 save_model(model, serialized_model)
             if model is None:
+                print("Loading model file: " + serialized_model)
                 model = load_model(serialized_model)
 
-            predicted = model.predict(test_docs)
-
-            print(
-                '================================\n\nClassification Report for'
-                + union_weight_suffix.upper()
-                + ' (Test Data)\n')
-            print(classification_report(test_labels, predicted, digits=report_precision))
-
-            # training_accuracy = model.score(train_docs, train_labels)
-            # testing_accuracy = model.score(test_docs, test_labels)
-            # f1 = f1_score(test_labels, predicted, average=None,
-            #               labels=['neutral', 'positive', 'negative'])
-            # f1_macro = f1_score(test_labels, predicted, average="macro",
-            #                     labels=['neutral', 'positive', 'negative'])
-            # print("\nModel: " + prefix, "\nTraining accuracy", training_accuracy, "\nTesting accuracy",
-            #       testing_accuracy,
-            #       "\nTesting F1 (neutral, positive, negative)",
-            #       f1,
-            #       "\nTesting F1 (macro)",
-            #       f1_macro, )
+            print_report(model, test_docs, test_labels, union_weight_suffix.upper(),
+                         report_precision)
             # print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
         print("\nEnding prediction")
 

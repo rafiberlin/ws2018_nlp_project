@@ -18,21 +18,21 @@ def do_not_tokenize(doc):
     return doc
 
 
-def print_report(model, test_docs, test_labels, test_name, report_precision):
+def print_report(model, test_docs, test_labels, classifier_name, report_precision):
     """
     Output a well formed report in the console.
-    :param model:
-    :param test_docs:
-    :param test_labels:
-    :param test_name:
-    :param report_precision:
+    :param model: a scikit classifier with the predict() method
+    :param test_docs: list of sentences as lists of tuples (word,pos) used for testing
+    :param test_labels: pandas dataframe object with labels for test docs
+    :param classifier_name: name of the classifier 
+    :param report_precision: number of decimal shown for the classification report
     :return:
     """
     predicted = model.predict(test_docs)
     testing_accuracy = model.score(test_docs, test_labels)
     print(
         '================================\n\nClassification Report for '
-        + test_name
+        + classifier_name
         + ' (Test Data)\n')
     print("\tTesting Accuracy: ", testing_accuracy, "\n")
     print(classification_report(test_labels, predicted, digits=report_precision))

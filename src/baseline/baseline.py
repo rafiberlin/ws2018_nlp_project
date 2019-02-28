@@ -18,15 +18,40 @@ def do_not_tokenize(doc):
     return doc
 
 
-def main():
+def print_report(model, test_docs, test_labels, classifier_name, report_precision):
+    """
+    Output a well formed report in the console.
+    :param model: a scikit classifier with the predict() method
+    :param test_docs: list of sentences as lists of tuples (word,pos) used for testing
+    :param test_labels: pandas dataframe object with labels for test docs
+    :param classifier_name: name of the classifier 
+    :param report_precision: number of decimal shown for the classification report
+    :return:
+    """
+    predicted = model.predict(test_docs)
+    testing_accuracy = model.score(test_docs, test_labels)
+    print(
+        '================================\n\nClassification Report for '
+        + classifier_name
+        + ' (Test Data)\n')
+    print("\tTesting Accuracy: ", testing_accuracy, "\n")
+    print(classification_report(test_labels, predicted, digits=report_precision))
+
+
+def main(dataset_folder_suffix=None):
     """
     Run the baseline and output results in the console (Accuracy + Macro F1 score for BOW and TFIDF)
     Used to show baseline numbers for the presentation.
+    :param dataset_folder_suffix: optional, the suffix for the processed folder. Possible values "no_class_skew", "reshuffled"
     :return: nothing, only print statements
     """
 
+    processed_folder = 'processed'
+    if dataset_folder_suffix:
+        processed_folder += "_" + dataset_folder_suffix
+
     parent_dir = Path(__file__).parents[2]
-    path = os.path.join(parent_dir, 'dataset', 'processed')
+    path = os.path.join(parent_dir, 'dataset', processed_folder)
     tagged_sentences = os.path.join(path, 'text_cleaned_pos.csv')
     label_file = os.path.join(path, 'shuffled.csv')
     docs, tags = get_tagged_sentences(path, tagged_sentences)
@@ -70,39 +95,21 @@ def main():
                                            max_iter=5000
                                            ).fit(tfidf_train, train_labels)
 
-    # Test on itself for BoW and TF-IDF
-    bow_train_acc = bow_classifier.score(bow_train, train_labels)
-    tfidf_train_acc = tf_idf_classifier.score(tfidf_train, train_labels)
-    print("Training score BOW", bow_train_acc)
-    print("Training score TFIDF", tfidf_train_acc)
-
     # Convert data into features for testing
     bow_test = bag_of_words.transform(test_docs)
     tfidf_test = tfidf.transform(test_docs)
     test_labels = np.ravel(test_labels)
 
-    # Test on test data
-    bow_test_acc = bow_classifier.score(bow_test, test_labels)
-    tfidf_test_acc = tf_idf_classifier.score(tfidf_test, test_labels)
-    print("Testing score BOW", bow_test_acc)
-    print("Testing score TFIDF", tfidf_test_acc)
-    report_precision = 8
-    # F1 Score for BoW and TF-IDF
-    bow_predicted = bow_classifier.predict(bow_test)
-    tfidf_predicted = tf_idf_classifier.predict(tfidf_test)
-    print('================================\n\nClassification Report for BoW\n')
-    print(classification_report(test_labels, bow_predicted, digits=report_precision))
-    print('================================\n\nClassification Report for TfIdf\n')
-    print(classification_report(test_labels, tfidf_predicted, digits=report_precision))
+    # Test on itself for BoW and TF-IDF
+    bow_train_acc = bow_classifier.score(bow_train, train_labels)
+    tfidf_train_acc = tf_idf_classifier.score(tfidf_train, train_labels)
 
-    # bow_f1 = f1_score(test_labels, bow_predicted, average=None, labels=['neutral', 'positive', 'negative'])
-    # tfidf_f1 = f1_score(test_labels, tfidf_predicted, average=None, labels=['neutral', 'positive', 'negative'])
-    # bow_macro = f1_score(test_labels, bow_predicted, average='macro', labels=['neutral', 'positive', 'negative'])
-    # tfidf_macro = f1_score(test_labels, tfidf_predicted, average='macro', labels=['neutral', 'positive', 'negative'])
-    # print("F1 score BOW for neutral, positive, negative", bow_f1)
-    # print("F1 score TFIDF for neutral, positive, negative", tfidf_f1)
-    # print("F1 score BOW for macro-average", bow_macro)
-    # print("F1 score TFIDF for macro-average", tfidf_macro)
+    report_precision = 8
+
+    print("\nTraining score BOW", bow_train_acc)
+    print_report(bow_classifier, bow_test, test_labels, "BOW", report_precision)
+    print("\nTraining score TFIDF", tfidf_train_acc)
+    print_report(tf_idf_classifier, tfidf_test, test_labels, "TFIDF", report_precision)
 
 
 if __name__ == "__main__":

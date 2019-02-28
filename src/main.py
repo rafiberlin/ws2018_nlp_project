@@ -78,7 +78,16 @@ def create_prefix(p_groups,
     :param test_percent: float between 0 and 1, percent of data used for testing
     :return: returns a string to be used as a file name, indicating parameters used for a model
     """
-    prefix_group = "_".join(["-".join(value) for value in sorted(p_groups.values())])
+
+    # Handles when using "DEFAULT" with empty groups
+    value_group_list = []
+    for value in sorted(p_groups.values()):
+        if value:
+            value_group_list.append("-".join(value))
+        else:
+            value_group_list.append("DEFAULT")
+
+    prefix_group = "_".join(value_group_list)
     union_weight_prefix = ""
 
     for union_key in sorted(u_weights.keys()):
@@ -492,71 +501,53 @@ def main(argv):
             # Rafi running on no_class_skew
 
             # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
-            # 
             #  test_percent],
             # 
             # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-            # 
             #  test_percent],
             # 
             # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
-            # 
             #  test_percent],
             # 
             # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.6, 'pos': 0.4, }, training_percent,
-            # 
             #  test_percent],
             # 
             # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.8, 'pos': 0.2, }, training_percent,
-            # 
             #  test_percent],
             # 
             # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 30000, {'bow': 0.5, 'pos': 0.5, },
-            # 
             #  training_percent,
-            # 
             #  test_percent],
             # 
             # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'bow': 0.6, 'pos': 0.4, },
-            # 
             #  training_percent,
-            # 
             #  test_percent],
 
             # Rafi running on no_class_skew
 
-            # [{"E": ["E"]}, 3, 30000, {'tfidf': 0.5, 'pos': 0.5, }, training_percent, test_percent],
+            [{"E": ["E"], "DEFAULT": []}, 1, 30000, {'tfidf': 0.5, 'pos': 0.5, }, training_percent, test_percent],
 
             [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.7, 'pos': 0.3, }, training_percent,
-
              test_percent],
 
             [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.3, 'pos': 0.7, }, training_percent,
-
              test_percent],
 
             [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.5, 'pos': 0.5, }, training_percent,
-
              test_percent],
 
             [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.6, 'pos': 0.4, }, training_percent,
-
              test_percent],
 
             [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.8, 'pos': 0.2, }, training_percent,
-
              test_percent],
 
             [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 30000, {'tfidf': 0.5, 'pos': 0.5, },
-
              training_percent,
-
              test_percent],
 
             [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'tfidf': 0.6, 'pos': 0.4, },
-
              training_percent,
-
              test_percent],
         ]
 

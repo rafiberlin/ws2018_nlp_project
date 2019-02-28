@@ -3,6 +3,7 @@ import numpy as np
 import os
 from pathlib import Path
 
+
 def show_values(pc, fmt="%.2f", **kw):
     """
     Shows corresponding values of cells inside the cell on the heatmap
@@ -29,12 +30,13 @@ def cm2inch(*tupl):
     """
     inch = 2.54
     if type(tupl[0]) == tuple:
-        return tuple(i/inch for i in tupl[0])
+        return tuple(i / inch for i in tupl[0])
     else:
-        return tuple(i/inch for i in tupl)
+        return tuple(i / inch for i in tupl)
 
 
-def heatmap(AUC, title, xlabel, ylabel, xticklabels, yticklabels, figure_width=40, figure_height=20, correct_orientation=False, cmap='RdBu'):
+def heatmap(AUC, title, xlabel, ylabel, xticklabels, yticklabels, figure_width=40, figure_height=20,
+            correct_orientation=False, cmap='RdBu'):
     """
     Creates a heat map, given the parameters from the classification report
     :param AUC: Area Under the Curve (AUC) from prediction scores
@@ -50,7 +52,7 @@ def heatmap(AUC, title, xlabel, ylabel, xticklabels, yticklabels, figure_width=4
     """
     # Plot it out
     fig, ax = plt.subplots()
-    c = ax.pcolor(AUC, edgecolors='k', linestyle= 'dashed', linewidths=0.2, cmap=cmap)
+    c = ax.pcolor(AUC, edgecolors='k', linestyle='dashed', linewidths=0.2, cmap=cmap)
 
     # put the major ticks at the middle of each cell
     ax.set_yticks(np.arange(AUC.shape[0]) + 0.5, minor=False)
@@ -67,7 +69,7 @@ def heatmap(AUC, title, xlabel, ylabel, xticklabels, yticklabels, figure_width=4
     # ax.legend(labels)
 
     # Remove last blank column
-    plt.xlim( (0, AUC.shape[1]) )
+    plt.xlim((0, AUC.shape[1]))
 
     # Turn off all the ticks
     ax = plt.gca()
@@ -94,7 +96,6 @@ def heatmap(AUC, title, xlabel, ylabel, xticklabels, yticklabels, figure_width=4
     fig.set_size_inches(cm2inch(figure_width, figure_height))
 
 
-
 def plot_classification_report(classification_report, name_of_model, cmap='RdBu'):
     """
     Create a plot for a classification report as returned by sklearn.metrics.classification_report
@@ -110,7 +111,7 @@ def plot_classification_report(classification_report, name_of_model, cmap='RdBu'
     plotMat = []
     support = []
     class_names = []
-    for line in lines[2 : (len(lines) - 2)]:
+    for line in lines[2: (len(lines) - 2)]:
         t = line.strip().split()
         if len(t) < 2: continue
         classes.append(t[0])
@@ -126,11 +127,12 @@ def plot_classification_report(classification_report, name_of_model, cmap='RdBu'
     xlabel = 'Metrics'
     ylabel = 'Classes'
     xticklabels = ['Precision', 'Recall', 'F1-score']
-    yticklabels = ['{0} ({1})'.format(class_names[idx], sup) for idx, sup  in enumerate(support)]
+    yticklabels = ['{0} ({1})'.format(class_names[idx], sup) for idx, sup in enumerate(support)]
     figure_width = 25
     figure_height = len(class_names) + 7
     correct_orientation = False
-    heatmap(np.array(plotMat), title, xlabel, ylabel, xticklabels, yticklabels, figure_width, figure_height, correct_orientation, cmap=cmap)
+    heatmap(np.array(plotMat), title, xlabel, ylabel, xticklabels, yticklabels, figure_width, figure_height,
+            correct_orientation, cmap=cmap)
 
 
 def create_classification_report_plot(report, results_folder, name_of_model):
@@ -141,7 +143,7 @@ def create_classification_report_plot(report, results_folder, name_of_model):
     :param name_of_model: name of parameters of the model, same scheme as names of .txt files in "results" folders
     """
     report = report.partition('micro avg')[0]
-    print('results fodler', results_folder)
+    print('results folder', results_folder)
 
     save_path = os.path.join(Path(__file__).parents[2].__str__(), results_folder, '{}.png'.format(name_of_model))
     print('save path', save_path)

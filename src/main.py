@@ -632,7 +632,7 @@ def main(argv):
                 + ' (Test Data)\n')
             report = classification_report(test_labels, predicted, digits=report_precision)
             print(report)
-            create_classification_report_plot(report, prefix_arg)
+            create_classification_report_plot(report, results_folder, prefix_arg)
 
             # training_accuracy = model.score(train_docs, train_labels)
             # testing_accuracy = model.score(test_docs, test_labels)

@@ -136,12 +136,8 @@ def run_training(tagged_sentences, all_labels, pos_groups, weighing_scale, featu
     if number_results < keep_best:
         keep_best = number_results
 
-    suffix = ""
-    for union_key in sorted(union_weights.keys()):
-        suffix += "_" + str(union_weights[union_key])
-
-    save_results(result_folder, file_prefix + "_" + "f1" + suffix + ".txt", merge_f1[:keep_best])
-    save_results(result_folder, file_prefix + "_" + "accuracy" + suffix + ".txt", merge_accuracy[:keep_best])
+    save_results(result_folder, file_prefix + "_" + "f1" + ".txt", merge_f1[:keep_best])
+    save_results(result_folder, file_prefix + "_" + "accuracy" + ".txt", merge_accuracy[:keep_best])
 
 
 def print_wrong_predictions(docs, prediction, gold_labels, number):
@@ -528,6 +524,8 @@ def main(argv):
             #  test_percent],
 
             # Rafi running on no_class_skew
+
+            # [{"E": ["E"]}, 3, 30000, {'tfidf': 0.5, 'pos': 0.5, }, training_percent, test_percent],
 
             [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.7, 'pos': 0.3, }, training_percent,
 

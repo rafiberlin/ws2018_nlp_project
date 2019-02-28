@@ -88,6 +88,7 @@ def filter_unwanted_characters(input_file, output_path, shuffle=False, correct_c
     :param input_file: complete path to an input file
     :param output_path: complete path to an output file
     :param shuffle: reorder the loaded data if True
+    :param correct_class_skew: make sure that all class are evenly represented in the final file if True
     :return: nothing, just writes into files
     """
     df = pd.read_csv(input_file, index_col=None, sep='\t', header=None, names=['id', 'sentiment', 'text', 'to_delete'])

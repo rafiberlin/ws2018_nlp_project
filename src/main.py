@@ -78,7 +78,16 @@ def create_prefix(p_groups,
     :param test_percent: float between 0 and 1, percent of data used for testing
     :return: returns a string to be used as a file name, indicating parameters used for a model
     """
-    prefix_group = "_".join(["-".join(value) for value in sorted(p_groups.values())])
+
+    # Handles when using "DEFAULT" with empty groups
+    value_group_list = []
+    for value in sorted(p_groups.values()):
+        if value:
+            value_group_list.append("-".join(value))
+        else:
+            value_group_list.append("DEFAULT")
+
+    prefix_group = "_".join(value_group_list)
     union_weight_prefix = ""
 
     for union_key in sorted(u_weights.keys()):
@@ -136,12 +145,8 @@ def run_training(tagged_sentences, all_labels, pos_groups, weighing_scale, featu
     if number_results < keep_best:
         keep_best = number_results
 
-    suffix = ""
-    for union_key in sorted(union_weights.keys()):
-        suffix += "_" + str(union_weights[union_key])
-
-    save_results(result_folder, file_prefix + "_" + "f1" + suffix + ".txt", merge_f1[:keep_best])
-    save_results(result_folder, file_prefix + "_" + "accuracy" + suffix + ".txt", merge_accuracy[:keep_best])
+    save_results(result_folder, file_prefix + "_" + "f1" + ".txt", merge_f1[:keep_best])
+    save_results(result_folder, file_prefix + "_" + "accuracy" + ".txt", merge_accuracy[:keep_best])
 
 
 def print_wrong_predictions(docs, prediction, gold_labels, number):
@@ -297,8 +302,11 @@ def main(argv):
 
     # End Handle command line arguments
 
-    processed_folder = "processed_" + results_path_suffix
-    results_folder = "results_" + results_path_suffix
+    processed_folder = "processed"
+    results_folder = "results"
+    if results_path_suffix:
+        processed_folder += "_" + results_path_suffix
+        results_folder += "_" + results_path_suffix
 
     data_set_path = os.path.join(parent_dir, os.path.join("dataset", processed_folder))
     model_path = os.path.join(parent_dir, "model")
@@ -493,69 +501,53 @@ def main(argv):
             # Rafi running on no_class_skew
 
             # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
-            # 
             #  test_percent],
             # 
             # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-            # 
             #  test_percent],
             # 
             # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
-            # 
             #  test_percent],
             # 
             # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.6, 'pos': 0.4, }, training_percent,
-            # 
             #  test_percent],
             # 
             # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.8, 'pos': 0.2, }, training_percent,
-            # 
             #  test_percent],
             # 
             # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 30000, {'bow': 0.5, 'pos': 0.5, },
-            # 
             #  training_percent,
-            # 
             #  test_percent],
             # 
             # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'bow': 0.6, 'pos': 0.4, },
-            # 
             #  training_percent,
-            # 
             #  test_percent],
 
             # Rafi running on no_class_skew
 
-            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.7, 'pos': 0.3, }, training_percent,
+            [{"E": ["E"], "DEFAULT": []}, 1, 30000, {'tfidf': 0.5, 'pos': 0.5, }, training_percent, test_percent],
 
+            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.7, 'pos': 0.3, }, training_percent,
              test_percent],
 
             [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.3, 'pos': 0.7, }, training_percent,
-
              test_percent],
 
             [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.5, 'pos': 0.5, }, training_percent,
-
              test_percent],
 
             [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.6, 'pos': 0.4, }, training_percent,
-
              test_percent],
 
             [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.8, 'pos': 0.2, }, training_percent,
-
              test_percent],
 
             [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 30000, {'tfidf': 0.5, 'pos': 0.5, },
-
              training_percent,
-
              test_percent],
 
             [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'tfidf': 0.6, 'pos': 0.4, },
-
              training_percent,
-
              test_percent],
         ]
 

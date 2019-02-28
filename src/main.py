@@ -3,6 +3,7 @@ import sys
 import time
 from model.train_model import return_best_pos_weight, create_fitted_model, save_model, load_model
 from data.helper import get_tagged_sentences, get_labels, get_pos_datasets
+from data.plot_classification_report import create_classification_report_plot
 from pathlib import Path
 import ast
 from sklearn.metrics import f1_score, classification_report
@@ -524,31 +525,31 @@ def main(argv):
             #  test_percent],
 
             # Rafi running on no_class_skew
-
-            [{"E": ["E"], "DEFAULT": []}, 1, 30000, {'tfidf': 0.5, 'pos': 0.5, }, training_percent, test_percent],
-
-            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.7, 'pos': 0.3, }, training_percent,
-             test_percent],
-
-            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.3, 'pos': 0.7, }, training_percent,
-             test_percent],
-
-            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.5, 'pos': 0.5, }, training_percent,
-             test_percent],
-
-            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.6, 'pos': 0.4, }, training_percent,
-             test_percent],
-
-            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.8, 'pos': 0.2, }, training_percent,
-             test_percent],
-
-            [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 30000, {'tfidf': 0.5, 'pos': 0.5, },
-             training_percent,
-             test_percent],
-
-            [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'tfidf': 0.6, 'pos': 0.4, },
-             training_percent,
-             test_percent],
+            #
+            # [{"E": ["E"], "DEFAULT": []}, 1, 30000, {'tfidf': 0.5, 'pos': 0.5, }, training_percent, test_percent],
+            #
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.7, 'pos': 0.3, }, training_percent,
+            #  test_percent],
+            #
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.3, 'pos': 0.7, }, training_percent,
+            #  test_percent],
+            #
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.5, 'pos': 0.5, }, training_percent,
+            #  test_percent],
+            #
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.6, 'pos': 0.4, }, training_percent,
+            #  test_percent],
+            #
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.8, 'pos': 0.2, }, training_percent,
+            #  test_percent],
+            #
+            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 30000, {'tfidf': 0.5, 'pos': 0.5, },
+            #  training_percent,
+            #  test_percent],
+            #
+            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'tfidf': 0.6, 'pos': 0.4, },
+            #  training_percent,
+            #  test_percent],
         ]
 
         start = time.time()
@@ -571,7 +572,8 @@ def main(argv):
             # [{'R': 2, 'V': 4, 'A': 3, 'N': 1}, 29500, {'bow': 0.3, 'pos': 0.7, }],
             # best f1 score. File with 25000 deletion was selected because
             # the Training score was higher, compared to 0 deletions...
-            [{'R': 1, 'V': 4, 'A': 1, 'N': 1}, 25000, {'tfidf': 0.8, 'pos': 0.2, }],
+            [{'E': 3}, 30000, {'bow': 0.5, 'pos': 0.5, }]
+            #[{'R': 1, 'V': 4, 'A': 1, 'N': 1}, 25000, {'tfidf': 0.8, 'pos': 0.2, }],
 
         ]
 
@@ -622,7 +624,9 @@ def main(argv):
                 '================================\n\nClassification Report for'
                 + union_weight_suffix.upper()
                 + ' (Test Data)\n')
-            print(classification_report(test_labels, predicted, digits=report_precision))
+            report = classification_report(test_labels, predicted, digits=report_precision)
+            print(report)
+            create_classification_report_plot(report, prefix_arg)
 
             # training_accuracy = model.score(train_docs, train_labels)
             # testing_accuracy = model.score(test_docs, test_labels)

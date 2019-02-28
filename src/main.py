@@ -297,8 +297,11 @@ def main(argv):
 
     # End Handle command line arguments
 
-    processed_folder = "processed_" + results_path_suffix
-    results_folder = "results_" + results_path_suffix
+    processed_folder = "processed"
+    results_folder = "results"
+    if results_path_suffix:
+        processed_folder += "_" + results_path_suffix
+        results_folder += "_" + results_path_suffix
 
     data_set_path = os.path.join(parent_dir, os.path.join("dataset", processed_folder))
     model_path = os.path.join(parent_dir, "model")

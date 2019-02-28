@@ -1,0 +1,597 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1671
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red252\green189\blue9;\red206\green59\blue5;\red253\green165\blue49;
+\red253\green154\blue9;}
+{\*\expandedcolortbl;;\cssrgb\c99477\c78089\c0;\cssrgb\c85233\c31565\c0;\cssrgb\c99945\c70410\c24558;
+\cssrgb\c100000\c66638\c0;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww29280\viewh12700\viewkind0
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+
+\f0\fs24 \cf0 \cb2 [\{'R': 2, 'V': 2, 'A': 4, 'N': 1, 'E':4\}, 30000, \{'bow': 0.3, 'pos': 0.7, \}]\cb1 \
+\
+\
+Best 3 accuracies\
+('A_E_N_R_V_4_30000_0.3_0.7_0.7_0.2_accuracy_pos_bow.txt', (0.7780993278566094, 0.6618475863758883, 0.6255964337139005))\
+('A_N_R_V_5_30000_0.3_0.7_0.7_0.2_accuracy_pos_bow.txt', (0.7787994772218073, 0.6616842277219636, 0.6256846292963881))\
+('A_N_R_V_5_0_0.8_0.2_0.7_0.2_accuracy_pos_bow.txt', (0.9012322628827483, 0.6497590459854611, 0.6239625902412042))\
+\
+Best 3 F1 scores\
+('A_N_R_V_5_30000_0.3_0.7_0.7_0.2_f1_pos_bow.txt', (0.7787994772218073, 0.6616842277219636, 0.6256846292963881))\
+('A_E_N_R_V_4_30000_0.3_0.7_0.7_0.2_f1_pos_bow.txt', (0.7780993278566094, 0.6618475863758883, 0.6255964337139005))\
+('A_N_R_V_5_0_0.8_0.2_0.7_0.2_f1_pos_bow.txt', (0.9011622479462286, 0.6497590459854611, 0.6239978019985836))\
+\
+Starting prediction\
+================================\
+\
+Classification Report for BoW + PoS (Test Data)\
+\
+              precision    recall  f1-score   support\
+\
+    negative  0.68471616 0.67761452 0.68114683      2314\
+\cb3      neutral  0.55914430 0.57580994 0.56735476 \cb1      2315\
+    positive  0.68696437 0.67329797 0.68006251      2262\
+\
+   micro avg  0.64199681 0.64199681 0.64199681      6891\
+   macro avg  0.64360827 0.64224081 0.64285470      6891\
+weighted avg  0.64326885 0.64199681 0.64256297      6891\
+\
+\
+#################################Wrong positive#################################\
+\cb4 Often predicted neutral, although gold label is positive: usually no or nonexpressive adjectives and no emoticons in sentences (they are weighted the most)\cb1 \
+\
+Predicted: neutral\
+\
+Gold label: positive\
+\
+Doc: \
+[('could', 'V'), ('anything', 'N'), ('better', 'R'), ('listen', 'V'), ('today', 'N'), ('?', 'DEFAULT'), ('george', 'DEFAULT'), ('harrison', 'DEFAULT'), ('comes', 'V'), ('sun', 'N'), ('.', 'DEFAULT'), ('#wintersolstice', 'DEFAULT'), ('#music', 'DEFAULT'), ('http://genericurl.com', 'DEFAULT')]\
+\
+\cb2 AV: no adjectives, no emoticons for strong weight\cb1 \
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: positive\
+\
+Doc: \
+[('may', 'V'), ('person', 'N'), ('know', 'V'), ('thoroughly', 'R'), ('enjoyed', 'V'), ('kanye', 'DEFAULT'), ('west', 'DEFAULT'), ('rant', 'N'), ('vmas', 'N')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: positive\
+\
+Doc: \
+[('@genericuser', 'DEFAULT'), ('going', 'V'), ('hype', 'N'), ('park', 'N'), ('tomorrow', 'N'), ('?', 'DEFAULT'), (':)', 'E')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: positive\
+\
+Doc: \
+[('saturday', 'DEFAULT'), ('night', 'N'), ('toast', 'N'), (',', 'DEFAULT'), ('hot', 'A'), ('choc', 'N'), ('&', 'DEFAULT'), ('@genericuser', 'DEFAULT'), ('e', 'DEFAULT'), ('news', 'N'), ('#happydays', 'DEFAULT')]\
+\
+\cb5 AV: so \'93hot\'94 wasn\'92t positive enough\cb1 \
+\
+#################################\
+\
+Predicted: negative\
+\
+Gold label: positive\
+\
+Doc: \
+[('@genericuser', 'DEFAULT'), ('set', 'N'), ('skills', 'N'), ('.', 'DEFAULT'), ('skills', 'N'), ('may', 'V'), ('make', 'V'), ('pleasure', 'N'), ('woman', 'N'), ('like', 'DEFAULT'), ('.', 'DEFAULT'), ('wont', 'V'), ('go', 'V'), ('floyd', 'DEFAULT'), ('mayweather', 'DEFAULT'), ('fornicate', 'V')]\
+\
+#################################\
+\
+Predicted: negative\
+\
+Gold label: positive\
+\
+Doc: \
+[('holy', 'A'), ('shit', 'N'), ('opened', 'V'), ('hannibals', 'DEFAULT'), ('kitchen', 'DEFAULT'), ('envelope', 'N'), ('someone', 'N'), ('handed', 'V'), ('friday', 'DEFAULT'), ('night', 'N'), ('#dragoncon', 'DEFAULT'), ('#hannibal', 'DEFAULT'), ('http://genericurl.com', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: negative\
+\
+Gold label: positive\
+\
+Doc: \
+[('2nd', 'DEFAULT'), ('part', 'N'), ('u', 'DEFAULT'), ('kendrick', 'DEFAULT'), ('lamar', 'DEFAULT'), ('emotional', 'A'), ('tbh', 'N'), ('like', 'DEFAULT'), ('voice', 'N'), (',', 'DEFAULT'), ('sounds', 'V'), ('hurt', 'V')]\
+\
+#################################\
+\
+Predicted: negative\
+\
+Gold label: positive\
+\
+Doc: \
+[('@genericuser', 'DEFAULT'), ('fair', 'A'), ('like', 'DEFAULT'), ('current', 'A'), ('chosen', 'V'), ('charity', 'N'), ('nat', 'DEFAULT'), ('second', 'A'), ('kid', 'N'), ('womens', 'N'), ('tuesday', 'N')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: positive\
+\
+Doc: \
+[('buzzing', 'V'), ('eagles', 'N'), ('death', 'N'), ('metal', 'N'), ('tonight', 'N'), ('.', 'DEFAULT'), ('tuesday', 'DEFAULT'), ('new', 'A'), ('friday', 'DEFAULT'), ('.', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: positive\
+\
+Doc: \
+[('@genericuser', 'DEFAULT'), ('hahaha', 'DEFAULT'), ('real', 'A'), ('he\'92s', 'DEFAULT'), ('fox', 'DEFAULT'), ('theatre', 'N'), ('dec', 'DEFAULT'), ('genericnumber', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: positive\
+\
+Doc: \
+[('thousands', 'N'), ('fans', 'N'), ('turned', 'V'), ('mexico', 'DEFAULT'), ('citys', 'N'), ('azteca', 'N'), ('stadium', 'N'), ('thursday', 'DEFAULT'), ('celebrate', 'V'), ('salvador', 'DEFAULT'), ('cabanas', 'DEFAULT'), ('return', 'V'), ('pitch', 'N'), ('.', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: positive\
+\
+Doc: \
+[('watching', 'V'), ('old', 'A'), ('snl', 'N'), ('episodes', 'N'), ('80s', 'N'), ('w/', 'DEFAULT'), ('chevy', 'N'), ('chase', 'N'), (',', 'DEFAULT'), ('john', 'DEFAULT'), ('belushi', 'DEFAULT'), (',', 'DEFAULT'), ('dan', 'DEFAULT'), ('ackroyd', 'DEFAULT'), ('.', 'DEFAULT'), ('billy', 'DEFAULT'), ('joel', 'DEFAULT'), ('musical', 'A'), ('guest', 'N'), ('.', 'DEFAULT'), ('best', 'A'), ('lazy', 'A'), ('sunday', 'N'), ('.', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: positive\
+\
+Doc: \
+[('family', 'N'), ('guy', 'N'), ('netflix', 'DEFAULT'), (',', 'DEFAULT'), ('think', 'V'), ('im', 'DEFAULT'), ('sleeping', 'V'), ('downstairs', 'N'), ('tonight', 'R')]\
+\
+#################################\
+\
+Predicted: negative\
+\
+Gold label: positive\
+\
+Doc: \
+[('could', 'V'), ('sat', 'V'), ('nickis', 'DEFAULT'), ('ass', 'N'), ('tonight', 'R')]\
+\
+#################################\
+\
+Predicted: negative\
+\
+Gold label: positive\
+\
+Doc: \
+[('driving', 'V'), ('tennessee', 'DEFAULT'), ('tomorrow', 'N'), ('see', 'V'), ('brother', 'N'), ('weekend', 'N'), ('!!', 'DEFAULT'), ('literally', 'R'), ('need', 'V'), ('get', 'V'), ('shit', 'N'), ('town', 'N'), ('mind', 'N'), ('.', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: negative\
+\
+Gold label: positive\
+\
+Doc: \
+[('yes', 'DEFAULT'), ('@genericuser', 'DEFAULT'), ('ignore', 'V'), ('$millions', 'N'), ('#rudygiuliani', 'DEFAULT'), ('took', 'V'), ('#qatar', 'DEFAULT'), (',', 'DEFAULT'), ('main', 'N'), ('sponsor', 'N'), ('#hamas', 'DEFAULT'), ('-', 'DEFAULT'), ('\'85', 'DEFAULT'), ('http://genericurl.com', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: positive\
+\
+Doc: \
+[('kim', 'DEFAULT'), ('kardashian', 'DEFAULT'), ('kanye', 'DEFAULT'), ('west', 'DEFAULT'), ('welcomed', 'V'), ('baby', 'N'), ('boy', 'N'), ('saturday', 'DEFAULT'), (',', 'DEFAULT'), ('sunday', 'DEFAULT'), ('night', 'N'), (',', 'DEFAULT'), ('pair', 'N'), ('hadnt', 'V'), ('decided', 'V'), ('name', 'N')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: positive\
+\
+Doc: \
+[('leaders', 'N'), ('vietnam', 'DEFAULT'), ('veterans', 'N'), ('leadership', 'N'), ('program', 'N'), ('reagan', 'DEFAULT'), ('administration', 'N'), ('gather', 'V'), ('.', 'DEFAULT'), ('c', 'DEFAULT'), ('.', 'DEFAULT'), ('saturday', 'DEFAULT'), ('.', 'DEFAULT'), ('looking', 'V'), ('forward', 'R'), ('seeing', 'V')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: positive\
+\
+Doc: \
+[('nba', 'DEFAULT'), ('star', 'DEFAULT'), ('lebron', 'DEFAULT'), ('james', 'DEFAULT'), ('giving', 'V'), ('$genericnumber', 'DEFAULT'), ('million', 'N'), ('muhammad', 'DEFAULT'), ('ali', 'DEFAULT'), ('exhibit', 'N'), ('http://genericurl.com', 'DEFAULT'), (':', 'DEFAULT'), ('auto', 'A'), ('pickup', 'N'), ('wikyou', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: positive\
+\
+Doc: \
+[('first', 'A'), ('drive', 'N'), (':', 'DEFAULT'), ('tesla', 'DEFAULT'), ('model', 'N'), ('p100d', 'V'), ('may', 'V'), ('look', 'V'), ('like', 'DEFAULT'), ('garden-variety', 'N'), ('model', 'N'), (',', 'DEFAULT'), ('teslas', 'R'), ('latest', 'A'), ('packs', 'N'), ('bigg', 'A'), ('..', 'DEFAULT'), ('http://genericurl.com', 'DEFAULT')]\
+\
+#################################\
+\
+#################################End Wrong positive##########################\
+\
+#################################Wrong negative#################################\
+\cb2 AV: again, predicted to be neutral when negative. \cb1 \
+\
+Predicted: neutral\
+\
+Gold label: negative\
+\
+Doc: \
+[('real', 'A'), ('madrid', 'A'), ('coach', 'N'), ('jose', 'DEFAULT'), ('mourinho', 'DEFAULT'), ('faces', 'V'), ('selection', 'N'), ('dilemmas', 'N'), ('ahead', 'R'), ('sunday\'92s', 'DEFAULT'), ('la', 'DEFAULT'), ('liga', 'DEFAULT'), ('trip', 'N'), ('real', 'A'), ('mallorca', 'DEFAULT'), (',', 'DEFAULT'), ('sami', 'DEFAULT'), ('khedi', 'DEFAULT'), ('..', 'DEFAULT'), ('#fb', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: negative\
+\
+Doc: \
+[('got', 'V'), ('love', 'N'), ('sony', 'DEFAULT'), ('.', 'DEFAULT'), ('disappear', 'V'), ('tomorrow', 'N'), (',', 'DEFAULT'), ('someone', 'N'), ('else', 'R'), ('would', 'V'), ('replace', 'V'), ('try', 'V'), ('harder', 'A'), ('consumers', 'N'), ('.', 'DEFAULT'), ('@genericuser', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: negative\
+\
+Doc: \
+[('trumps', 'N'), ('cabinet', 'N'), (',', 'DEFAULT'), ('david', 'DEFAULT'), ('dukes', 'N'), ('pennsylvania', 'DEFAULT'), ('ave', 'DEFAULT'), ('.?', 'DEFAULT'), ('hear', 'V'), ('bob', 'DEFAULT'), ('dylan', 'DEFAULT'), (':', 'DEFAULT'), ('trump', 'N'), ('protest', 'N'), ('song', 'N'), ('.', 'DEFAULT'), ('#robbingusbarren', 'DEFAULT'), ('http://genericurl.com', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: negative\
+\
+Doc: \
+[('well', 'DEFAULT'), ('im', 'DEFAULT'), ('dogs', 'N'), ('see', 'V'), ('u', 'DEFAULT'), ('friday', 'DEFAULT'), ('send', 'V'), ('genericnumber', 'DEFAULT'), ('tweets', 'N'), ('garbage', 'N'), ('cheating', 'V'), ('trash', 'N'), ('ryan', 'DEFAULT'), ('braun', 'DEFAULT'), ('.', 'DEFAULT'), ('good', 'A'), ('night', 'N')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: negative\
+\
+Doc: \
+[('vote', 'V'), ('jessica', 'DEFAULT'), ('mcginnis', 'DEFAULT'), ('11th', 'A'), ('grade', 'N'), ('homecoming', 'N'), ('princess', 'N'), ('personally', 'R'), ('try', 'V'), ('slap', 'V'), ('donald', 'DEFAULT'), ('trump', 'DEFAULT'), ('face', 'N')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: negative\
+\
+Doc: \
+[('photo', 'N'), (':', 'DEFAULT'), ('studyrelief', 'N'), (':', 'DEFAULT'), ('genericnumber', 'DEFAULT'), ('september', 'DEFAULT'), ('genericnumber', 'DEFAULT'), ('smashed', 'V'), ('iphone', 'N'), ('last', 'A'), ('night', 'N'), ('pixels', 'N'), ('screen', 'N'), ('..', 'DEFAULT'), ('http://genericurl.com', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: negative\
+\
+Doc: \
+[('ugh', 'DEFAULT'), ('wanna', 'V'), ('watch', 'V'), ('styled', 'V'), ('rock', 'V'), (',', 'DEFAULT'), ('stream', 'N'), ('shit', 'N'), ('.', 'DEFAULT'), ('might', 'V'), ('wait', 'V'), ('watch', 'V'), ('catch', 'V'), ('tomorrow', 'N')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: negative\
+\
+Doc: \
+[('watched', 'V'), ('genericnumber', 'DEFAULT'), ('minutes', 'N'), ('roast', 'N'), ('justin', 'DEFAULT'), ('bieber', 'DEFAULT'), ('may', 'V'), ('brutal', 'A'), ('thing', 'N'), ('ive', 'DEFAULT'), ('seen', 'V')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: negative\
+\
+Doc: \
+[('go', 'V'), ('set', 'V'), ('watchman', 'N'), ('tomorrow', 'N'), ('.', 'DEFAULT'), ('means', 'V'), ('expect', 'V'), ('see', 'V'), ('speed', 'N'), ('readers', 'N'), ('news', 'N'), ('.', 'DEFAULT'), ('read', 'V'), ('genericnumber', 'DEFAULT'), ('minutes', 'N'), ('piss', 'V'), ('.', 'DEFAULT'), ('!!', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: negative\
+\
+Doc: \
+[('amazon', 'DEFAULT'), ('prime', 'A'), ('day', 'N'), ('better', 'A'), ('black', 'A'), ('friday', 'N'), ('im', 'DEFAULT'), ('going', 'V'), ('sleep', 'V'), ('!', 'DEFAULT'), ('called', 'V'), ('amazon', 'DEFAULT'), ('garage', 'N'), ('sale', 'N'), ('day', 'N'), ('!', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: negative\
+\
+Doc: \
+[('course', 'N'), ('#clownshoes', 'DEFAULT'), ('#altright', 'DEFAULT'), ('#illinoisnazis', 'DEFAULT'), ('http://genericurl.com', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: negative\
+\
+Doc: \
+[('wichita', 'DEFAULT'), ('st.', 'DEFAULT'), ('genericnumber', 'DEFAULT'), ('errors', 'N'), ('genericnumber', 'DEFAULT'), ('innings', 'N'), ('.', 'DEFAULT'), ('imagine', 'V'), ('veteran', 'N'), ('coach', 'N'), ('gene', 'DEFAULT'), ('stephenson', 'DEFAULT'), ('boiling', 'V'), ('dugout', 'N'), ('.', 'DEFAULT'), ('msu', 'DEFAULT'), ('lead', 'V'), ('genericnumber-genericnumber', 'N'), (',', 'DEFAULT'), ('bottom', 'A'), ('2nd', 'DEFAULT'), ('.', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: negative\
+\
+Doc: \
+[('mark', 'DEFAULT'), ('martin', 'DEFAULT'), ('far', 'R'), ('unluckiest', 'A'), ('nascar', 'N'), ('driver', 'N'), ('time', 'N'), (',', 'DEFAULT'), ('2nd', 'DEFAULT'), ('genericnumber', 'DEFAULT'), ('times', 'N'), ('points', 'N'), ('&', 'DEFAULT'), ('heartbreaking', 'A'), ('genericnumber', 'DEFAULT'), ('daytona', 'DEFAULT'), ('genericnumber', 'DEFAULT'), ('.', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: negative\
+\
+Doc: \
+[('new', 'A'), ('daily', 'A'), ('reported', 'V'), ('5th', 'A'), ('lee', 'DEFAULT'), ('soo', 'R'), ('mans', 'DEFAULT'), ('wife', 'N'), ('passed', 'V'), ('away', 'R'), (',', 'DEFAULT'), ('succumbed', 'V'), ('illness', 'N'), ('.', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: negative\
+\
+Doc: \
+[('\'92', 'DEFAULT'), ('favorites', 'N'), ('\'92', 'DEFAULT'), ('russia-portugal', 'DEFAULT'), ('clash', 'N'), ('capello', 'DEFAULT'), (':', 'DEFAULT'), ('moscow', 'DEFAULT'), (',', 'DEFAULT'), ('october', 'DEFAULT'), ('genericnumber', 'DEFAULT'), ('(', 'DEFAULT'), ('ria', 'DEFAULT'), ('novosti', 'DEFAULT'), (')', 'DEFAULT'), ('russia\'92s', 'DEFAULT'), ('match', 'N'), ('portu', 'DEFAULT'), ('..', 'DEFAULT'), ('http://genericurl.com', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: negative\
+\
+Doc: \
+[('trump', 'DEFAULT'), ('copied', 'V'), ('hitler', 'DEFAULT'), (':', 'DEFAULT'), ('adolf', 'DEFAULT'), ('hitler', 'DEFAULT'), ('said', 'V'), ('would', 'V'), ('make', 'V'), ('germany', 'DEFAULT'), ('great', 'A'), ('#notmypresident', 'DEFAULT'), ('#uniteblue', 'DEFAULT'), ('#lovetrumpshate', 'DEFAULT'), ('http://genericurl.com', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: negative\
+\
+Doc: \
+[('according', 'V'), ('dvr', 'N'), (',', 'DEFAULT'), ('penultimate', 'A'), ('episode', 'N'), ('hannibal', 'DEFAULT'), ('4th', 'A'), ('quarter', 'N'), ('nfl', 'N'), ('preseason', 'N'), ('game', 'N'), ('.', 'DEFAULT'), ('could', 'V'), ('eat', 'V'), ('face', 'N'), ('.', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: negative\
+\
+Doc: \
+[('finally', 'R'), ('broke', 'V'), ('got', 'V'), ('amazon', 'DEFAULT'), ('prime', 'A'), ('delivery', 'N'), ('1st', 'A'), ('purchase', 'N'), ('member', 'N'), ('late', 'A'), ('.', 'DEFAULT'), ('@genericuser', 'DEFAULT'), ('expecting', 'V'), ('better', 'A'), ('.', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: negative\
+\
+Doc: \
+[('@genericuser', 'DEFAULT'), ('foo', 'N'), ('fighters', 'N'), ('asked', 'V'), ('play', 'V'), ('main', 'A'), ('stage', 'N'), (',', 'DEFAULT'), ('refused', 'V'), ('.', 'DEFAULT'), ('nearly', 'R'), ('tore', 'V'), ('tent', 'N'), ('!', 'DEFAULT'), ('went', 'V'), ('sunday', 'DEFAULT'), ('.', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: neutral\
+\
+Gold label: negative\
+\
+Doc: \
+[('medical', 'A'), ('marijuana', 'N'), ('legal', 'A'), ('majority', 'N'), ('america', 'DEFAULT'), (',', 'DEFAULT'), ('yet', 'R'), ('veterans', 'N'), ('get', 'V'), ('guidance', 'N'), ('thanks', 'N'), ('va', 'DEFAULT'), ('policy', 'N'), ('\'85', 'DEFAULT'), ('http://genericurl.com', 'DEFAULT')]\
+\
+#################################\
+\
+#################################End Wrong negative##########################\
+\
+#################################Wrong neutral#################################\
+\
+Predicted: negative\
+\
+Gold label: neutral\
+\
+Doc: \
+[('mong', 'N'), ('may', 'V'), (',', 'DEFAULT'), ('kane', 'DEFAULT'), ('produce', 'V'), ('last', 'A'), ('seasons', 'N'), ('form', 'N'), ('consistently', 'R'), ('england', 'DEFAULT'), ('goal', 'N'), ('scorer', 'N'), ('genericnumber+', 'DEFAULT'), ('years', 'N')]\
+\
+#################################\
+\
+Predicted: negative\
+\
+Gold label: neutral\
+\
+Doc: \
+[('settled', 'V'), ('part', 'N'), ('bali', 'DEFAULT'), ('stuff', 'N'), ('friends', 'N'), ('.', 'DEFAULT'), ('tomorrow', 'N'), ('.', 'DEFAULT'), ('totally', 'R'), ('forgot', 'V'), ('8am', 'DEFAULT'), ('class', 'N'), ('-_-', 'E')]\
+\
+#################################\
+\
+Predicted: negative\
+\
+Gold label: neutral\
+\
+Doc: \
+[('bannon', 'DEFAULT'), ('bringing', 'V'), ('reagan', 'DEFAULT'), ('back', 'R'), ('!', 'DEFAULT'), ('#magahttp', 'DEFAULT'), (':/', 'E'), ('/', 'DEFAULT'), ('genericurl.com', 'DEFAULT'), ('via', 'DEFAULT'), ('@genericuser', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: neutral\
+\
+Doc: \
+[('final', 'A'), ('destination', 'N'), ('genericnumber', 'N'), ('coming', 'V'), ('soon', 'R'), ('.', 'DEFAULT'), ('never', 'R'), ('thought', 'V'), ('theyd', 'DEFAULT'), ('make', 'V'), ('5th', 'A'), ('one', 'DEFAULT'), ('!', 'DEFAULT'), ('#youcantcheatdeath', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: negative\
+\
+Gold label: neutral\
+\
+Doc: \
+[('yoga', 'DEFAULT'), ('improve', 'V'), ('sex', 'N'), ('may', 'V'), ('even', 'R'), ('prevent', 'V'), ('treat', 'V'), ('sex', 'N'), ('problems', 'N'), ('increasing', 'V'), ('overall', 'A'), ('health', 'N'), ('cardiovascular', 'A'), ('system', 'N'), ('.', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: negative\
+\
+Gold label: neutral\
+\
+Doc: \
+[('hear', 'V'), ('mariners', 'DEFAULT'), ('genericnumber-genericnumber', 'A'), ('following', 'V'), ('past', 'A'), ('two', 'DEFAULT'), ('releases', 'N'), ('sharknado', 'DEFAULT'), ('.', 'DEFAULT'), ('#sharknado3', 'DEFAULT'), ('comes', 'V'), ('wednesday', 'DEFAULT'), ('.', 'DEFAULT'), ('#gomariners', 'DEFAULT'), ('#statsarefun', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: neutral\
+\
+Doc: \
+[('next', 'A'), ('friday', 'DEFAULT'), ('soltek', 'DEFAULT'), ('residents', 'N'), ('daffadam', 'V'), ('medlam', 'DEFAULT'), ('take', 'V'), ('stage', 'N'), ('plan', 'N'), ('b', 'V'), ('london', 'DEFAULT'), ('c', 'N'), ('panel\'92s', 'DEFAULT'), ('1st', 'A'), ('birthday', 'N'), ('..', 'DEFAULT'), ('http://genericurl.com', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: negative\
+\
+Gold label: neutral\
+\
+Doc: \
+[('@genericuser', 'DEFAULT'), ('didnt', 'V'), ('believe', 'V'), ('sun', 'N'), ('single', 'A'), ('second', 'A'), ('louis', 'DEFAULT'), ('becoming', 'V'), ('dad', 'N'), ('believe', 'V'), ('sun', 'N'), ('anything', 'N'), ('zayn', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: negative\
+\
+Gold label: neutral\
+\
+Doc: \
+[(',', 'DEFAULT'), ('clear', 'A'), ('.', 'DEFAULT'), ('banning', 'V'), ('abortion', 'N'), ('doesnt', 'V'), ('stop', 'V'), ('happening', 'V'), (',', 'DEFAULT'), ('makes', 'V'), ('unsafe', 'A'), ('.', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: negative\
+\
+Gold label: neutral\
+\
+Doc: \
+[('@genericuser', 'DEFAULT'), ('pout', 'V'), ('may', 'V'), ('work', 'V'), ('daddy', 'N'), ('doesnt', 'V'), ('work', 'V'), ('big', 'A'), ('brother', 'N'), ('lmao', 'DEFAULT'), ('!!', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: negative\
+\
+Gold label: neutral\
+\
+Doc: \
+[('nothing', 'N'), ('much', 'R'), ('going', 'V'), ('happen', 'V'), ('naruto', 'DEFAULT'), ('tomorrow', 'N'), ('going', 'V'), ('intro', 'N'), ('serious', 'A'), ('shit', 'N'), ('!', 'DEFAULT'), ('marada', 'V'), ('go', 'V'), ('crazy', 'A'), ('!', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: neutral\
+\
+Doc: \
+[('blood', 'N'), ('moon', 'N'), (':', 'DEFAULT'), ('blood', 'N'), ('moons', 'N'), (':', 'DEFAULT'), ('sun', 'N'), ('shall', 'V'), ('turned', 'V'), ('darkness', 'N'), (',', 'DEFAULT'), ('moon', 'N'), ('blood', 'N'), (',', 'DEFAULT'), ('great', 'A'), ('http://genericurl.com', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: neutral\
+\
+Doc: \
+[('@genericuser', 'DEFAULT'), ('idk', 'DEFAULT'), ('im', 'DEFAULT'), ('gonna', 'V'), ('get', 'V'), ('around', 'DEFAULT'), ('hannibal', 'DEFAULT'), ('know', 'V'), ('wonderfalls', 'DEFAULT'), ('season', 'N'), (',', 'DEFAULT'), ('may', 'V'), ('tide', 'V')]\
+\
+#################################\
+\
+Predicted: negative\
+\
+Gold label: neutral\
+\
+Doc: \
+[('uk', 'DEFAULT'), ('government', 'N'), ('rejects', 'V'), ('mps', 'N'), ('criticism', 'N'), ('#libya', 'DEFAULT'), ('intervention', 'N'), ('http://genericurl.com', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: neutral\
+\
+Doc: \
+[('@genericuser', 'DEFAULT'), ('may', 'V'), ('seeing', 'V'), ('welbeck', 'DEFAULT'), ('together', 'R'), ('.', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: neutral\
+\
+Doc: \
+[('@genericuser', 'DEFAULT'), ('may', 'V'), ('seen', 'V'), (':', 'DEFAULT'), ('mad', 'A'), ('max', 'DEFAULT'), (',', 'DEFAULT'), ('jurassic', 'DEFAULT'), ('world', 'N'), (',', 'DEFAULT'), ('predestination', 'N'), (',', 'DEFAULT'), ('area', 'N'), ('genericnumber', 'N'), (',', 'DEFAULT'), ('ex', 'N'), ('machina', 'N'), (',', 'DEFAULT'), ('kingsmen', 'DEFAULT'), (',', 'DEFAULT'), ('shadows', 'N'), (',', 'DEFAULT'), ('..', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: neutral\
+\
+Doc: \
+[('friday', 'DEFAULT'), (',', 'DEFAULT'), ('october', 'DEFAULT'), ('19th', 'DEFAULT'), ('talib', 'DEFAULT'), ('kweli', 'DEFAULT'), (':', 'DEFAULT'), ('idle', 'A'), ('warship', 'N'), ('res', 'N'), ('adrienne', 'DEFAULT'), ('arsht', 'DEFAULT'), ('center', 'N'), ('!', 'DEFAULT'), ('http://genericurl.com', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: neutral\
+\
+Doc: \
+[('@genericuser', 'DEFAULT'), ('yes', 'DEFAULT'), ('!', 'DEFAULT'), ('organized', 'V'), ('#terrorist', 'DEFAULT'), ('act', 'V'), ('.', 'DEFAULT'), ('operating', 'V'), ('north', 'DEFAULT'), ('#israelfires', 'DEFAULT'), ('#jerusalem', 'DEFAULT'), ('area', 'N'), ('!', 'DEFAULT'), ('surprise', 'N'), ('attack', 'N'), ('!', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: neutral\
+\
+Doc: \
+[('think', 'V'), ('stone', 'N'), ('roses', 'N'), ('might', 'V'), ('tfi', 'N'), ('friday', 'N'), ('tonight', 'N'), ('!!', 'DEFAULT'), ('since', 'DEFAULT'), ('chris', 'DEFAULT'), ('evans', 'DEFAULT'), ('said', 'V'), ('weeks', 'N'), ('guest', 'N'), ('special', 'A'), ('didnt', 'V'), ('name', 'V'), ('!', 'DEFAULT')]\
+\
+#################################\
+\
+Predicted: positive\
+\
+Gold label: neutral\
+\
+Doc: \
+[('listen', 'V'), ('win', 'V'), ('passes', 'V'), ('see', 'V'), ('#fantasticbeasts', 'N'), ('2pm', 'DEFAULT'), ('w/', 'DEFAULT'), ('@genericuser', 'DEFAULT'), ('http://genericurl.com', 'DEFAULT')]\
+\
+#################################\
+\
+#################################End Wrong neutral##########################\
+\
+Ending prediction\
+}

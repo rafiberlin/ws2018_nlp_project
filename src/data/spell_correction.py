@@ -82,7 +82,7 @@ def merge_files_as_binary(path, output, file_pattern="*.txt"):
                     outfile.write(line)
 
 
-def filter_unwanted_characters(input_file, output_path, shuffle=False):
+def filter_unwanted_characters(input_file, output_path, shuffle=False, correct_class_skew=False):
     """
     Remove broken lines (which can't be output to proper csv because they contain a tab)
     :param input_file: complete path to an input file
@@ -105,6 +105,15 @@ def filter_unwanted_characters(input_file, output_path, shuffle=False):
     df['text'] = df.text.str.replace('\t', '')
     # html decoding
     df['text'] = df.text.apply(html.unescape)
+
+    if correct_class_skew:
+        shuffle = True
+        min_values = df.groupby("sentiment").size().min()
+        classes = df['sentiment'].unique()
+        # before appending to the new frame, shuffle all rows, reset the index, and add to the empty frame
+        df = pd.concat(
+            [df.iloc[df["sentiment"].values == single_class].sample(frac=1).reset_index(drop=True)[:min_values] for
+             single_class in classes])
 
     if shuffle:
         df = df.sample(frac=1)
@@ -169,19 +178,20 @@ def clean_data(input_file, output_file):
                 outfile.write(cleaned_line + "\n")
 
 
-def create_files_for_analysis(path, shuffle=False):
+def create_files_for_analysis(path, shuffle=False, remove_class_skew=False):
     """
     Merges individual raw docs into one dataset file, filters unwanted characters from dataset,
     shuffles it, cleans it with clean_data and writes it into file text_cleaned.csv
     :param path: path to a document with raw tweets
     :param shuffle: if True shuffle the tweets
+    :param remove_class_skew: if True , set the number of documents for each class evenly
     :return: nothing, just writes into files
     """
     print("Start")
     all_raw = os.path.join(path, "all_raw.csv")
     processed_path = os.path.join(Path(__file__).parents[2].__str__(), 'dataset', 'processed')
     merge_files_as_binary(path, all_raw)
-    filter_unwanted_characters(all_raw, processed_path, shuffle)
+    filter_unwanted_characters(all_raw, processed_path, shuffle, remove_class_skew)
     clean_data(os.path.join(processed_path, "text_only.csv"),
                os.path.join(processed_path, "text_cleaned.csv"))
     print("Finish")
@@ -217,7 +227,8 @@ def main():
     print(parent_dir)
     train_path = os.path.join(parent_dir.__str__(), 'dataset', 'raw')
     shuffle_data = True
-    create_files_for_analysis(train_path, shuffle_data)
+    remove_skew = True
+    create_files_for_analysis(train_path, shuffle_data, remove_skew)
 
 
 if __name__ == "__main__":

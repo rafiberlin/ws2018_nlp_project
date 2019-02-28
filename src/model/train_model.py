@@ -1,6 +1,6 @@
 import features.ocfs as ocfs
 from data.helper import get_pos_datasets
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfVectorizer
 from baseline.baseline import do_not_tokenize
 from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline, FeatureUnion
@@ -13,7 +13,7 @@ from pickle import load as p_load
 
 def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_scale, features_to_remove,
                            union_transformer_weights=None, percentage_train_data=0.7, percentage_test_data=0.2,
-                           use_multi_processing=False):
+                           use_multi_processing=False, devset=True):
     """
 
     :param tagged_sentences: list of sentences as lists of tuples as created by get_tagged_sentences
@@ -26,6 +26,7 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
     :param percentage_train_data: float between 0 and 1, percentage of training data
     :param percentage_test_data: float between 0 and 1, percentage of test data
     :param use_multi_processing: boolean: True = use multiprocessing for training
+    :param devset: if True, runs the training with the devset
     :return: list of best scoring assignments of weights to featrues
                 e.g. of one entry in the list ({'V': 2, 'A': 4, 'N+#': 1, 'R': 1, 'E': 4, 'DEFAULT': 0},
                     (0.8574962658700522, 0.627297231070816, 0.5884891927065569))
@@ -39,9 +40,16 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
     # all_pos_vocab = ocfs.create_pos_weight_combination(pos_groups, weighing_scale)[:4]
     all_pos_vocab = ocfs.create_pos_weight_combination(pos_groups, weighing_scale)
 
-    train_docs, test_docs, train_labels, test_labels = get_pos_datasets(tagged_sentences, all_labels,
-                                                                        pos_groups, percentage_train_data,
-                                                                        percentage_test_data)
+    dev_docs, train_docs, test_docs, dev_labels, train_labels, test_labels = get_pos_datasets(tagged_sentences,
+                                                                                              all_labels,
+                                                                                              pos_groups,
+                                                                                              percentage_train_data,
+                                                                                              percentage_test_data)
+
+    if devset:
+        print("\nTraining on devset")
+        train_docs = dev_docs
+        train_labels = dev_labels
 
     # Process the model training with all combination in parallel, letting one core for CPU
     if use_multi_processing:
@@ -61,7 +69,6 @@ def return_best_pos_weight(tagged_sentences, all_labels, pos_groups, weighing_sc
         results = p.map(argument_wrapper_for_run_model_for_all_combination,
                         args)
         p.close()
-        p.join()
 
     return results
 
@@ -129,8 +136,8 @@ def run_pos_model(train_docs, test_docs, train_labels, test_labels, pos_vocab, n
     :param pos_vocab: dict with feature names as keys and some values. Values will be overwritten with a list created
                                                                         from key
     :param number_of_features_to_delete: numebr of features to delete with ocfs feature selection
-    :param union_transformer_weights: dict with keys= model names (bow,pos) and values = floats between 0 and 1,
-                                        weights for each model in model union
+    :param union_transformer_weights: dict, key=name of model (e.g.pos,bow or tfidf), value=float between 0 and 1,
+                                                    weight of this model in training
     :param accuracy_to_beat: Reminder for BOW, 0.6252552478967573
     :param f1_score_to_beat: Reminder for BOW, 0.5865028050367952):
     :return: a set three scores: accuracy for training, for testing , and unified f1 for testing
@@ -182,19 +189,11 @@ def create_fitted_model(train_docs, train_labels, pos_vocab, number_of_features_
     :param pos_vocab: dict, one weighting combination. Key=pos category, value=weight
            e.g. {'V': 1, 'A': 1, 'N': 1, 'E': 1}
     :param number_of_features_to_delete: int, num of featrues to delete
-    :param union_transformer_weights: dict, key=name of model (e.g.pos,bow), value=float between 0 and 1,
+    :param union_transformer_weights: dict, key=name of model (e.g.pos,bow or tfidf), value=float between 0 and 1,
                                                     weight of this model in training
     :return: fitted model
 
     """
-
-    # from pickle import dump, load
-    # print("Test")
-    # dump(pos_bow_pipeline, open('filename.joblib','wb'))
-    # clf2 = load(open('filename.joblib','rb'))
-    # res = clf2.predict(test_docs)
-    #
-    # print(res)
     if union_transformer_weights is None:
         union_transformer_weights = {'bow': 0.7, 'pos': 0.3, }
 
@@ -203,29 +202,16 @@ def create_fitted_model(train_docs, train_labels, pos_vocab, number_of_features_
                                            max_iter=5000
                                            )
 
-    bag_of_words = CountVectorizer(
-        analyzer='word',
-        tokenizer=do_not_tokenize,
-        preprocessor=do_not_tokenize,
-        binary=True  # replaces bow_train = (bow_train >= 1).astype(int)
-    )
-
-    pos_vectorizer = ocfs.PosVectorizer(pos_vocab)
+    transformer = None
+    if "bow" in union_transformer_weights.keys():
+        transformer = create_bow_pos_transformer(pos_vocab, number_of_features_to_delete)
+    elif "tfidf" in union_transformer_weights.keys():
+        transformer = create_tfidf_pos_transformer(pos_vocab, number_of_features_to_delete)
 
     pos_bow_pipeline = Pipeline([
         # Use FeatureUnion to combine the features from bow and pos
         ('union', FeatureUnion(
-            transformer_list=[
-                # Pipeline for pulling features from the post's subject line
-                ('bow', Pipeline([
-                    ('bowweighing', bag_of_words),
-                ])),
-                # Pipeline for standard bag-of-words model for body
-                ('pos', Pipeline([
-                    ('posweighing', pos_vectorizer),
-                    ('ocfs', ocfs.OCFS(number_of_features_to_delete)),
-                ])),
-            ],
+            transformer_list=transformer,
             # weight components in FeatureUnion
             transformer_weights=union_transformer_weights,
         )),
@@ -236,6 +222,71 @@ def create_fitted_model(train_docs, train_labels, pos_vocab, number_of_features_
     pos_bow_pipeline.fit(train_docs, train_labels)
 
     return pos_bow_pipeline
+
+
+def create_bow_pos_transformer(pos_vocab, number_of_features_to_delete):
+    """
+    Creates a transformer list with BOW and POS modelling
+    :param pos_vocab: dict, one weighting combination. Key=pos category, value=weight
+           e.g. {'V': 1, 'A': 1, 'N': 1, 'E': 1}
+    :param number_of_features_to_delete: int, num of featrues to delete
+    :return: a transformer list
+    """
+
+    bag_of_words = CountVectorizer(
+        analyzer='word',
+        tokenizer=do_not_tokenize,
+        preprocessor=do_not_tokenize,
+        binary=True
+    )
+
+    pos_vectorizer = ocfs.PosVectorizer(pos_vocab)
+
+    transformer_list = [
+        # Pipeline for pulling BOW features
+        ('bow', Pipeline([
+            ('bowweighing', bag_of_words),
+        ])),
+        # Pipeline for POS
+        ('pos', Pipeline([
+            ('posweighing', pos_vectorizer),
+            ('ocfs', ocfs.OCFS(number_of_features_to_delete)),
+        ])),
+    ]
+
+    return transformer_list
+
+
+def create_tfidf_pos_transformer(pos_vocab, number_of_features_to_delete):
+    """
+    Creates a transformer list with TFIDF and POS modelling
+    :param pos_vocab: dict, one weighting combination. Key=pos category, value=weight
+           e.g. {'V': 1, 'A': 1, 'N': 1, 'E': 1}
+    :param number_of_features_to_delete: int, num of featrues to delete
+    :return: a transformer list
+    """
+
+    tfidf = TfidfVectorizer(
+        analyzer='word',
+        tokenizer=do_not_tokenize,
+        preprocessor=do_not_tokenize,
+    )
+
+    pos_vectorizer = ocfs.PosVectorizer(pos_vocab)
+
+    transformer_list = [
+        # Pipeline for pulling TFIDF features
+        ('tfidf', Pipeline([
+            ('tfidfweighing', tfidf),
+        ])),
+        # Pipeline for POS
+        ('pos', Pipeline([
+            ('posweighing', pos_vectorizer),
+            ('ocfs', ocfs.OCFS(number_of_features_to_delete)),
+        ])),
+    ]
+
+    return transformer_list
 
 
 def argument_wrapper_for_run_model_for_all_combination(args):

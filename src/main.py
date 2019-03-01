@@ -332,7 +332,7 @@ def main(argv):
 
     tagged_sentences = get_tagged_sentences(data_set_path, tagged_sentences, start_range=start_range,
                                             end_range=end_range, split_pos=False)
-    print(len(tagged_sentences))
+
     all_labels = get_labels(labels, start_range=start_range, end_range=end_range)
     training_percent = 0.7
     test_percent = 0.2

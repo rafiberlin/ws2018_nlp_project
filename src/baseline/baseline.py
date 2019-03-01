@@ -39,7 +39,7 @@ def print_report(model, test_docs, test_labels, classifier_name, report_precisio
 
     report = classification_report(test_labels, predicted, digits=report_precision)
     print(report)
-    create_classification_report_plot(report, 'baseline', classifier_name)
+    create_classification_report_plot(report, classifier_name)
 
 
 def main(dataset_folder_suffix=None):

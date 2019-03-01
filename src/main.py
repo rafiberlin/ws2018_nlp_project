@@ -476,7 +476,7 @@ def main(argv):
                 + ' (Test Data) ===\n')
             report = classification_report(test_labels, predicted, digits=report_precision)
             print(report)
-            create_classification_report_plot(report, results_folder, 'BOW_POS {}'.format(prefix))
+            create_classification_report_plot(report, 'BOW_POS {}'.format(prefix))
 
             # For more detailed examination of wrong prediction uncomment the next line
             # print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)

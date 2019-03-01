@@ -132,7 +132,7 @@ def plot_classification_report(classification_report, name_of_model, cmap='RdBu'
             correct_orientation, cmap=cmap)
 
 
-def create_classification_report_plot(report, results_folder, name_of_model):
+def create_classification_report_plot(report, name_of_model):
     """
     Given a classification report, create a heat map for precision, recall and f1 score for each sentiment label
     :param report: classification report for a model as returned by sklearn.metrics.classification_report
@@ -143,9 +143,9 @@ def create_classification_report_plot(report, results_folder, name_of_model):
     report = report.replace('micro avg', 'micro_avg')
     report = report.replace('macro avg', 'macro_avg')
     report = report.replace('weighted avg', 'weighted_avg')
-    #report = report.partition('micro avg')[0]
 
-    save_path = os.path.join(Path(__file__).parents[2].__str__(), results_folder, '{}.png'.format(name_of_model))
+    save_path = os.path.join(Path(__file__).parents[2].__str__(), 'results', 'visualization',
+                             '{}.png'.format(name_of_model))
     plot_classification_report(report, name_of_model)
     plt.savefig(save_path, dpi=200, format='png', bbox_inches='tight')
     plt.close()

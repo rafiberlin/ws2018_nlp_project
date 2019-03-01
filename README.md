@@ -113,7 +113,7 @@ To tag the data navigate to the directory where `the runTagger.sh` is located, t
 
 ## Results
 
-**Bag of Words + Part of Speech:**    
+**Best Bag of Words + Part of Speech Model:**    
 
 Weighting Scheme:     
 Adjectives:     4   

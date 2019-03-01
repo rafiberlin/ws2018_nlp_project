@@ -24,7 +24,7 @@ Chris Nicholls and Fei Song. *Improving Sentiment Analysis with Part-of-Speech W
 We implement a Feature Selection Technique from:   
 Jun Yan, Ning Liu, Benyu Zhang, Shuicheng Yan, Zheng Chen, Qiansheng Cheng, Weiguo Fan, and Wei-Ying Ma. OCFS: Optimal Orthogonal Centroid Feature Selection for Text Categorization. In *28th Annual International ACM SIGIR Conference on Research and Development in Information Retrieval*, pages 122–129. Association for Computing Machinery, Inc., January 2005.
 
-The idea of merging POS categories together for calculation came from: 
+The idea of merging POS categories together for calculation came from:   
 Rui Xia and Chengqing Zong. A POS-based Ensemble Model for Cross-domain Sentiment Classification. In *Proceedings of 5th International Joint Conference on Natural Language Processing* page 616. Asian Federation of Natural Language Processing, in 2011
 
 ## Getting Started
@@ -118,7 +118,16 @@ To tag the data navigate to the directory where `the runTagger.sh` is located, t
 
 ## Results
 
-**Best Bag of Words + Part of Speech Model:**    
+### Findings: 
+Adding POS categories as features does improve the performance of a Bag-of-Words classifier.   
+However, TFIDF classifier scores overall the highest.
+
+|          | BOW    | TFIDF  | BOW+POS | TFIDF+POS | BOW+TFIDF+POS |
+|----------|--------|--------|-------|-----------|---------------|
+| Accuracy | 0.6374 | 0.6515 | 0.6457  | 0.6425    | 0.6440        |
+| F1 macro | 0.6383 | **0.6512** | *0.6467*  | 0.6428    | 0.6448        |
+
+**Best Bag of Words + Part-of-Speech Model:**    
 
 Weighting Scheme:     
 Adjectives:     4   

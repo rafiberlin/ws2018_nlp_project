@@ -146,7 +146,7 @@ def clean_data(input_file, output_file):
     :return: nothing, just writes into a file
     """
     spelling_corrections = {}
-    # speller = SpellCorrector(corpus="english")
+
 
     file_encoding = "utf-8-sig"
     with open(output_file, mode="w", encoding=file_encoding, newline='') as outfile:
@@ -209,7 +209,6 @@ def build_pie_chart(data_frame_labels, chart_title="Label distribution in the Se
     """
     val_counts = data_frame_labels.Label.value_counts()
     label_count = [val_counts["positive"], val_counts["negative"], val_counts["neutral"]]
-    # print("count", label_count)
     label = ['positive', 'negative', 'neutral']
     colors = ['lightblue', 'orange', 'lightgray']
     explode = (0.1, 0.1, 0.1)  # only "explode" the 2nd slice (i.e. 'Hogs')

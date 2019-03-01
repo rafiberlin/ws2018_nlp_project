@@ -111,7 +111,12 @@ def plot_classification_report(classification_report, name_of_model, cmap='RdBu'
     plotMat = []
     support = []
     class_names = []
-    for line in lines[2: (len(lines) - 1)]:
+    last_index = 1
+    if not lines[-1]:
+        last_index = 2
+
+    for line in lines[2: (len(lines) - last_index)]:
+    #for line in lines[2: (len(lines) - 1)]:
         t = line.strip().split()
         if len(t) < 2: continue
         classes.append(t[0])

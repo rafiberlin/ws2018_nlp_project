@@ -75,7 +75,7 @@ Output of `main.py` whithout arguments:
     │   |   ├── data_reshuffled                 # trained and tested on data in dataset/processed_reshuffled
     │   |   ├── data_equal_classes_reshuffled   # trained and tested on data in dataset/processed_equal_classes_reshuffled
     ├── src                                     # project source code  
-    │   ├── baseline                            # implementation of the baseline models: MaxEnt classifier with BoW snd TfIdf    
+    │   ├── baseline                            # implementation of baseline models: MaxEnt classifier with BoW and TfIdf    
     │   ├── features                            # implementation of feature selection technique and Speech Vectorizer
     │   ├── model                               # implementation of transformers and methods for training MaxEnt models
     │   ├── data                                # implementation of methods to process raw data

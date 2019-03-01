@@ -108,7 +108,7 @@ def run_training(tagged_sentences, all_labels, pos_groups, weighing_scale, featu
 
     :param tagged_sentences: list of sentences as lists of tuples (word, pos) as returned by get_tagged_sentences
     :param all_labels: pandas data frame object with sentiment labels for pos-tagged sentences
-    :param pos_groups: dict with keys=names of pos features, values=list of pos categories to have that featrue
+    :param pos_groups: dict with keys=names of pos features, values=list of pos categories to have that feature
     :param weighing_scale: int, from 1 to this number is the weighting scale to assign to features
     :param feature_to_delete: int, number of features to delete
     :param union_weights: dict with keys=models, values=their weights during training
@@ -345,216 +345,23 @@ def main(argv):
 
         prefix_args = [
 
-            # First tests which were run
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.7, 'pos': 0.3, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
-            #  test_percent],
-            # Test set focusing on having a bigger weight on POS in the Union Feature
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 23000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 28000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 32000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 29500, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30500, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-            #  test_percent],
-
-            # # Test like in the paper (POS only, BOW weight = 0)
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0, 'pos': 1, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0, 'pos': 1, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0, 'pos': 1, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0, 'pos': 1, }, training_percent,
-            #  test_percent],
-
-            # Test: grouping A and R (POS only, BOW weight = 0)
-            # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 30000, {'bow': 0, 'pos': 1, }, training_percent,
-            # test_percent],
-            # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 25000, {'bow': 0, 'pos': 1, }, training_percent,
-            # test_percent],
-            # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 35000, {'bow': 0, 'pos': 1, }, training_percent,
-            # test_percent],
-            # [{"V": ["V"], "N": ["N"], "A+R": ["A", "R"]}, 5, 0, {'bow': 0, 'pos': 1, }, training_percent,
-            # test_percent],
-
-            # Test with 50% BOW 50% POS on union
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.5, 'pos': 0.5, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
-            #  test_percent],
-
-            # Patrick?
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.6, 'pos': 0.4, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0.6, 'pos': 0.4, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.6, 'pos': 0.4, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.6, 'pos': 0.4, }, training_percent,
-            #  test_percent],
-
-            # Alyona?
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.8, 'pos': 0.2, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 25000, {'bow': 0.8, 'pos': 0.2, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.8, 'pos': 0.2, }, training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 35000, {'bow': 0.8, 'pos': 0.2, }, training_percent,
-            #  test_percent],
-
-            # Rafi
-            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 0, {'bow': 0.5, 'pos': 0.5, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 25000, {'bow': 0.5, 'pos': 0.5, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 30000, {'bow': 0.5, 'pos': 0.5, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 35000, {'bow': 0.5, 'pos': 0.5, },
+            # A list with   arg[0]: dict with feature names as keys and pos categories with those features as values
+            #                         e.g. {"V+L": ["V", "L"], "A": ["A"], "N": ["N"], "R": ["R"]}
+            #                 arg[1]: int, an upper bound of weighting scale
+            #                         e.g. 5 for weights [1,2,3,4,5]
+            #                 arg[2]: int, number of features to delete with feature selection technique
+            #                         e.g. 30000
+            #                 arg[3]: dict with keys=model names, values=their weights during training
+            #                         e.g. {'bow': 0.7, 'pos': 0.3, }
+            #                 arg[4]: float between 0 and 1, percentage of data for training
+            #                         e.g. 0.7
+            #                 arg[5]: float between 0 and 1, percentage of data for testing
+            #                         e.g. 0.2
+            # e.g.:
+            # [{"V": ["V"], "A+E": ["A", "E"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.7, 'pos': 0.3, },
             #  training_percent,
             #  test_percent],
 
-            # Patrick?
-            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 0, {'bow': 0.6, 'pos': 0.4, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 25000, {'bow': 0.6, 'pos': 0.4, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 30000, {'bow': 0.6, 'pos': 0.4, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 35000, {'bow': 0.6, 'pos': 0.4, },
-            #  training_percent,
-            #  test_percent],
-            # Alyona?
-            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 0, {'bow': 0.7, 'pos': 0.3, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 25000, {'bow': 0.7, 'pos': 0.3, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 30000, {'bow': 0.7, 'pos': 0.3, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 35000, {'bow': 0.7, 'pos': 0.3, },
-            #  training_percent,
-            #  test_percent],
-
-            # Rafi
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 0, {'bow': 0.5, 'pos': 0.5, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'bow': 0.5, 'pos': 0.5, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 35000, {'bow': 0.5, 'pos': 0.5, },
-            #  training_percent,
-            #  test_percent],
-
-            # Patrick
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 0, {'bow': 0.4, 'pos': 0.6, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'bow': 0.4, 'pos': 0.6, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 35000, {'bow': 0.4, 'pos': 0.6, },
-            #  training_percent,
-            #  test_percent],
-            # Patrick
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 0, {'bow': 0.7, 'pos': 0.3, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'bow': 0.7, 'pos': 0.3, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 35000, {'bow': 0.7, 'pos': 0.3, },
-            #  training_percent,
-            #  test_percent],
-
-            # Alyona
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 0, {'bow': 0.6, 'pos': 0.4, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'bow': 0.6, 'pos': 0.4, },
-            #  training_percent,
-            #  test_percent],
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 35000, {'tfidf': 0.6, 'pos': 0.4, },
-            # training_percent,
-            # test_percent],
-
-            # Rafi running on no_class_skew
-
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.7, 'pos': 0.3, }, training_percent,
-            #  test_percent],
-            # 
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.3, 'pos': 0.7, }, training_percent,
-            #  test_percent],
-            # 
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.5, 'pos': 0.5, }, training_percent,
-            #  test_percent],
-            # 
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.6, 'pos': 0.4, }, training_percent,
-            #  test_percent],
-            # 
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'bow': 0.8, 'pos': 0.2, }, training_percent,
-            #  test_percent],
-            # 
-            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 30000, {'bow': 0.5, 'pos': 0.5, },
-            #  training_percent,
-            #  test_percent],
-            # 
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'bow': 0.6, 'pos': 0.4, },
-            #  training_percent,
-            #  test_percent],
-
-            # Rafi running on no_class_skew
-            #
-            # [{"E": ["E"], "DEFAULT": []}, 1, 30000, {'tfidf': 0.5, 'pos': 0.5, }, training_percent, test_percent],
-            #
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.7, 'pos': 0.3, }, training_percent,
-            #  test_percent],
-            #
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.3, 'pos': 0.7, }, training_percent,
-            #  test_percent],
-            #
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.5, 'pos': 0.5, }, training_percent,
-            #  test_percent],
-            #
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.6, 'pos': 0.4, }, training_percent,
-            #  test_percent],
-            #
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}, 5, 30000, {'tfidf': 0.8, 'pos': 0.2, }, training_percent,
-            #  test_percent],
-            #
-            # [{"V": ["V"], "R+A": ["R", "A"], "N": ["N"], "E": ["E"]}, 5, 30000, {'tfidf': 0.5, 'pos': 0.5, },
-            #  training_percent,
-            #  test_percent],
-            #
-            # [{"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"], "E": ["E"]}, 4, 30000, {'tfidf': 0.6, 'pos': 0.4, },
-            #  training_percent,
-            #  test_percent],
         ]
 
         start = time.time()

@@ -34,34 +34,53 @@ Python 3.x
 To install the requirements please navigate to the directory of the project in the terminal. Run:  
 `pip install -r requirements.txt`
 
-## Running the Code
+## Running the Code  
 
-### Prediction
-To start the project, open a terminal /command window, navigate to the src/ folder and enter : `python main.py`
-This will start the project in the prediction mode, where the saved models will output their score in the console.
+To start the project, open a terminal/command window, navigate to the src/ folder and enter: 
 
-### Training 
-Starting the project with `python main.py train` will start the project in training mode; it will save the best POS 
-weighing combinations for a list of POS grouping saved in the main.py script. (see prefix_args variable to edit this list)
+```
+python main.py [train] [devset] [reshuffled] [equal_classes_reshuffled] [baseline] 
 
-It is also possible to use the development set to train on with both options: `python main.py train devset`  
-or `python main.py devset`
+# Optional Arguments:
+
+  train                     # trains models specified in main.py. Saves 20 best weighting combinations in results directory
+  devset                    # train on development set
+  reshuffled                # use processed, reshuffled data for training and testing
+  equal_classes_reshuffled  # use processed, equally sized, reshuffled data for training and testing
+  baseline                  # output classification reports for bow and tfidf models
+
+```
+
+Running `main.py` without arguments will load our best-performing model and start sentiment class prediction on test data.   
+Output of `main.py` whithout arguments:
+* A list of ten best-performing models according to accuracy metric
+* A list of ten best-performing models according to f1metric
+* Training accuracy, testing accuracy
+* Classification report for the best-performing model  
+
 
 ### File Structure
 
-    ├── \_papers                    # scientific literature used for research
-    ├── dataset                     # the final, canonical data for modeling
-    │   ├── processed               # processed data
-    │   ├── raw                     # unprocessed data   
-    ├── model                       # trained models  
-    ├── results                     # results of feature engineering
-    ├── src                         # project source code  
-    │   ├── baseline                # implementation of the baseline model: MaxEnt Classifier with BoW snd TfIdf    
-    │   ├── features                # implementation of feature selection technique 
-    │   ├── model                   # implementation of feature engineering for MaxEnt classifier with POS  
-    │   ├── data                    # implementation of data processing functions  
-    │   ├── main.py                 # all functions necessary for training the POS model are called from here
-    └── requirements.txt            # all modules necessary to run scripts
+    ├── \_papers                                # scientific literature used for research
+    ├── dataset                                 # data used for training, development and testing
+    │   ├── processed                           # processed data
+    |   ├── processed_reshuffled                # processed data, with documents shuffled
+    |   ├── processed_equal_classes_reshuffled  # peocessed data, with equal number of docs per sentiment class, reshuffled
+    │   ├── raw                                 # unprocessed data   
+    ├── models                                  # trained models, can be loaded for prediction through main.py  
+    ├── results                                 # prediction results of trained models
+    │   ├── best                                # top 10 results
+    │   ├── all                                 # all resutls
+    │   |   ├── data_                           # trained and tested on data in dataset/processed
+    │   |   ├── data_reshuffled                 # trained and tested on data in dataset/processed_reshuffled
+    │   |   ├── data_equal_classes_reshuffled   # trained and tested on data in dataset/processed_equal_classes_reshuffled
+    ├── src                                     # project source code  
+    │   ├── baseline                            # implementation of the baseline models: MaxEnt classifier with BoW snd TfIdf    
+    │   ├── features                            # implementation of feature selection technique and Speech Vectorizer
+    │   ├── model                               # implementation of transformers and methods for training MaxEnt models
+    │   ├── data                                # implementation of methods to process raw data
+    │   ├── main.py                             # main script to train models and/or predict class labels
+    └── requirements.txt                        # modules necessary to run scripts
 
 ### Data
 
@@ -94,14 +113,75 @@ To tag the data navigate to the directory where `the runTagger.sh` is located, t
 
 ## Results
 
+**Best Bag of Words + Part of Speech Model:**    
+
+Weighting Scheme:     
+Adjectives:     4   
+Interjections:  4   
+Emoticons:      2   
+Adverbs:        1   
+All Other POS:  0
+
+Features to delete (OCFS): 35000    
+Model Weights: BOW 50%, POS 50%    
+
+
+    === Classification Report for BOW POS (Test Data) ===
+    
+        Testing Accuracy:  0.6457698447250036 
+
+                  precision  recall     f1-score     support
+
+        negative  0.68950373 0.67847882 0.68394685      2314
+         neutral  0.56036636 0.58142549 0.57070172      2315
+        positive  0.69349005 0.67816092 0.68573983      2262
+
+       micro avg  0.64576984 0.64576984 0.64576984      6891
+       macro avg  0.64778672 0.64602174 0.64679613      6891
+    weighted avg  0.64742915 0.64576984 0.64649122      6891
+
+![bow_pos 4_a4_default0_e2_r1_35000_bow_0 5_pos_0 5_0 7](https://user-images.githubusercontent.com/25862134/53637384-4b846300-3c23-11e9-8c73-c99af40c6820.png)
+
+
+
+
 **Baseline: BoW**
-![bow](https://user-images.githubusercontent.com/25862134/53578201-7913d280-3b77-11e9-9f38-65be8432d26d.png)
+
+    === Classification Report for BOW (Test Data) ===
+
+	  Testing Accuracy:  0.637498186039762 
+
+                  precision  recall     f1-score     support
+
+        negative  0.68521739 0.68107174 0.68313827      2314
+         neutral  0.55042017 0.56587473 0.55804047      2315
+        positive  0.68159204 0.66622458 0.67382070      2262
+
+       micro avg  0.63749819 0.63749819 0.63749819      6891
+       macro avg  0.63907653 0.63772368 0.63833315      6891
+    weighted avg  0.63874284 0.63749819 0.63805370      6891
+
+
+![bow](https://user-images.githubusercontent.com/25862134/53638170-bafb5200-3c25-11e9-9601-a516d04719ad.png)
+
 
 **Baseline: TfIdf**
-![tfidf](https://user-images.githubusercontent.com/25862134/53578202-7913d280-3b77-11e9-918c-f237a9706dfa.png)
 
+    === Classification Report for TFIDF (Test Data) ===
 
-**Best Result: BoW/TfIdf + PoS**
+	  Testing Accuracy:  0.6515745174865767 
+
+                  precision  recall    f1-score      support
+
+        negative  0.68898305 0.70267934 0.69576380      2314
+         neutral  0.57932264 0.56155508 0.57030050      2315
+        positive  0.68386533 0.69142352 0.68762365      2262
+
+       micro avg  0.65157452 0.65157452 0.65157452      6891
+       macro avg  0.65072367 0.65188598 0.65122932      6891
+    weighted avg  0.65046322 0.65157452 0.65094294      6891
+
+![tfidf](https://user-images.githubusercontent.com/25862134/53638236-f269fe80-3c25-11e9-982e-5e0408f1554c.png)
 
 
 ## Authors

@@ -73,14 +73,14 @@ Specifically, we use the annotated data in English from Subtask A: ”Message Po
 
 ### Data Processing
 1. The dataset consists of approximately 60 000 tweets divided into 12 files. We combined all raw data into one file `all_raw` under dataset/raw. 
-2. Data Cleaning
-    2.1 Usernames are replaced by token @GENERICUSER
-    2.2 Emails are replaced by token EMAIL@GENERIC.COM
-    2.3 URLs are replaced by http://genericurl.com
-    2.4 Numbers are replaced by GENERICNUMBER
-    2.5 Letters that are repeated more than 2 times within a word (e.g. "paaaaarty") are removed
-    2.6 Quotes, tabs, other unwanted characters are removed
-    2.7 HTML tags are removed
+2. Data Cleaning  
+    * Usernames are replaced by token @GENERICUSER  
+    * Emails are replaced by token EMAIL@GENERIC.COM   
+    * URLs are replaced by http://genericurl.com   
+    * Numbers are replaced by GENERICNUMBER   
+    * Letters that are repeated more than 2 times within a word (e.g. "paaaaarty") are removed   
+    * Quotes, tabs, other unwanted characters are removed   
+    * HTML tags are removed
 3. ARK Tagger is used for tagging sentences with Part-of-Speech categories. The Tagger is optimized for Twitter data.
 
 Olutobi Owoputi, Brendan O’Connor, Chris Dyer, Kevin Gimpel, Nathan Schneider, and Noah A. Smith. Improved Part-of-Speech Tagging for Online Conversational Text with Word Clusters. In _Proceedings of the 2013 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies_, pages 380–390. Association for Computational Linguistics, 2013. URL http://aclweb.org/anthology/N13-1039.

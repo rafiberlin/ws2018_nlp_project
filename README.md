@@ -41,14 +41,14 @@ To install the requirements please navigate to the directory of the project in t
 To start the project, open a terminal/command window, navigate to the src/ folder and enter: 
 
 ```
-python main.py [train] [devset] [reshuffled] [equal_classes_reshuffled] [baseline] 
+python main.py [train] [devset] [reshuffled] [no_shuffle] [baseline] 
 
 # Optional Arguments:
 
   train                     # trains models specified in main.py. Saves 20 best weighting combinations in results directory
   devset                    # train on development set
   reshuffled                # use processed, reshuffled data for training and testing
-  equal_classes_reshuffled  # use processed, equally sized, reshuffled data for training and testing
+  no_shuffle		    # use processed, equally sized, reshuffled data for training and testing
   baseline                  # output classification reports for bow and tfidf models
 
 ```
@@ -58,8 +58,8 @@ Output of `main.py` without arguments:
 * A list of ten best-performing models according to accuracy metric
 * A list of ten best-performing models according to F1 metric
 * Training accuracy, testing accuracy
-* Classification report for the best-performing model  
-
+* Classification report for the best-performing model    
+By default data from equally sized shuffled data from processed/equal_classes_reshuffled directory is used. 
 
 ### File Structure
 

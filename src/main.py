@@ -432,10 +432,11 @@ def main(argv):
 
             model_arg = [train_docs, train_labels]
             model_arg.extend(arg)
-            if results_path_suffix:
-                results_path_suffix = "_" + results_path_suffix
 
-            serialized_model = os.path.join(model_path, prefix + results_path_suffix + model_extension)
+            if results_path_suffix:
+                serialized_model = os.path.join(model_path, prefix + "_" + results_path_suffix + model_extension)
+            else:
+                serialized_model = os.path.join(model_path, prefix + model_extension)
 
             union_weights = arg[2]
             union_weight_suffix = ""

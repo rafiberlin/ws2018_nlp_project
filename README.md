@@ -118,7 +118,16 @@ To tag the data navigate to the directory where `the runTagger.sh` is located, t
 
 ## Results
 
-**Best Bag of Words + Part of Speech Model:**    
+### Findings: 
+Adding POS categories as features does improve the performance of a Bag-of-Words classifier.   
+However, TFIDF classifier scores overall the highest.
+
+|          | BOW    | TFIDF  | BOW+POS | TFIDF+POS | BOW+TFIDF+POS |
+|----------|--------|--------|-------|-----------|---------------|
+| Accuracy | 0.6374 | 0.6515 | 0.6457  | 0.6425    | 0.6440        |
+| F1 macro | 0.6383 | **0.6512** | *0.6467*  | 0.6428    | 0.6448        |
+
+**Best Bag of Words + Part-of-Speech Model:**    
 
 Weighting Scheme:     
 Adjectives:     4   

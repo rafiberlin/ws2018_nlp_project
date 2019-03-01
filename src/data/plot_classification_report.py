@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 
-def show_values(pc, fmt="%.5f", **kw):
+def show_values(pc, fmt="%.4f", **kw):
     """
     Shows corresponding values of cells inside the cell on the heatmap
     :param pc: the plot
@@ -104,25 +104,22 @@ def plot_classification_report(classification_report, name_of_model, cmap='RdBu'
     :param cmap: color scheme for the hear map
     """
 
-    title = 'Classification report ' + name_of_model
+    title = 'Classification Report for ' + name_of_model
     lines = classification_report.split('\n')
 
     classes = []
     plotMat = []
     support = []
     class_names = []
-    for line in lines[2: (len(lines) - 2)]:
+    for line in lines[2: (len(lines) - 1)]:
         t = line.strip().split()
         if len(t) < 2: continue
         classes.append(t[0])
         v = [float(x) for x in t[1: len(t) - 1]]
         support.append(int(t[-1]))
         class_names.append(t[0])
-        print(v)
         plotMat.append(v)
 
-    print('plotMat: {0}'.format(plotMat))
-    print('support: {0}'.format(support))
 
     xlabel = 'Metrics'
     ylabel = 'Classes'
@@ -142,8 +139,11 @@ def create_classification_report_plot(report, results_folder, name_of_model):
     :param results_folder: name of folder where results for report are stored
     :param name_of_model: name of parameters of the model, same scheme as names of .txt files in "results" folders
     """
-    report = report.partition('micro avg')[0]
-    print('results folder', results_folder)
+
+    report = report.replace('micro avg', 'micro_avg')
+    report = report.replace('macro avg', 'macro_avg')
+    report = report.replace('weighted avg', 'weighted_avg')
+    #report = report.partition('micro avg')[0]
 
     save_path = os.path.join(Path(__file__).parents[2].__str__(), results_folder, '{}.png'.format(name_of_model))
     plot_classification_report(report, name_of_model)

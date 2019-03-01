@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 
 
-def show_values(pc, fmt="%.2f", **kw):
+def show_values(pc, fmt="%.5f", **kw):
     """
     Shows corresponding values of cells inside the cell on the heatmap
     :param pc: the plot
@@ -146,7 +146,6 @@ def create_classification_report_plot(report, results_folder, name_of_model):
     print('results folder', results_folder)
 
     save_path = os.path.join(Path(__file__).parents[2].__str__(), results_folder, '{}.png'.format(name_of_model))
-    print('save path', save_path)
     plot_classification_report(report, name_of_model)
     plt.savefig(save_path, dpi=200, format='png', bbox_inches='tight')
     plt.close()

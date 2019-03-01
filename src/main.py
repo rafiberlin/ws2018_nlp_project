@@ -276,7 +276,7 @@ def main(argv):
     The default behavior is to start the prediction of the saved models
     :param argv: list of command line arguments.
                 Possible arguments which might be combined together:
-                 train, devset, reshuffled, equal_classes_reshuffled, baseline
+                 train, devset, reshuffled, no_shuffle, baseline
     :return:
     """
 
@@ -298,13 +298,13 @@ def main(argv):
     if "devset" in argv:
         use_devset = True
 
-    results_path_suffix = ""
+    results_path_suffix = "equal_classes_reshuffled"
 
     if "reshuffled" in argv:
-        results_path_suffix += "reshuffled"
+        results_path_suffix = "reshuffled"
 
-    if "equal_classes_reshuffled" in argv:
-        results_path_suffix = "equal_classes_reshuffled"
+    if "no_shuffle" in argv:
+        results_path_suffix = ""
 
     if "baseline" in argv:
         baseline(results_path_suffix)
@@ -320,6 +320,7 @@ def main(argv):
     results_root = os.path.join("results", "all")
     results_folder = os.path.join(results_root, results_folder)
     data_set_path = os.path.join(parent_dir, os.path.join("dataset", processed_folder))
+    print("\nWorking with the following dataset folder: ", data_set_path)
     model_path = os.path.join(parent_dir, "model")
     results_path = os.path.join(parent_dir, results_folder)
 
@@ -383,15 +384,32 @@ def main(argv):
     else:
 
         print("\nStarting prediction")
-        predict_args = [
+        predict_args = []
 
-            # best accuracy for /dataset/processed
-            [{'R': 2, 'V': 4, 'A': 3, 'N': 1}, 29500, {'bow': 0.3, 'pos': 0.7, }],
-            # best f1 score for /dataset/processed
-            [{'V': 5, 'A': 2, 'R': 1, 'N': 1}, 0, {'bow': 0.8, 'pos': 0.2, }],
-
-        ]
-
+        if results_path_suffix == "equal_classes_reshuffled":
+            # removed some results with deletion 40000 => identical to 35000
+            predict_args = [
+                [{'R': 1, 'E': 2, 'A': 4, '!': 4}, 35000, {'bow': 0.5, 'pos': 0.5, }],
+                [{'E+!': 1}, 35000, {'bow': 0.5, 'pos': 0.5, }],
+                [{'E': 1}, 30000, {'bow': 0.5, 'pos': 0.5, }],
+                [{'E+!': 1}, 35000, {'bow': 0.3, 'pos': 0.6, 'tfidf': 0.1}],
+                [{'R': 3, 'A': 5, 'V': 2, 'N': 2}, 30000, {'bow': 0.5, 'pos': 0.5, }],
+                [{'E+!': 1}, 30000, {'bow': 0.5, 'pos': 0.5, }],
+                [{'R': 1, 'A': 2, 'V': 1, 'N': 5}, 30000, {'bow': 0.3, 'pos': 0.7, }],
+                [{'E+!': 1}, 35000, {'bow': 0.5, 'pos': 0.4, 'tfidf': 0.1}],
+            ]
+        elif results_path_suffix == "reshuffled":
+            predict_args = [
+                [{'R': 4, 'V': 3, 'A': 5, 'N': 1}, 30000, {'bow': 0.3, 'pos': 0.7, }],
+                [{'E': 4, 'A': 4, 'R': 2, 'V': 2, 'N': 1}, 30000, {'bow': 0.3, 'pos': 0.7, }],
+                [{'R': 2, 'V': 5, 'A': 1, 'N': 5}, 0, {'bow': 0.8, 'pos': 0.2, }],
+                [{'R': 2, 'V': 5, 'A': 1, 'N': 5}, 25000, {'bow': 0.8, 'pos': 0.2, }],
+            ]
+        else:  # /dataset/processed
+            predict_args = [
+                [{'R': 2, 'V': 4, 'A': 3, 'N': 1}, 29500, {'bow': 0.3, 'pos': 0.7, }],
+                [{'V': 5, 'A': 2, 'R': 1, 'N': 1}, 0, {'bow': 0.8, 'pos': 0.2, }],
+            ]
         for arg in predict_args:
             pos_vocabulary = arg[0]
             pos_group = get_pos_groups_from_vocab(pos_vocabulary)

@@ -56,6 +56,7 @@ def main(dataset_folder_suffix=None):
 
     parent_dir = Path(__file__).parents[2].__str__()
     path = os.path.join(parent_dir, 'dataset', processed_folder)
+    print("\nWorking with following dataset folder: ", path)
     tagged_sentences = os.path.join(path, 'text_cleaned_pos.csv')
     label_file = os.path.join(path, 'shuffled.csv')
     docs, tags = get_tagged_sentences(path, tagged_sentences)

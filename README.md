@@ -106,7 +106,7 @@ Specifically, we use the annotated data in English from Subtask A: ”Message Po
     * HTML tags are removed
 3. ARK Tagger is used for tagging sentences with Part-of-Speech categories. The Tagger is optimized for Twitter data.
 
-Remark: One of our approach consisted in removing the class distribution imbalance. This resulted in an overall smaller dataset of nearly 40000 documents.
+Remark: One of our approach consisted in removing the class distribution imbalance. This resulted in an overall smaller dataset of nearly 35000 documents.
 
 Olutobi Owoputi, Brendan O’Connor, Chris Dyer, Kevin Gimpel, Nathan Schneider, and Noah A. Smith. Improved Part-of-Speech Tagging for Online Conversational Text with Word Clusters. In _Proceedings of the 2013 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies_, pages 380–390. Association for Computational Linguistics, 2013. URL http://aclweb.org/anthology/N13-1039.
 

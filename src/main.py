@@ -322,16 +322,12 @@ def main(argv):
     labels = os.path.join(data_set_path, 'shuffled.csv')
 
     start_range = 0
-    end_range = None  # Set to None to get the whole set...
+    end_range = None  # Set to None to get the whole set
 
     tagged_sentences = get_tagged_sentences(data_set_path, tagged_sentences, start_range=start_range,
                                             end_range=end_range, split_pos=False)
 
     all_labels = get_labels(labels, start_range=start_range, end_range=end_range)
-    # pos_groups = {"V": ["V"], "A": ["A"], "N": ["N"], "R": ["R"]}
-    # weighing_scale = 5
-    # feature_to_delete = 23000
-    # union_weights = {'bow': 0.3, 'pos': 0.7, }
     training_percent = 0.7
     test_percent = 0.2
     split_job = True
@@ -433,30 +429,28 @@ def main(argv):
 
             predicted = model.predict(test_docs)
 
+            training_accuracy = model.score(train_docs, train_labels)
+            testing_accuracy = model.score(test_docs, test_labels)
+            f1 = f1_score(test_labels, predicted, average=None,
+                          labels=['neutral', 'positive', 'negative'])
+            f1_macro = f1_score(test_labels, predicted, average="macro",
+                                labels=['neutral', 'positive', 'negative'])
+            print("\nModel: " + prefix, "\nTraining accuracy", training_accuracy, "\nTesting accuracy",
+                  testing_accuracy,
+                  "\nTesting F1 (neutral, positive, negative)",
+                  f1,
+                  "\nTesting F1 (macro)",
+                  f1_macro, )
+
             print(
-                '================================\n\nClassification Report for'
+                '\n\n=== Classification Report for'
                 + union_weight_suffix.upper()
-                + ' (Test Data)\n')
+                + ' (Test Data) ===\n')
             report = classification_report(test_labels, predicted, digits=report_precision)
             print(report)
             create_classification_report_plot(report, results_folder, 'BOW_POS {}'.format(prefix))
 
-            # training_accuracy = model.score(train_docs, train_labels)
-            # testing_accuracy = model.score(test_docs, test_labels)
-            # f1 = f1_score(test_labels, predicted, average=None,
-            #               labels=['neutral', 'positive', 'negative'])
-            # f1_macro = f1_score(test_labels, predicted, average="macro",
-            #                     labels=['neutral', 'positive', 'negative'])
-            # print("\nModel: " + prefix, "\nTraining accuracy", training_accuracy, "\nTesting accuracy",
-            #       testing_accuracy,
-            #       "\nTesting F1 (neutral, positive, negative)",
-            #       f1,
-            #       "\nTesting F1 (macro)",
-            #       f1_macro, )
-
-            # print_report(model, test_docs, test_labels, union_weight_suffix.upper(),
-            #              report_precision)
-
+            # For more detailed examination of wrong prediction uncomment the next line
             # print_wrong_predictions(test_docs, predicted, test_labels, number_wrong_predictions_to_print)
         print("\nEnding prediction")
 

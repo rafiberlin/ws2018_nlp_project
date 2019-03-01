@@ -74,6 +74,7 @@ Output of `main.py` whithout arguments:
     │   |   ├── data_                           # trained and tested on data in dataset/processed
     │   |   ├── data_reshuffled                 # trained and tested on data in dataset/processed_reshuffled
     │   |   ├── data_equal_classes_reshuffled   # trained and tested on data in dataset/processed_equal_classes_reshuffled
+    │   ├── visualization                       # heat maps of baseline and bow+pos results
     ├── src                                     # project source code  
     │   ├── baseline                            # implementation of baseline models: MaxEnt classifier with BoW and TfIdf    
     │   ├── features                            # implementation of feature selection technique and Speech Vectorizer

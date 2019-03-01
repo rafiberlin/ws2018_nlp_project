@@ -113,12 +113,9 @@ To tag the data navigate to the directory where `the runTagger.sh` is located, t
 
 ## Results
 
-Bag of Words:
+**Bag of Words + Part of Speech:**    
 
-TfIdf:
-
-Bag of Words + Part of Speech: 
-** Weighting Scheme: **   
+Weighting Scheme:     
 Adjectives:     4   
 Interjections:  4   
 Emoticons:      2   
@@ -130,6 +127,8 @@ Model Weights: BOW 50%, POS 50%
 
 
     === Classification Report for BOW POS (Test Data) ===
+    
+        Testing Accuracy:  0.6457698447250036 
 
                   precision  recall     f1-score     support
 

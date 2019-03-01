@@ -389,15 +389,20 @@ def main(argv):
         if results_path_suffix == "equal_classes_reshuffled":
 
             predict_args = [
+
+                # outputs classification reports for three best scoring models
                 [{'R': 1, 'E': 2, 'A': 4, '!': 4}, 35000, {'bow': 0.5, 'pos': 0.5, }],
                 [{'E+!': 1}, 35000, {'bow': 0.5, 'pos': 0.5, }],
                 [{'E': 1}, 30000, {'bow': 0.5, 'pos': 0.5, }],
-                [{'E+!': 1}, 35000, {'bow': 0.3, 'pos': 0.6, 'tfidf': 0.1}],
-                [{'R': 3, 'A': 5, 'V': 2, 'N': 2}, 30000, {'bow': 0.5, 'pos': 0.5, }],
-                [{'E+!': 1}, 30000, {'bow': 0.5, 'pos': 0.5, }],
-                [{'R': 1, 'A': 2, 'V': 1, 'N': 5}, 30000, {'bow': 0.3, 'pos': 0.7, }],
-                [{'E+!': 1}, 30000, {'bow': 0.5, 'pos': 0.4, 'tfidf': 0.1}],
-                [{'V': 5, 'A': 5, 'N': 1, 'R': 3}, 30000, {'bow': 0.3, 'pos': 0.7, }]
+
+                # to output classification reports for further 7 models, please uncomment the following lines
+                # [{'E+!': 1}, 35000, {'bow': 0.3, 'pos': 0.6, 'tfidf': 0.1}],
+                # [{'R': 3, 'A': 5, 'V': 2, 'N': 2}, 30000, {'bow': 0.5, 'pos': 0.5, }],
+                # [{'E+!': 1}, 30000, {'bow': 0.5, 'pos': 0.5, }],
+                # [{'R': 1, 'A': 2, 'V': 1, 'N': 5}, 30000, {'bow': 0.3, 'pos': 0.7, }],
+                # [{'E+!': 1}, 30000, {'bow': 0.5, 'pos': 0.4, 'tfidf': 0.1}],
+                # [{'V': 5, 'A': 5, 'N': 1, 'R': 3}, 30000, {'bow': 0.3, 'pos': 0.7, }]
+                # [{'E+!': 1, 'DEFAULT': 0}, 30000, {'bow': 0.5, 'pos': 0.4, 'tfidf': 0.1}]
             ]
         elif results_path_suffix == "reshuffled":
             predict_args = [

@@ -52,9 +52,9 @@ python main.py [train] [devset] [reshuffled] [equal_classes_reshuffled] [baselin
 ```
 
 Running `main.py` without arguments will load our best-performing model and start sentiment class prediction on test data.   
-Output of `main.py` whithout arguments:
+Output of `main.py` without arguments:
 * A list of ten best-performing models according to accuracy metric
-* A list of ten best-performing models according to f1metric
+* A list of ten best-performing models according to F1 metric
 * Training accuracy, testing accuracy
 * Classification report for the best-performing model  
 
@@ -77,7 +77,7 @@ Output of `main.py` whithout arguments:
     │   ├── visualization                       # heat maps of baseline and bow+pos results
     ├── src                                     # project source code  
     │   ├── baseline                            # implementation of baseline models: MaxEnt classifier with BoW and TfIdf    
-    │   ├── features                            # implementation of feature selection technique and Speech Vectorizer
+    │   ├── features                            # implementation of feature selection technique and POS Vectorizer
     │   ├── model                               # implementation of transformers and methods for training MaxEnt models
     │   ├── data                                # implementation of methods to process raw data
     │   ├── main.py                             # main script to train models and/or predict class labels

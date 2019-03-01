@@ -1,4 +1,4 @@
-# Sentiment Analysis in Twitter Context: <br/> Incorporating Part-of-Speech Tags as Features into a MaxEnt Classifier
+# Sentiment Analysis in Twitter Context: <br/> Incorporating Part-of-Speech Tags as Features <br/> into a MaxEnt Classifier
 
 The project investigates whether including Part-of-Speech (POS) information can help improve Sentiment Analysis of Twitter data. We attempt to maximize the performance of a Maximum Entropy (MaxEnt) Classifier that categorises tweets into three categories with regards to their sentiment: positive, negative and neutral.
 
@@ -74,6 +74,7 @@ Specifically, we use the annotated data in English from Subtask A: ”Message Po
 ### Data Processing
 1. The dataset consists of approximately 60 000 tweets divided into 12 files. We combined all raw data into one file `all_raw` under dataset/raw. 
 2. Data Cleaning  
+    * Fixed unicode encoding issue
     * Usernames are replaced by token @GENERICUSER  
     * Emails are replaced by token EMAIL@GENERIC.COM   
     * URLs are replaced by http://genericurl.com   

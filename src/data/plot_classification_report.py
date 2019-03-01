@@ -116,7 +116,7 @@ def plot_classification_report(classification_report, name_of_model, cmap='RdBu'
         last_index = 2
 
     for line in lines[2: (len(lines) - last_index)]:
-    #for line in lines[2: (len(lines) - 1)]:
+
         t = line.strip().split()
         if len(t) < 2: continue
         classes.append(t[0])
@@ -141,7 +141,6 @@ def create_classification_report_plot(report, name_of_model):
     """
     Given a classification report, create a heat map for precision, recall and f1 score for each sentiment label
     :param report: classification report for a model as returned by sklearn.metrics.classification_report
-    :param results_folder: name of folder where results for report are stored
     :param name_of_model: name of parameters of the model, same scheme as names of .txt files in "results" folders
     """
 

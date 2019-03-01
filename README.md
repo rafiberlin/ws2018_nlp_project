@@ -34,18 +34,30 @@ Python 3.x
 To install the requirements please navigate to the directory of the project in the terminal. Run:  
 `pip install -r requirements.txt`
 
-## Running the Code
+## Running the Code  
 
-### Prediction
-To start the project, open a terminal /command window, navigate to the src/ folder and enter : `python main.py`
-This will start the project in the prediction mode, where the saved models will output their score in the console.
+To start the project, open a terminal/command window, navigate to the src/ folder and enter: 
 
-### Training 
-Starting the project with `python main.py train` will start the project in training mode; it will save the best POS 
-weighing combinations for a list of POS grouping saved in the main.py script. (see prefix_args variable to edit this list)
+```
+python main.py [train] [devset] [reshuffled] [equal_classes_reshuffled] [baseline] 
 
-It is also possible to use the development set to train on with both options: `python main.py train devset`  
-or `python main.py devset`
+# Optional Arguments:
+
+  train                     # trains models specified in main.py. Saves 20 best weighting combinations in results directory
+  devset                    # train on development set
+  reshuffled                # use processed, reshuffled data for training and testing
+  equal_classes_reshuffled  # use processed, equally sized, reshuffled data for training and testing
+  baseline                  # output classification reports for bow and tfidf models
+
+```
+
+Running `main.py` without arguments will load our best-performing model and start sentiment class prediction on test data.   
+Output of `main.py` whithout arguments:
+* A list of ten best-performing models according to accuracy metric
+* A list of ten best-performing models according to f1metric
+* Training accuracy, testing accuracy
+* Classification report for the best-performing model  
+
 
 ### File Structure
 
@@ -56,7 +68,7 @@ or `python main.py devset`
     |   ├── processed_equal_classes_reshuffled  # peocessed data, with equal number of docs per sentiment class, reshuffled
     │   ├── raw                                 # unprocessed data   
     ├── models                                  # trained models, can be loaded for prediction through main.py  
-    ├── results                                 # results of feature engineering
+    ├── results                                 # prediction results of trained models
     │   ├── best                                # top 10 results
     │   ├── all                                 # all resutls
     │   |   ├── data_                           # trained and tested on data in dataset/processed
@@ -64,9 +76,9 @@ or `python main.py devset`
     │   |   ├── data_equal_classes_reshuffled   # trained and tested on data in dataset/processed_equal_classes_reshuffled
     ├── src                                     # project source code  
     │   ├── baseline                            # implementation of the baseline models: MaxEnt classifier with BoW snd TfIdf    
-    │   ├── features                            # implementation of feature selection technique
-    │   ├── model                               # implementation of feature engineering for MaxEnt classifier with POS  
-    │   ├── data                                # implementation of data processing functions  
+    │   ├── features                            # implementation of feature selection technique and Speech Vectorizer
+    │   ├── model                               # implementation of transformers and methods for training MaxEnt models
+    │   ├── data                                # implementation of methods to process raw data
     │   ├── main.py                             # main script to train models and/or predict class labels
     └── requirements.txt                        # modules necessary to run scripts
 

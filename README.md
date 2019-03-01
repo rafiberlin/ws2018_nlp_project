@@ -67,7 +67,7 @@ By default data from equally sized shuffled data from processed/equal_classes_re
     ├── dataset                                 # data used for training, development and testing
     │   ├── processed                           # processed data
     |   ├── processed_reshuffled                # processed data, with documents shuffled
-    |   ├── processed_equal_classes_reshuffled  # peocessed data, with equal number of docs per sentiment class, reshuffled
+    |   ├── processed_equal_classes_reshuffled  # processed data, with equal number of docs per sentiment class, reshuffled
     │   ├── raw                                 # unprocessed data   
     ├── models                                  # trained models, can be loaded for prediction through main.py  
     ├── results                                 # prediction results of trained models

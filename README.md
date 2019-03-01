@@ -106,7 +106,7 @@ Remark: To balance. This resulted in an overall smaller dataset of nearly 40000 
     * Letters that are repeated more than 2 times within a word (e.g. "paaaaarty") are removed   
     * Quotes, tabs, other unwanted characters are removed   
     * HTML tags are removed
-3. The initial data distribution among the three classes was unequal. We have removed some documents to achieve equal amounts of training data for each class. This resulted in a smaller dataset of ca. 40000 documents.  
+3. The initial data distribution among the three classes was unequal. We have removed some documents to achieve equal amounts of training data for each class. This resulted in a smaller dataset of ca. 35000 documents.  
 
 Processed data without shuffling the order of files and without balancing the amounts of training data per class is stored under dataset/processed.   
 Processed shuffled data without balancing the training data is stored under processed_reshuffled.  

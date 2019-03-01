@@ -93,6 +93,12 @@ Sara Rosenthal, Noura Farra, and Preslav Nakov. SemEval-2017 task 4: Sentiment a
 
 Specifically, we use the annotated data in English from Subtask A: ”Message Polarity Classification”, which consists of tweets labelled as ”positive”, ”negative” and ”neutral”.
 
+The initial data distribution among the three classes was unequal. We have removed some documents to achieve equal amounts of training data for each class. This resulted in a smaller dataset of ca. 35000 documents.  
+
+Processed data without shuffling the order of files and without balancing the amounts of training data per class is stored under dataset/processed.   
+Processed shuffled data without balancing the training data is stored under processed_reshuffled.  
+Processed data with balanced training shuffled data is stored under processed_equal_classes_reshuffled.   
+
 ### Data Processing
 1. The dataset consists of approximately 60 000 tweets divided into 12 files. We combined all raw data into one file `all_raw` under dataset/raw. 
 2. Data Cleaning  
@@ -104,14 +110,15 @@ Specifically, we use the annotated data in English from Subtask A: ”Message Po
     * Letters that are repeated more than 2 times within a word (e.g. "paaaaarty") are removed   
     * Quotes, tabs, other unwanted characters are removed   
     * HTML tags are removed
-3. ARK Tagger is used for tagging sentences with Part-of-Speech categories. The Tagger is optimized for Twitter data.
 
-Remark: One of our approach consisted in removing the class distribution imbalance. This resulted in an overall smaller dataset of nearly 40000 documents.
+3. ARK Tagger was used for tagging sentences with Part-of-Speech categories. The Tagger is optimized for Twitter data.
 
+Paper on ARK Tagger:  
 Olutobi Owoputi, Brendan O’Connor, Chris Dyer, Kevin Gimpel, Nathan Schneider, and Noah A. Smith. Improved Part-of-Speech Tagging for Online Conversational Text with Word Clusters. In _Proceedings of the 2013 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies_, pages 380–390. Association for Computational Linguistics, 2013. URL http://aclweb.org/anthology/N13-1039.
 
+The Tagger can be downloaded [here](http://www.cs.cmu.edu/~ark/TweetNLP/#pos_down). 
 
-To tag the data navigate to the directory where `the runTagger.sh` is located, then run the following command in the terminal:
+In order to tag sentences, we ran the following command from the root folder of the tagger directory: 
 
 `./runTagger.sh --output-format conll <name-of-file-to-tag>`
 

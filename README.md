@@ -24,6 +24,8 @@ Chris Nicholls and Fei Song. *Improving Sentiment Analysis with Part-of-Speech W
 We implement a Feature Selection Technique from:   
 Jun Yan, Ning Liu, Benyu Zhang, Shuicheng Yan, Zheng Chen, Qiansheng Cheng, Weiguo Fan, and Wei-Ying Ma. OCFS: Optimal Orthogonal Centroid Feature Selection for Text Categorization. In *28th Annual International ACM SIGIR Conference on Research and Development in Information Retrieval*, pages 122–129. Association for Computing Machinery, Inc., January 2005.
 
+The idea of merging POS categories together for calculation came from: 
+Rui Xia and Chengqing Zong. A POS-based Ensemble Model for Cross-domain Sentiment Classification. In *Proceedings of 5th International Joint Conference on Natural Language Processing* page 616. Asian Federation of Natural Language Processing, in 2011
 
 ## Getting Started
 
@@ -103,6 +105,8 @@ Specifically, we use the annotated data in English from Subtask A: ”Message Po
     * Quotes, tabs, other unwanted characters are removed   
     * HTML tags are removed
 3. ARK Tagger is used for tagging sentences with Part-of-Speech categories. The Tagger is optimized for Twitter data.
+
+Remark: One of our approach consisted in removing the class distribution imbalance. This resulted in an overall smaller dataset of nearly 40000 documents.
 
 Olutobi Owoputi, Brendan O’Connor, Chris Dyer, Kevin Gimpel, Nathan Schneider, and Noah A. Smith. Improved Part-of-Speech Tagging for Online Conversational Text with Word Clusters. In _Proceedings of the 2013 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies_, pages 380–390. Association for Computational Linguistics, 2013. URL http://aclweb.org/anthology/N13-1039.
 

@@ -187,7 +187,7 @@ def print_wrong_predictions(docs, prediction, gold_labels, number):
     _print_predictions(idx_neutral, "neutral")
 
 
-def print_best_combination(result, number_to_print=3):
+def print_best_combination(result, number_to_print=10):
     """
     Automatically parses all result files saved in the results folder and print the best 3 results (accuracy, F1 score)
     :param result: results folder
@@ -204,8 +204,10 @@ def print_best_combination(result, number_to_print=3):
             if ".txt" in file:
                 try:
                     fp = open(os.path.join(main_folder, file))
-                    first_line = [ast.literal_eval(line) for line in fp.readlines()][0][1]
-                    best.append((file, first_line,))
+                    first_line = [ast.literal_eval(line) for line in fp.readlines()][0]
+                    first_combination = first_line[0]
+                    first_scores = first_line[1]
+                    best.append((file, first_combination, first_scores,))
                 finally:
                     fp.close()
 
@@ -213,8 +215,8 @@ def print_best_combination(result, number_to_print=3):
     merge_f1 = []
     merge_accuracy.extend(best)
     merge_f1.extend(best)
-    merge_f1.sort(reverse=True, key=lambda tup: tup[1][2])
-    merge_accuracy.sort(reverse=True, key=lambda tup: tup[1][1])
+    merge_f1.sort(reverse=True, key=lambda tup: tup[2][2])
+    merge_accuracy.sort(reverse=True, key=lambda tup: tup[2][1])
 
     count = 0
     print_acc = []

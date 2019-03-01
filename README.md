@@ -113,14 +113,76 @@ To tag the data navigate to the directory where `the runTagger.sh` is located, t
 
 ## Results
 
+Bag of Words:
+
+TfIdf:
+
+Bag of Words + Part of Speech: 
+** Weighting Scheme: **   
+Adjectives:     4   
+Interjections:  4   
+Emoticons:      2   
+Adverbs:        1   
+All Other POS:  0
+
+Features to delete (OCFS): 35000    
+Model Weights: BOW 50%, POS 50%    
+
+
+    === Classification Report for BOW POS (Test Data) ===
+
+                  precision  recall     f1-score     support
+
+        negative  0.68950373 0.67847882 0.68394685      2314
+         neutral  0.56036636 0.58142549 0.57070172      2315
+        positive  0.69349005 0.67816092 0.68573983      2262
+
+       micro avg  0.64576984 0.64576984 0.64576984      6891
+       macro avg  0.64778672 0.64602174 0.64679613      6891
+    weighted avg  0.64742915 0.64576984 0.64649122      6891
+
+![bow_pos 4_a4_default0_e2_r1_35000_bow_0 5_pos_0 5_0 7](https://user-images.githubusercontent.com/25862134/53637384-4b846300-3c23-11e9-8c73-c99af40c6820.png)
+
+
+
+
 **Baseline: BoW**
-![bow](https://user-images.githubusercontent.com/25862134/53578201-7913d280-3b77-11e9-9f38-65be8432d26d.png)
+
+    === Classification Report for BOW (Test Data) ===
+
+	  Testing Accuracy:  0.637498186039762 
+
+                  precision  recall     f1-score     support
+
+        negative  0.68521739 0.68107174 0.68313827      2314
+         neutral  0.55042017 0.56587473 0.55804047      2315
+        positive  0.68159204 0.66622458 0.67382070      2262
+
+       micro avg  0.63749819 0.63749819 0.63749819      6891
+       macro avg  0.63907653 0.63772368 0.63833315      6891
+    weighted avg  0.63874284 0.63749819 0.63805370      6891
+
+
+![bow](https://user-images.githubusercontent.com/25862134/53638170-bafb5200-3c25-11e9-9601-a516d04719ad.png)
+
 
 **Baseline: TfIdf**
-![tfidf](https://user-images.githubusercontent.com/25862134/53578202-7913d280-3b77-11e9-918c-f237a9706dfa.png)
 
+    === Classification Report for TFIDF (Test Data) ===
 
-**Best Result: BoW/TfIdf + PoS**
+	  Testing Accuracy:  0.6515745174865767 
+
+                  precision  recall    f1-score      support
+
+        negative  0.68898305 0.70267934 0.69576380      2314
+         neutral  0.57932264 0.56155508 0.57030050      2315
+        positive  0.68386533 0.69142352 0.68762365      2262
+
+       micro avg  0.65157452 0.65157452 0.65157452      6891
+       macro avg  0.65072367 0.65188598 0.65122932      6891
+    weighted avg  0.65046322 0.65157452 0.65094294      6891
+
+![tfidf](https://user-images.githubusercontent.com/25862134/53638236-f269fe80-3c25-11e9-982e-5e0408f1554c.png)
 
 
 ## Authors

@@ -274,7 +274,9 @@ def main(argv):
     """
     Main entry point. If the argument "train" is entered on the command line, it will start the training.
     The default behavior is to start the prediction of the saved models
-    :param argv: list of command line arguments. Possible arguments which might be combined together: train, devset, reshuffled, no_class_skew, baseline
+    :param argv: list of command line arguments.
+                Possible arguments which might be combined together:
+                 train, devset, reshuffled, equal_classes_reshuffled, baseline
     :return:
     """
 
@@ -299,10 +301,10 @@ def main(argv):
     results_path_suffix = ""
 
     if "reshuffled" in argv:
-        results_path_suffix = "reshuffled"
+        results_path_suffix += "reshuffled"
 
-    if "no_class_skew" in argv:
-        results_path_suffix = "no_class_skew"
+    if "equal_classes_reshuffled" in argv:
+        results_path_suffix = "equal_classes_reshuffled"
 
     if "baseline" in argv:
         baseline(results_path_suffix)
@@ -311,11 +313,12 @@ def main(argv):
     # End Handle command line arguments
 
     processed_folder = "processed"
-    results_folder = "results"
+    results_folder = "data"
     if results_path_suffix:
         processed_folder += "_" + results_path_suffix
         results_folder += "_" + results_path_suffix
-
+    results_root = os.path.join("results", "all")
+    results_folder = os.path.join(results_root, results_folder)
     data_set_path = os.path.join(parent_dir, os.path.join("dataset", processed_folder))
     model_path = os.path.join(parent_dir, "model")
     results_path = os.path.join(parent_dir, results_folder)
@@ -359,6 +362,9 @@ def main(argv):
             # [{"V": ["V"], "A+E": ["A", "E"], "N": ["N"], "R": ["R"]}, 5, 0, {'bow': 0.7, 'pos': 0.3, },
             #  training_percent,
             #  test_percent],
+
+            # One example with a short computing time.
+            [{"A+E": ["A", "E"]}, 1, 0, {'bow': 0.7, 'pos': 0.3, }, training_percent, test_percent],
 
         ]
 

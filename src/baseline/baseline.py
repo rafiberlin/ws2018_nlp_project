@@ -46,7 +46,7 @@ def main(dataset_folder_suffix=None):
     """
     Run the baseline and output results in the console (Accuracy + Macro F1 score for BOW and TFIDF)
     Used to show baseline numbers for the presentation.
-    :param dataset_folder_suffix: optional, the suffix for the processed folder. Possible values "no_class_skew", "reshuffled"
+    :param dataset_folder_suffix: optional, the suffix for the processed folder. Possible values "equal_classes_reshuffled", "reshuffled"
     :return: nothing, only print statements
     """
 
@@ -54,7 +54,7 @@ def main(dataset_folder_suffix=None):
     if dataset_folder_suffix:
         processed_folder += "_" + dataset_folder_suffix
 
-    parent_dir = Path(__file__).parents[2]
+    parent_dir = Path(__file__).parents[2].__str__()
     path = os.path.join(parent_dir, 'dataset', processed_folder)
     tagged_sentences = os.path.join(path, 'text_cleaned_pos.csv')
     label_file = os.path.join(path, 'shuffled.csv')
@@ -114,7 +114,6 @@ def main(dataset_folder_suffix=None):
     print_report(bow_classifier, bow_test, test_labels, "BOW", report_precision)
     print("\nTraining score TFIDF", tfidf_train_acc)
     print_report(tf_idf_classifier, tfidf_test, test_labels, "TFIDF", report_precision)
-
 
 
 if __name__ == "__main__":

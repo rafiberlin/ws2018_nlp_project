@@ -127,3 +127,19 @@ def correct_spelling2(word, last_corrections=None, to_lower=False,
     if last_corrections is not None:
         last_corrections[word] = final_guess
     return final_guess
+
+# training_accuracy = model.score(train_docs, train_labels)
+# testing_accuracy = model.score(test_docs, test_labels)
+# f1 = f1_score(test_labels, predicted, average=None,
+#               labels=['neutral', 'positive', 'negative'])
+# f1_macro = f1_score(test_labels, predicted, average="macro",
+#                     labels=['neutral', 'positive', 'negative'])
+# print("\nModel: " + prefix, "\nTraining accuracy", training_accuracy, "\nTesting accuracy",
+#       testing_accuracy,
+#       "\nTesting F1 (neutral, positive, negative)",
+#       f1,
+#       "\nTesting F1 (macro)",
+#       f1_macro, )
+
+# print_report(model, test_docs, test_labels, union_weight_suffix.upper(),
+#              report_precision)

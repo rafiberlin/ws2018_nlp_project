@@ -203,7 +203,9 @@ def create_fitted_model(train_docs, train_labels, pos_vocab, number_of_features_
                                            )
 
     transformer = None
-    if "bow" in union_transformer_weights.keys():
+    if "bow" in union_transformer_weights.keys() and "tfidf" in union_transformer_weights.keys():
+        transformer = create_bow_tfidf_pos_transformer(pos_vocab, number_of_features_to_delete)
+    elif "bow" in union_transformer_weights.keys():
         transformer = create_bow_pos_transformer(pos_vocab, number_of_features_to_delete)
     elif "tfidf" in union_transformer_weights.keys():
         transformer = create_tfidf_pos_transformer(pos_vocab, number_of_features_to_delete)
@@ -222,6 +224,49 @@ def create_fitted_model(train_docs, train_labels, pos_vocab, number_of_features_
     pos_bow_pipeline.fit(train_docs, train_labels)
 
     return pos_bow_pipeline
+
+
+def create_bow_tfidf_pos_transformer(pos_vocab, number_of_features_to_delete):
+    """
+    Creates a transformer list with BOW, TFIDF and POS modelling
+    :param pos_vocab: dict, one weighting combination. Key=pos category, value=weight
+           e.g. {'V': 1, 'A': 1, 'N': 1, 'E': 1}
+    :param number_of_features_to_delete: int, num of featrues to delete
+    :return: a transformer list
+    """
+
+    tfidf = TfidfVectorizer(
+        analyzer='word',
+        tokenizer=do_not_tokenize,
+        preprocessor=do_not_tokenize,
+    )
+
+    bag_of_words = CountVectorizer(
+        analyzer='word',
+        tokenizer=do_not_tokenize,
+        preprocessor=do_not_tokenize,
+        binary=True
+    )
+
+    pos_vectorizer = ocfs.PosVectorizer(pos_vocab)
+
+    transformer_list = [
+        # Pipeline for pulling BOW features
+        ('bow', Pipeline([
+            ('bowweighing', bag_of_words),
+        ])),
+        # Pipeline for pulling TFIDF features
+        ('tfidf', Pipeline([
+            ('tfidfweighing', tfidf),
+        ])),
+        # Pipeline for POS
+        ('pos', Pipeline([
+            ('posweighing', pos_vectorizer),
+            ('ocfs', ocfs.OCFS(number_of_features_to_delete)),
+        ])),
+    ]
+
+    return transformer_list
 
 
 def create_bow_pos_transformer(pos_vocab, number_of_features_to_delete):

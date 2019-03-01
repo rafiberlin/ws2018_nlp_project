@@ -387,7 +387,7 @@ def main(argv):
         predict_args = []
 
         if results_path_suffix == "equal_classes_reshuffled":
-            # removed some results with deletion 40000 => identical to 35000
+
             predict_args = [
                 [{'R': 1, 'E': 2, 'A': 4, '!': 4}, 35000, {'bow': 0.5, 'pos': 0.5, }],
                 [{'E+!': 1}, 35000, {'bow': 0.5, 'pos': 0.5, }],

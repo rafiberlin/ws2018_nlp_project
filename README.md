@@ -52,7 +52,7 @@ python main.py [train] [devset] [reshuffled] [equal_classes_reshuffled] [baselin
 ```
 
 Running `main.py` without arguments will load our best-performing model and start sentiment class prediction on test data.   
-Output of `main.py` whithout arguments:
+Output of `main.py` without arguments:
 * A list of ten best-performing models according to accuracy metric
 * A list of ten best-performing models according to f1metric
 * Training accuracy, testing accuracy

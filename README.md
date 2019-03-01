@@ -49,19 +49,26 @@ or `python main.py devset`
 
 ### File Structure
 
-    ├── \_papers                    # scientific literature used for research
-    ├── dataset                     # the final, canonical data for modeling
-    │   ├── processed               # processed data
-    │   ├── raw                     # unprocessed data   
-    ├── model                       # trained models  
-    ├── results                     # results of feature engineering
-    ├── src                         # project source code  
-    │   ├── baseline                # implementation of the baseline model: MaxEnt Classifier with BoW snd TfIdf    
-    │   ├── features                # implementation of feature selection technique 
-    │   ├── model                   # implementation of feature engineering for MaxEnt classifier with POS  
-    │   ├── data                    # implementation of data processing functions  
-    │   ├── main.py                 # all functions necessary for training the POS model are called from here
-    └── requirements.txt            # all modules necessary to run scripts
+    ├── \_papers                                # scientific literature used for research
+    ├── dataset                                 # data used for training, development and testing
+    │   ├── processed                           # processed data
+    |   ├── processed_reshuffled                # processed data, with documents shuffled
+    |   ├── processed_equal_classes_reshuffled  # peocessed data, with equal number of docs per sentiment class, reshuffled
+    │   ├── raw                                 # unprocessed data   
+    ├── models                                  # trained models, can be loaded for prediction through main.py  
+    ├── results                                 # results of feature engineering
+    │   ├── best                                # top 10 results
+    │   ├── all                                 # all resutls
+    │   |   ├── data_                           # trained and tested on data in dataset/processed
+    │   |   ├── data_reshuffled                 # trained and tested on data in dataset/processed_reshuffled
+    │   |   ├── data_equal_classes_reshuffled   # trained and tested on data in dataset/processed_equal_classes_reshuffled
+    ├── src                                     # project source code  
+    │   ├── baseline                            # implementation of the baseline models: MaxEnt classifier with BoW snd TfIdf    
+    │   ├── features                            # implementation of feature selection technique
+    │   ├── model                               # implementation of feature engineering for MaxEnt classifier with POS  
+    │   ├── data                                # implementation of data processing functions  
+    │   ├── main.py                             # main script to train models and/or predict class labels
+    └── requirements.txt                        # modules necessary to run scripts
 
 ### Data
 

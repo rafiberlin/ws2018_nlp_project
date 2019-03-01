@@ -32,12 +32,13 @@ def print_report(model, test_docs, test_labels, classifier_name, report_precisio
     predicted = model.predict(test_docs)
     testing_accuracy = model.score(test_docs, test_labels)
     print(
-        '================================\n\nClassification Report for '
+        '\n\n=== Classification Report for '
         + classifier_name
-        + ' (Test Data)\n')
+        + ' (Test Data) ===\n')
     print("\tTesting Accuracy: ", testing_accuracy, "\n")
 
     report = classification_report(test_labels, predicted, digits=report_precision)
+    print(report)
     create_classification_report_plot(report, 'baseline', classifier_name)
 
 
